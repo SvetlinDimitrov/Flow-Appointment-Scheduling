@@ -8,14 +8,14 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserService {
 
-  Page<UserView> getAllUsers(Pageable pageable);
+  Page<UserView> getAll(Pageable pageable);
 
-  UserView getUserById(Long id);
+  UserView getById(Long id);
 
-  UserView createUser(UserPostRequest userView);
+  UserView create(UserPostRequest userView);
 
-  UserView updateUser(Long id, UserPutRequest userView);
+  UserView update(Long id, UserPutRequest userView);
 
-  void deleteUser(Long id);
+  void delete(Long id);
 
 }

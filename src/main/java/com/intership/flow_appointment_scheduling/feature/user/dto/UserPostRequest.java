@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public record UserPostRequest(
 
     @NotBlank(message = "Password must not be blank")
-    @Size(max = 255, message = "Password must not exceed 255 characters")
+    @Size(min = 3, max = 255, message = "Password must not exceed 255 characters")
     String password,
 
     @NotBlank(message = "Email must not be blank")
@@ -17,10 +17,10 @@ public record UserPostRequest(
     @Email(message = "Email must be valid")
     String email,
 
-    @Size(max = 255, message = "First name must not exceed 255 characters")
+    @Size(min = 3, max = 255, message = "First name must not exceed 255 characters")
     String firstName,
 
-    @Size(max = 255, message = "Last name must not exceed 255 characters")
+    @Size(min = 3, max = 255, message = "Last name must not exceed 255 characters")
     String lastName,
 
     @NotNull(message = "Role must not be blank")

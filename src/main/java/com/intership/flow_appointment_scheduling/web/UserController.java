@@ -23,28 +23,34 @@ public class UserController {
   }
 
   @GetMapping
-  public ResponseEntity<Page<UserView>> getAllUsers(Pageable pageable) {
-    return new ResponseEntity<>(userService.getAllUsers(pageable), HttpStatus.OK);
+  public ResponseEntity<Page<UserView>> getAll(Pageable pageable) {
+    return ResponseEntity.ok(userService.getAll(pageable));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<UserView> getUserById(@PathVariable Long id) {
-    return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
+  public ResponseEntity<UserView> getById(@PathVariable Long id) {
+    return ResponseEntity.ok(userService.getById(id));
   }
 
   @PostMapping
-  public ResponseEntity<UserView> createUser(@Valid @RequestBody UserPostRequest createDto) {
-    return new ResponseEntity<>(userService.createUser(createDto), HttpStatus.CREATED);
+  public ResponseEntity<UserView> create(@Valid @RequestBody UserPostRequest createDto) {
+
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(userService.create(createDto));
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<UserView> updateUser(@PathVariable Long id, @Valid @RequestBody UserPutRequest updateDto) {
-    return new ResponseEntity<>(userService.updateUser(id, updateDto), HttpStatus.OK);
+  public ResponseEntity<UserView> update(@PathVariable Long id, @Valid @RequestBody UserPutRequest updateDto) {
+    return ResponseEntity.ok(userService.update(id, updateDto));
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-    userService.deleteUser(id);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  public ResponseEntity<Void> delete(@PathVariable Long id) {
+    userService.delete(id);
+
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
   }
 }

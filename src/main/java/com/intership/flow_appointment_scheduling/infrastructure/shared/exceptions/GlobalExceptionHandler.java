@@ -1,8 +1,5 @@
-package com.intership.flow_appointment_scheduling.web;
+package com.intership.flow_appointment_scheduling.infrastructure.shared.exceptions;
 
-import com.intership.flow_appointment_scheduling.infrastructure.shared.exceptions.UserAlreadyExistsException;
-import com.intership.flow_appointment_scheduling.infrastructure.shared.exceptions.UserNotFoundException;
-import com.intership.flow_appointment_scheduling.infrastructure.shared.exceptions.UserRoleNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -34,13 +31,13 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(UserRoleNotFoundException.class)
-  public ResponseEntity<ProblemDetail> handleBadResponseException(UserRoleNotFoundException e) {
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
-    problemDetail.setTitle("User Role Not Found");
-    problemDetail.setType(URI.create("http://localhost:8080/errors/user-role-not-found"));
+  @ExceptionHandler(CreationException.class)
+  public ResponseEntity<ProblemDetail> handleBadResponseException(CreationException e) {
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    problemDetail.setTitle("Creation Error");
+    problemDetail.setType(URI.create("http://localhost:8080/errors/creation-error"));
 
-    return new ResponseEntity<>(problemDetail, HttpStatus.NOT_FOUND);
+    return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
