@@ -1,5 +1,6 @@
 package com.intership.flow_appointment_scheduling.feature.user.entity;
 
+import com.intership.flow_appointment_scheduling.feature.user.entity.enums.UserRoles;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -24,8 +25,9 @@ public class User {
   @Column(columnDefinition = "varchar(255)", nullable = false)
   private String password;
 
-  @ManyToOne
-  private Role role;
+  @Enumerated(EnumType.STRING)
+  @Column(columnDefinition = "varchar(255)", nullable = false)
+  private UserRoles role;
 
   public Long getId() {
     return id;
@@ -67,11 +69,11 @@ public class User {
     this.password = password;
   }
 
-  public Role getRole() {
+  public UserRoles getRole() {
     return role;
   }
 
-  public void setRole(Role role) {
+  public void setRole(UserRoles role) {
     this.role = role;
   }
 
@@ -96,6 +98,7 @@ public class User {
         ", lastName='" + lastName + '\'' +
         ", email='" + email + '\'' +
         ", password='" + password + '\'' +
+        ", role=" + role +
         '}';
   }
 }

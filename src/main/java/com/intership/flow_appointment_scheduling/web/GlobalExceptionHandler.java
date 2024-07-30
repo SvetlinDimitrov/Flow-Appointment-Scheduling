@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
-public ResponseEntity<ProblemDetail> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+  public ResponseEntity<ProblemDetail> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
     String message = ex.getMessage();
     String invalidValue = message.substring(message.indexOf("\"") + 1, message.lastIndexOf("\""));
     String acceptedValues = message.substring(message.indexOf("[") + 1, message.indexOf("]"));
