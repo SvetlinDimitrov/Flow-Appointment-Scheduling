@@ -35,15 +35,6 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(CreationException.class)
-  public ResponseEntity<ProblemDetail> handleBadResponseException(CreationException e) {
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
-    problemDetail.setTitle("Creation Error");
-    problemDetail.setType(URI.create("http://localhost:8080/errors/creation-error"));
-
-    return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
-  }
-
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ProblemDetail> handleValidationExceptions(MethodArgumentNotValidException ex) {
     List<String> errors = ex.getBindingResult()
