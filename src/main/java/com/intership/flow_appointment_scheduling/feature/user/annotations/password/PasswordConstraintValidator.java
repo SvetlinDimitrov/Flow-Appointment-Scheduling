@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.passay.*;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class PasswordConstraintValidator implements ConstraintValidator<ValidPassword, String> {
 
@@ -25,8 +26,19 @@ public class PasswordConstraintValidator implements ConstraintValidator<ValidPas
 
     if (result.isValid()) return true;
 
+    List<String> messages = validator.getMessages(result);
+
+    String allMessages = String.join(",", messages);
+    String formatedMessage = allMessages.toLowerCase();
+
+    char firstCharUpperCase = Character.toUpperCase(formatedMessage.charAt(0));
+    formatedMessage = firstCharUpperCase + formatedMessage.substring(1);
+
+    formatedMessage = formatedMessage.replace(".", "");
+    formatedMessage = formatedMessage.replace("password", "");
+
     context.disableDefaultConstraintViolation();
-    context.buildConstraintViolationWithTemplate(String.join(", ", validator.getMessages(result)))
+    context.buildConstraintViolationWithTemplate(formatedMessage)
         .addConstraintViolation();
 
     return false;

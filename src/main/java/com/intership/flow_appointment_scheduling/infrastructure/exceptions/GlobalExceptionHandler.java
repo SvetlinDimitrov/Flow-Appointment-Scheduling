@@ -1,14 +1,18 @@
 package com.intership.flow_appointment_scheduling.infrastructure.exceptions;
 
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -42,14 +46,23 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ProblemDetail> handleValidationExceptions(MethodArgumentNotValidException ex) {
-    String detail = ex.getBindingResult().getFieldErrors().stream()
-        .map(error -> error.getField() + ": " + error.getDefaultMessage())
-        .reduce((acc, error) -> acc + "; " + error)
-        .orElse("Validation error");
+    List<String> errors = ex.getBindingResult()
+        .getFieldErrors()
+        .stream()
+        .collect(Collectors.groupingBy(
+            FieldError::getField,
+            Collectors.mapping(DefaultMessageSourceResolvable::getDefaultMessage, Collectors.toList())
+        ))
+        .entrySet()
+        .stream()
+        .map(entry -> entry.getKey() + ": " + String.join(", ", entry.getValue()))
+        .collect(Collectors.toList());
 
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+    ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
     problemDetail.setTitle("Validation Error");
     problemDetail.setType(URI.create("http://localhost:8080/errors/validation-error"));
+    problemDetail.setDetail("Validation failed for one or more fields.");
+    problemDetail.setProperty("errors", errors);
 
     return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
   }
