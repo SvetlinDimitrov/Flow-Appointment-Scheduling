@@ -9,19 +9,21 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
-import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(UserNotFoundException.class)
-  public ResponseEntity<ProblemDetail> handleBadResponseException(UserNotFoundException e) {
+  @ExceptionHandler({UserNotFoundException.class, NoHandlerFoundException.class})
+  public ResponseEntity<ProblemDetail> handleBadResponseException(Exception e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
-    problemDetail.setTitle("User Not Found");
-    problemDetail.setType(URI.create("http://localhost:8080/errors/user-not-found"));
+
+    if (e instanceof UserNotFoundException) problemDetail.setTitle(((UserNotFoundException) e).getTITLE());
+    else problemDetail.setTitle("Not Found");
 
     return new ResponseEntity<>(problemDetail, HttpStatus.NOT_FOUND);
   }
@@ -29,8 +31,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(UserAlreadyExistsException.class)
   public ResponseEntity<ProblemDetail> handleBadResponseException(UserAlreadyExistsException e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
-    problemDetail.setTitle("User Already Exists");
-    problemDetail.setType(URI.create("http://localhost:8080/errors/user-already-exists"));
+
+    problemDetail.setTitle(e.getTITLE());
 
     return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
   }
@@ -51,7 +53,6 @@ public class GlobalExceptionHandler {
 
     ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
     problemDetail.setTitle("Validation Error");
-    problemDetail.setType(URI.create("http://localhost:8080/errors/validation-error"));
     problemDetail.setDetail("Validation failed for one or more fields.");
     problemDetail.setProperty("errors", errors);
 
@@ -67,8 +68,19 @@ public class GlobalExceptionHandler {
     String detail = String.format("Invalid value '%s' for enum type. Accepted values are: %s", invalidValue, acceptedValues);
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
     problemDetail.setTitle("Invalid Enum Value");
-    problemDetail.setType(URI.create("http://localhost:8080/errors/invalid-enum-value"));
 
     return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
 }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ProblemDetail> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+    String detail = String.format("Failed to convert value of type '%s' to required type '%s'; For input string: '%s'",
+        ex.getValue().getClass().getSimpleName(), ex.getRequiredType().getSimpleName(), ex.getValue());
+
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+    problemDetail.setTitle("Method Argument Type Mismatch");
+
+    return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
+  }
+
 }
