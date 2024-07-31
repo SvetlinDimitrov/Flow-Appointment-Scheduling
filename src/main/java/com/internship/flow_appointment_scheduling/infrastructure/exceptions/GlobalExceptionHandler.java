@@ -10,7 +10,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,23 +17,13 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler({UserNotFoundException.class, NoHandlerFoundException.class})
-  public ResponseEntity<ProblemDetail> handleBadResponseException(Exception e) {
+  @ExceptionHandler(UserNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleUserNotFoundException(UserNotFoundException e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
-
-    if (e instanceof UserNotFoundException) problemDetail.setTitle(((UserNotFoundException) e).getTitle());
-    else problemDetail.setTitle("Not Found");
-
-    return new ResponseEntity<>(problemDetail, HttpStatus.NOT_FOUND);
-  }
-
-  @ExceptionHandler(UserAlreadyExistsException.class)
-  public ResponseEntity<ProblemDetail> handleBadResponseException(UserAlreadyExistsException e) {
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
 
     problemDetail.setTitle(e.getTitle());
 
-    return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(problemDetail, HttpStatus.NOT_FOUND);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

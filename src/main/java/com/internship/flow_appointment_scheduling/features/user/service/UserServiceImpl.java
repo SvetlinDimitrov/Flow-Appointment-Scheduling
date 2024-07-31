@@ -5,9 +5,7 @@ import com.internship.flow_appointment_scheduling.features.user.dto.UserPutReque
 import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.UserAlreadyExistsException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.UserNotFoundException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.ExceptionMessages;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.UserMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,14 +32,11 @@ public class UserServiceImpl implements UserService {
   public UserView getById(Long id) {
     return userRepository.findById(id)
         .map(userMapper::toView)
-        .orElseThrow(() -> new UserNotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND.message, id)));
+        .orElseThrow(() -> new UserNotFoundException(id));
   }
 
   @Override
   public UserView create(UserPostRequest createDto) {
-
-    if (userRepository.existsByEmail(createDto.email()))
-      throw new UserAlreadyExistsException(String.format(ExceptionMessages.USER_ALREADY_EXISTS.message, createDto.email()));
 
     User userToSave = userMapper.toEntity(createDto);
 
@@ -52,7 +47,7 @@ public class UserServiceImpl implements UserService {
   public UserView update(Long id, UserPutRequest putDto) {
 
     User entity = userRepository.findById(id)
-        .orElseThrow(() -> new UserNotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND.message, id)));
+        .orElseThrow(() -> new UserNotFoundException(id));
 
     userMapper.updateEntity(entity, putDto);
 
@@ -62,7 +57,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public void delete(Long id) {
     if (!userRepository.existsById(id))
-      throw new UserNotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND.message, id));
+      throw new UserNotFoundException(id);
 
     userRepository.deleteById(id);
   }
