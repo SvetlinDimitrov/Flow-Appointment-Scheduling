@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +33,8 @@ public interface UserControllerDocumentation {
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = UserView.class))}),
       @ApiResponse(responseCode = "404", description = "User not found",
-          content = @Content)
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = ProblemDetail.class))}),
   })
   @GetMapping("/{id}")
   ResponseEntity<UserView> getById(@PathVariable Long id);
@@ -61,7 +63,8 @@ public interface UserControllerDocumentation {
           content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserView.class))
       ),
       @ApiResponse(responseCode = "400", description = "Invalid input",
-          content = @Content)
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = ProblemDetail.class))}),
   })
   @PostMapping
   ResponseEntity<UserView> create(@Valid @RequestBody UserPostRequest createDto);
@@ -87,10 +90,12 @@ public interface UserControllerDocumentation {
       @ApiResponse(responseCode = "200", description = "User updated",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = UserView.class))}),
-      @ApiResponse(responseCode = "404", description = "User not found",
-          content = @Content),
       @ApiResponse(responseCode = "400", description = "Invalid input",
-          content = @Content)
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = ProblemDetail.class))}),
+      @ApiResponse(responseCode = "404", description = "User not found",
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = ProblemDetail.class))}),
   })
   @PutMapping("/{id}")
   ResponseEntity<UserView> update(@PathVariable Long id, @Valid @RequestBody UserPutRequest updateDto);
@@ -100,7 +105,8 @@ public interface UserControllerDocumentation {
       @ApiResponse(responseCode = "204", description = "User deleted",
           content = @Content),
       @ApiResponse(responseCode = "404", description = "User not found",
-          content = @Content)
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = ProblemDetail.class))}),
   })
   @DeleteMapping("/{id}")
   ResponseEntity<Void> delete(@PathVariable Long id);
