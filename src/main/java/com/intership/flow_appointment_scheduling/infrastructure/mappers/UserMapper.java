@@ -1,4 +1,4 @@
-package com.intership.flow_appointment_scheduling.infrastructure.shared.mappers;
+package com.intership.flow_appointment_scheduling.infrastructure.mappers;
 
 import com.intership.flow_appointment_scheduling.feature.user.dto.UserPostRequest;
 import com.intership.flow_appointment_scheduling.feature.user.dto.UserPutRequest;

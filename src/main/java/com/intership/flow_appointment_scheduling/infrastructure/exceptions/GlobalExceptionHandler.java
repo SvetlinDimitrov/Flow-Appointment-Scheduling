@@ -1,4 +1,4 @@
-package com.intership.flow_appointment_scheduling.infrastructure.shared.exceptions;
+package com.intership.flow_appointment_scheduling.infrastructure.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
