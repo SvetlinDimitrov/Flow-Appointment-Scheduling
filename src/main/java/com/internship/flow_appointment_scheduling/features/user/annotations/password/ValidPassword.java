@@ -1,9 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.user.annotations.password;
 
-
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

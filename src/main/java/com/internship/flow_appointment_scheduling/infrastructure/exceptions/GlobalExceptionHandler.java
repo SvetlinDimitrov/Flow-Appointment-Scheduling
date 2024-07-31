@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ProblemDetail> handleBadResponseException(Exception e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
 
-    if (e instanceof UserNotFoundException) problemDetail.setTitle(((UserNotFoundException) e).getTITLE());
+    if (e instanceof UserNotFoundException) problemDetail.setTitle(((UserNotFoundException) e).getTitle());
     else problemDetail.setTitle("Not Found");
 
     return new ResponseEntity<>(problemDetail, HttpStatus.NOT_FOUND);
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ProblemDetail> handleBadResponseException(UserAlreadyExistsException e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
 
-    problemDetail.setTitle(e.getTITLE());
+    problemDetail.setTitle(e.getTitle());
 
     return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
   }

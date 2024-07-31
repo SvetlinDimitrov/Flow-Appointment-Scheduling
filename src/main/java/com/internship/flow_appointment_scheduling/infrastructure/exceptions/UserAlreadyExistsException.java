@@ -6,7 +6,7 @@ public class UserAlreadyExistsException extends RuntimeException {
     super(message);
   }
 
-    public String getTITLE() {
+    public String getTitle() {
         return "User Already Exists";
     }
 }

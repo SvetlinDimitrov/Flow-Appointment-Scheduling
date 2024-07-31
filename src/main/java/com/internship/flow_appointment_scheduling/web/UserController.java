@@ -1,6 +1,5 @@
 package com.internship.flow_appointment_scheduling.web;
 
-
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserView;

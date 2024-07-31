@@ -3,12 +3,10 @@ package com.internship.flow_appointment_scheduling.features.user.annotations.pas
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.passay.*;
-
 import java.util.Arrays;
 import java.util.List;
 
 public class PasswordConstraintValidator implements ConstraintValidator<ValidPassword, String> {
-
 
   @Override
   public boolean isValid(String password, ConstraintValidatorContext context) {

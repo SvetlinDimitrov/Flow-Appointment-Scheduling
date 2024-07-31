@@ -26,7 +26,7 @@ public class User {
   private String password;
 
   @Enumerated(EnumType.STRING)
-  @Column(columnDefinition = "varchar(255)", nullable = false)
+  @Column(nullable = false)
   private UserRoles role;
 
   public Long getId() {
