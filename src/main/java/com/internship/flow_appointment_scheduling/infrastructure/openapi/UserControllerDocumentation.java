@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +23,12 @@ public interface UserControllerDocumentation {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the users",
           content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = Page.class))})
+              schema = @Schema(implementation = Page.class))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
   })
   @GetMapping
+  @SecurityRequirement(name = "bearerAuth")
   ResponseEntity<Page<UserView>> getAll(Pageable pageable);
 
   @Operation(summary = "Get a user by ID")
@@ -35,7 +39,10 @@ public interface UserControllerDocumentation {
       @ApiResponse(responseCode = "404", description = "User not found",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
   })
+  @SecurityRequirement(name = "bearerAuth")
   @GetMapping("/{id}")
   ResponseEntity<UserView> getById(@PathVariable Long id);
 
@@ -96,7 +103,10 @@ public interface UserControllerDocumentation {
       @ApiResponse(responseCode = "404", description = "User not found",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
   })
+  @SecurityRequirement(name = "bearerAuth")
   @PutMapping("/{id}")
   ResponseEntity<UserView> update(@PathVariable Long id, @Valid @RequestBody UserPutRequest updateDto);
 
@@ -107,7 +117,10 @@ public interface UserControllerDocumentation {
       @ApiResponse(responseCode = "404", description = "User not found",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
   })
+  @SecurityRequirement(name = "bearerAuth")
   @DeleteMapping("/{id}")
   ResponseEntity<Void> delete(@PathVariable Long id);
 }
