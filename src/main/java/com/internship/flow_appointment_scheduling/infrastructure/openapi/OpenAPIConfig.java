@@ -1,4 +1,4 @@
-package com.intership.flow_appointment_scheduling.infrastructure.openapi;
+package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -14,6 +14,7 @@ public class OpenAPIConfig {
     return GroupedOpenApi.builder()
         .group("public-api")
         .pathsToMatch("/api/**")
+        .packagesToScan("com.internship.flow_appointment_scheduling.web")
         .build();
   }
 
