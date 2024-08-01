@@ -26,6 +26,8 @@ public interface UserControllerDocumentation {
               schema = @Schema(implementation = Page.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden",
           content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
+          content = {@Content(mediaType = "application/json")}),
   })
   @GetMapping
   @SecurityRequirement(name = "bearerAuth")
@@ -40,6 +42,8 @@ public interface UserControllerDocumentation {
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
           content = {@Content(mediaType = "application/json")}),
   })
   @SecurityRequirement(name = "bearerAuth")
@@ -105,6 +109,8 @@ public interface UserControllerDocumentation {
               schema = @Schema(implementation = ProblemDetail.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden",
           content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
+          content = {@Content(mediaType = "application/json")}),
   })
   @SecurityRequirement(name = "bearerAuth")
   @PutMapping("/{id}")
@@ -118,6 +124,8 @@ public interface UserControllerDocumentation {
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
           content = {@Content(mediaType = "application/json")}),
   })
   @SecurityRequirement(name = "bearerAuth")

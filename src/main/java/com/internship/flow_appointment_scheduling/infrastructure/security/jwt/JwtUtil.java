@@ -11,9 +11,6 @@ import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 @Component
 public class JwtUtil {
@@ -24,22 +21,30 @@ public class JwtUtil {
     @Value("${jwt.expiration-time}")
     private long expirationTime;
 
-    private Key getSigningKey() {
-        byte[] keyBytes = secret.getBytes();
-        return Keys.hmacShaKeyFor(keyBytes);
+    public JwtResponse generateToken(String email) {
+        Date now = new Date();
+        Date expirationDate = new Date(now.getTime() + expirationTime);
+
+        String token = Jwts.builder()
+            .setSubject(email)
+            .setIssuedAt(now)
+            .setExpiration(expirationDate)
+            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+            .compact();
+
+        LocalDateTime expirationTime = LocalDateTime.ofInstant(expirationDate.toInstant(), ZoneId.systemDefault());
+
+        return new JwtResponse(token, expirationTime);
     }
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Boolean isTokenExpired(String token) {
+        Date expiration = extractAllClaims(token).getExpiration();
+        return expiration.before(new Date());
     }
 
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+    public String extractEmail(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.getSubject();
     }
 
     private Claims extractAllClaims(String token) {
@@ -50,31 +55,8 @@ public class JwtUtil {
             .getBody();
     }
 
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    public JwtResponse generateToken(String username) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
-    }
-
-    private JwtResponse createToken(Map<String, Object> claims, String subject) {
-        Date now = new Date();
-        Date expirationDate = new Date(now.getTime() + expirationTime);
-        String token = Jwts.builder()
-            .setClaims(claims)
-            .setSubject(subject)
-            .setIssuedAt(now)
-            .setExpiration(expirationDate)
-            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-            .compact();
-        LocalDateTime expirationTime = LocalDateTime.ofInstant(expirationDate.toInstant(), ZoneId.systemDefault());
-        return new JwtResponse(token, expirationTime);
-    }
-
-    public Boolean validateToken(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username) && !isTokenExpired(token));
+    private Key getSigningKey() {
+        byte[] keyBytes = secret.getBytes();
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }
