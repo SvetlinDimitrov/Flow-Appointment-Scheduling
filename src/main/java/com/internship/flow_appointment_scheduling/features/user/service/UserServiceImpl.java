@@ -9,6 +9,7 @@ import com.internship.flow_appointment_scheduling.infrastructure.exceptions.User
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.UserMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,10 +17,12 @@ public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
   private final UserMapper userMapper;
+  private final PasswordEncoder passwordEncoder;
 
-  public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+  public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.userMapper = userMapper;
+    this.passwordEncoder = passwordEncoder;
   }
 
   @Override
@@ -39,6 +42,7 @@ public class UserServiceImpl implements UserService {
   public UserView create(UserPostRequest createDto) {
 
     User userToSave = userMapper.toEntity(createDto);
+    userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
 
     return userMapper.toView(userRepository.save(userToSave));
   }
