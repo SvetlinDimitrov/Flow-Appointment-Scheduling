@@ -18,7 +18,7 @@ public record UserPostRequest(
     @NotBlank(message = "Email must not be blank")
     @Size(min = 3, max = 255, message = "Email must not exceed 255 characters and must be at least 3 characters")
     @Email(message = "Email must be valid")
-    @UniqueEmail()
+    @UniqueEmail
     String email,
 
     @Size(min = 3, max = 255, message = "First name must not exceed 255 characters and must be at least 3 characters")

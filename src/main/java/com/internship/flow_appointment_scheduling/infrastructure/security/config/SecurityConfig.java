@@ -4,6 +4,7 @@ import com.internship.flow_appointment_scheduling.infrastructure.security.jwt.Jw
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,6 +26,15 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+  private static final String[] SWAGGER_ENDPOINTS = {
+      "/v2/api-docs",
+      "/swagger-resources/**",
+      "/swagger-ui.html",
+      "/webjars/**",
+      "/v3/api-docs/**",
+      "/swagger-ui/**"
+  };
+
   @Value("${cors.allowed-origins}")
   private List<String> allowedOrigins;
 
@@ -41,7 +51,9 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(authorizeRequests ->
             authorizeRequests
-                .requestMatchers("/api/v1/user").permitAll()
+                .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth").permitAll()
                 .anyRequest().authenticated()
         )
         .sessionManagement(sessionManagement ->

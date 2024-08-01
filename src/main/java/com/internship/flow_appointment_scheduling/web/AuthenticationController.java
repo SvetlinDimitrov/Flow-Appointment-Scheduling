@@ -5,33 +5,29 @@ import com.internship.flow_appointment_scheduling.infrastructure.security.dto.Jw
 import com.internship.flow_appointment_scheduling.infrastructure.security.jwt.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/v1/auth")
 public class AuthenticationController {
 
   private final AuthenticationManager authenticationManager;
-  private final UserDetailsService userDetailsService;
   private final JwtUtil jwtUtil;
 
-  public AuthenticationController(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, JwtUtil jwtUtil) {
+  public AuthenticationController(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
     this.authenticationManager = authenticationManager;
-    this.userDetailsService = userDetailsService;
     this.jwtUtil = jwtUtil;
   }
 
-  @PostMapping("/authenticate")
+  @PostMapping
   public JwtResponse createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest){
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(authenticationRequest.email(), authenticationRequest.password())
     );
 
-    UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.email());
-
-    return jwtUtil.generateToken(userDetails.getUsername());
+    return jwtUtil.generateToken(authenticationRequest.email());
   }
 }

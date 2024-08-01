@@ -4,9 +4,10 @@ import com.internship.flow_appointment_scheduling.infrastructure.security.dto.Jw
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
+import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -23,6 +24,11 @@ public class JwtUtil {
     @Value("${jwt.expiration-time}")
     private long expirationTime;
 
+    private Key getSigningKey() {
+        byte[] keyBytes = secret.getBytes();
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -37,7 +43,11 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder()
+            .setSigningKey(getSigningKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
     }
 
     private Boolean isTokenExpired(String token) {
@@ -52,9 +62,13 @@ public class JwtUtil {
     private JwtResponse createToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + expirationTime);
-        String token = Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(now)
+        String token = Jwts.builder()
+            .setClaims(claims)
+            .setSubject(subject)
+            .setIssuedAt(now)
             .setExpiration(expirationDate)
-            .signWith(SignatureAlgorithm.HS256, secret).compact();
+            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+            .compact();
         LocalDateTime expirationTime = LocalDateTime.ofInstant(expirationDate.toInstant(), ZoneId.systemDefault());
         return new JwtResponse(token, expirationTime);
     }
