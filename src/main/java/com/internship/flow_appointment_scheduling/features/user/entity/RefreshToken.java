@@ -1,7 +1,11 @@
 package com.internship.flow_appointment_scheduling.features.user.entity;
 
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -12,8 +16,8 @@ import java.util.UUID;
 public class RefreshToken {
 
   @Id
-  @GeneratedValue(generator = "UUID")
-  UUID id;
+  @UuidGenerator
+  private String id;
 
   LocalDateTime expiryDate;
 
@@ -21,11 +25,11 @@ public class RefreshToken {
   User user;
 
 
-  public UUID getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(UUID id) {
+  public void setId(String id) {
     this.id = id;
   }
 

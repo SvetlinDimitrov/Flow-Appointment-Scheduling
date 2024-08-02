@@ -22,7 +22,6 @@ import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class JwtServiceImpl implements JwtService {
@@ -48,7 +47,7 @@ public class JwtServiceImpl implements JwtService {
 
   public JwtResponse refreshToken(RefreshTokenPostRequest dto) {
     RefreshToken refreshToken = refreshTokenRepository
-        .findById(UUID.fromString(dto.token()))
+        .findById(dto.token())
         .orElseThrow(() -> new RefreshTokenNotFoundException(dto.token()));
 
     if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {

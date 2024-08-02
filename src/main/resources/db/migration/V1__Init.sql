@@ -6,3 +6,12 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     role ENUM('ADMINISTRATOR', 'EMPLOYEE', 'CLIENT') NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id VARCHAR(255) PRIMARY KEY,
+    expiry_date TIMESTAMP,
+    user_id BIGINT,
+    CONSTRAINT fk_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+);
