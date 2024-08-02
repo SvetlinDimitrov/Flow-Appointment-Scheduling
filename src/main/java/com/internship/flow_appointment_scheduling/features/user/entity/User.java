@@ -29,7 +29,7 @@ public class User {
   @Column(nullable = false)
   private UserRoles role;
 
-  @OneToOne(mappedBy = "user")
+  @OneToOne(mappedBy = "user" , cascade = {CascadeType.REMOVE})
   private RefreshToken refreshToken;
 
   public Long getId() {
