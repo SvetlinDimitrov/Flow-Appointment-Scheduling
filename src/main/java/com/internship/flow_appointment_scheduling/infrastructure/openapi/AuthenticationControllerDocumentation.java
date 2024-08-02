@@ -2,6 +2,7 @@ package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationRequest;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtResponse;
+import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenPostRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -43,4 +44,23 @@ public interface AuthenticationControllerDocumentation {
   @PostMapping
   ResponseEntity<JwtResponse> createAuthenticationToken(@Valid @RequestBody AuthenticationRequest authenticationRequest);
 
+  @Operation(
+      summary = "Refresh authentication token",
+      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          content = @Content(
+              mediaType = "application/json",
+              schema = @Schema(implementation = RefreshTokenPostRequest.class)
+          )
+      )
+  )
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Successfully refreshed authentication token",
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = JwtResponse.class))
+      ),
+      @ApiResponse(responseCode = "400", description = "Invalid input or token expired",
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = ProblemDetail.class))}),
+  })
+  @PostMapping("/refresh")
+  ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshTokenPostRequest dto);
 }
