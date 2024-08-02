@@ -17,13 +17,22 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(UserNotFoundException.class)
-  public ResponseEntity<ProblemDetail> handleUserNotFoundException(UserNotFoundException e) {
+  @ExceptionHandler({UserNotFoundException.class, RefreshTokenNotFoundException.class})
+  public ResponseEntity<ProblemDetail> handleUserNotFoundException(GeneralException e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
 
     problemDetail.setTitle(e.getTitle());
 
     return new ResponseEntity<>(problemDetail, HttpStatus.NOT_FOUND);
+  }
+
+  @ExceptionHandler(RefreshTokenExpiredException.class)
+  public ResponseEntity<ProblemDetail> handleRefreshTokenExpiredException(RefreshTokenExpiredException e) {
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+
+    problemDetail.setTitle(e.getTitle());
+
+    return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

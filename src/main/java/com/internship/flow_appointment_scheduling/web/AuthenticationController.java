@@ -3,7 +3,8 @@ package com.internship.flow_appointment_scheduling.web;
 import com.internship.flow_appointment_scheduling.infrastructure.openapi.AuthenticationControllerDocumentation;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationRequest;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtResponse;
-import com.internship.flow_appointment_scheduling.infrastructure.security.jwt.JwtUtil;
+import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenPostRequest;
+import com.internship.flow_appointment_scheduling.infrastructure.security.service.JwtServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,11 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController implements AuthenticationControllerDocumentation {
 
   private final AuthenticationManager authenticationManager;
-  private final JwtUtil jwtUtil;
+  private final JwtServiceImpl jwtService;
 
-  public AuthenticationController(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+  public AuthenticationController(AuthenticationManager authenticationManager, JwtServiceImpl refreshTokenService) {
     this.authenticationManager = authenticationManager;
-    this.jwtUtil = jwtUtil;
+    this.jwtService = refreshTokenService;
   }
 
   @PostMapping
@@ -33,6 +34,13 @@ public class AuthenticationController implements AuthenticationControllerDocumen
 
     return ResponseEntity
         .ok()
-        .body(jwtUtil.generateToken(authenticationRequest.email()));
+        .body(jwtService.generateToken(authenticationRequest.email()));
+  }
+
+  @PostMapping("/refresh")
+  public ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshTokenPostRequest dto) {
+    return ResponseEntity
+        .ok()
+        .body(jwtService.refreshToken(dto));
   }
 }

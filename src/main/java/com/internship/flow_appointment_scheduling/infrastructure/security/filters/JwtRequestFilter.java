@@ -1,5 +1,6 @@
-package com.internship.flow_appointment_scheduling.infrastructure.security.jwt;
+package com.internship.flow_appointment_scheduling.infrastructure.security.filters;
 
+import com.internship.flow_appointment_scheduling.infrastructure.security.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,9 +18,9 @@ import java.io.IOException;
 public class JwtRequestFilter extends OncePerRequestFilter {
 
   private final UserDetailsService userDetailsService;
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtUtil;
 
-  public JwtRequestFilter(UserDetailsService userDetailsService, JwtUtil jwtUtil) {
+  public JwtRequestFilter(UserDetailsService userDetailsService, JwtService jwtUtil) {
     this.userDetailsService = userDetailsService;
     this.jwtUtil = jwtUtil;
   }
@@ -39,8 +40,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     try {
 
-      if (jwt != null && !jwtUtil.isTokenExpired(jwt)) {
-        email = jwtUtil.extractEmail(jwt);
+      if (jwt != null && !jwtUtil.isJwtTokenExpired(jwt)) {
+        email = jwtUtil.getEmailFromToken(jwt);
       }
 
       if (email != null) {

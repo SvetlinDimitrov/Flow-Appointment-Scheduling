@@ -29,6 +29,9 @@ public class User {
   @Column(nullable = false)
   private UserRoles role;
 
+  @OneToOne(mappedBy = "user")
+  private RefreshToken refreshToken;
+
   public Long getId() {
     return id;
   }
@@ -75,6 +78,14 @@ public class User {
 
   public void setRole(UserRoles role) {
     this.role = role;
+  }
+
+  public RefreshToken getRefreshToken() {
+    return refreshToken;
+  }
+
+  public void setRefreshToken(RefreshToken refreshToken) {
+    this.refreshToken = refreshToken;
   }
 
   @Override

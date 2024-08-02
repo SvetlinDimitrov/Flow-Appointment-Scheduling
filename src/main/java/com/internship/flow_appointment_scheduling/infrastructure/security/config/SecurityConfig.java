@@ -1,6 +1,6 @@
 package com.internship.flow_appointment_scheduling.infrastructure.security.config;
 
-import com.internship.flow_appointment_scheduling.infrastructure.security.jwt.JwtRequestFilter;
+import com.internship.flow_appointment_scheduling.infrastructure.security.filters.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,8 +54,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(authorizeRequests ->
             authorizeRequests
                 .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth", "/api/v1/auth/refresh", "/api/v1/users").permitAll()
                 .anyRequest().authenticated()
         )
         .sessionManagement(sessionManagement ->
