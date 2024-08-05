@@ -1,6 +1,6 @@
-package com.internship.flow_appointment_scheduling.features.user.entity;
+package com.internship.flow_appointment_scheduling.infrastructure.security.entity;
 
-
+import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
@@ -9,7 +9,6 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.UUID;
 
 @Entity
 @Table(name = "refresh_tokens")

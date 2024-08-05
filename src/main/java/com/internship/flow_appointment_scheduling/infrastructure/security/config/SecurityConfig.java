@@ -28,13 +28,15 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  private static final String[] SWAGGER_ENDPOINTS = {
+  private static final String[] WHITE_LIST = {
       "/v2/api-docs",
       "/swagger-resources/**",
       "/swagger-ui.html",
       "/webjars/**",
       "/v3/api-docs/**",
-      "/swagger-ui/**"
+      "/swagger-ui/**",
+      "/api/v1/auth",
+      "/api/v1/auth/refresh"
   };
 
   @Value("${cors.allowed-origins}")
@@ -53,8 +55,8 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(authorizeRequests ->
             authorizeRequests
-                .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth", "/api/v1/auth/refresh", "/api/v1/users").permitAll()
+                .requestMatchers(WHITE_LIST).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                 .anyRequest().authenticated()
         )
         .sessionManagement(sessionManagement ->

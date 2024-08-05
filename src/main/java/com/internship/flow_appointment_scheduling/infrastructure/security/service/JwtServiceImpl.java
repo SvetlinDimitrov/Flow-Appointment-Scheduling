@@ -1,6 +1,5 @@
 package com.internship.flow_appointment_scheduling.infrastructure.security.service;
 
-import com.internship.flow_appointment_scheduling.features.user.entity.RefreshToken;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.RefreshTokenExpiredException;
@@ -11,6 +10,7 @@ import com.internship.flow_appointment_scheduling.infrastructure.security.dto.Jw
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtView;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenPostRequest;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenView;
+import com.internship.flow_appointment_scheduling.infrastructure.security.entity.RefreshToken;
 import com.internship.flow_appointment_scheduling.infrastructure.security.repository.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,6 +18,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

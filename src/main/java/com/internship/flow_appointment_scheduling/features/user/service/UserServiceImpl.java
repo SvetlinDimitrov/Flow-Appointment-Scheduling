@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     UserAuth userAuth = extractUserFromAuth();
 
     if (userAuth.getAuthorities().contains(getRole(UserRoles.CLIENT))
-        && !userAuth.getId().equals(id))
+        && !userAuth.getEntity().getId().equals(id))
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
     return userRepository.findById(id)
@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
   public UserView update(Long id, UserPutRequest putDto) {
     UserAuth userAuth = extractUserFromAuth();
 
-    if (!userAuth.getId().equals(id) && (
+    if (!userAuth.getEntity().getId().equals(id) && (
         userAuth.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
             userAuth.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
     )
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
   public void delete(Long id) {
     UserAuth userAuth = extractUserFromAuth();
 
-    if (!userAuth.getId().equals(id) && (
+    if (!userAuth.getEntity().getId().equals(id) && (
         userAuth.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
             userAuth.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
     )

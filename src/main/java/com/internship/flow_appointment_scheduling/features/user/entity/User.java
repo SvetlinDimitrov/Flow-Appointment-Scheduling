@@ -1,6 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.user.entity;
 
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
+import com.internship.flow_appointment_scheduling.infrastructure.security.entity.RefreshToken;
 import jakarta.persistence.*;
 
 import java.util.Objects;
