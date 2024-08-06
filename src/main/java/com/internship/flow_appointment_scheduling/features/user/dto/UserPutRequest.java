@@ -1,8 +1,8 @@
 package com.internship.flow_appointment_scheduling.features.user.dto;
 
+import com.internship.flow_appointment_scheduling.features.user.annotations.adminOnly.AdminOnly;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record UserPutRequest(
@@ -15,7 +15,7 @@ public record UserPutRequest(
     @NotBlank(message = "Last name must not be blank")
     String lastName,
 
-    @NotNull(message = "Role must not be null")
+    @AdminOnly
     UserRoles role
 
 ) {

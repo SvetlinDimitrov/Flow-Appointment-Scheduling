@@ -91,14 +91,23 @@ public interface UserControllerDocumentation {
           content = @Content(
               mediaType = "application/json",
               schema = @Schema(implementation = UserPutRequest.class),
-              examples = @ExampleObject(
-                  name = "UserPutBodyExample",
-                  value = "{" +
-                      "\"firstName\": \"John2\"," +
-                      "\"lastName\": \"Wick2\"," +
-                      "\"role\": \"CLIENT\"" +
-                      "}"
-              )
+              examples = {
+                  @ExampleObject(
+                      name = "Admin Request",
+                      value = "{" +
+                          "\"firstName\": \"John2\"," +
+                          "\"lastName\": \"Wick2\"," +
+                          "\"role\": \"CLIENT\"" +
+                          "}"
+                  ),
+                  @ExampleObject(
+                      name = "Normal Request",
+                      value = "{" +
+                          "\"firstName\": \"Jane\"," +
+                          "\"lastName\": \"Doe\"" +
+                          "}"
+                  )
+              }
           )
       )
   )

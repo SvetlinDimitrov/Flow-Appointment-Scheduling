@@ -23,13 +23,29 @@ public interface AuthenticationControllerDocumentation {
           content = @Content(
               mediaType = "application/json",
               schema = @Schema(implementation = AuthenticationRequest.class),
-              examples = @ExampleObject(
-                  name = "AuthenticationRequestExample",
-                  value = "{" +
-                      "\"email\": \"abv@example.com\"," +
-                      "\"password\": \"password123A!\"" +
-                      "}"
-              )
+              examples = {
+                  @ExampleObject(
+                      name = "Admin Example",
+                      value = "{" +
+                          "\"email\": \"john.wick@example.com\"," +
+                          "\"password\": \"password123A!\"" +
+                          "}"
+                  ),
+                  @ExampleObject(
+                      name = "Employee Example",
+                      value = "{" +
+                          "\"email\": \"jane.doe@example.com\"," +
+                          "\"password\": \"password123A!\"" +
+                          "}"
+                  ),
+                  @ExampleObject(
+                      name = "Customer Example",
+                      value = "{" +
+                          "\"email\": \"alice.smith@example.com\"," +
+                          "\"password\": \"password123A!\"" +
+                          "}"
+                  )
+              }
           )
       )
   )
