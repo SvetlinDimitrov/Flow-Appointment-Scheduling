@@ -23,7 +23,6 @@ public class RefreshToken {
   @OneToOne
   User user;
 
-
   public String getId() {
     return id;
   }

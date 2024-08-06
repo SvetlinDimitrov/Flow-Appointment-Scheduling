@@ -6,7 +6,7 @@ import com.internship.flow_appointment_scheduling.infrastructure.exceptions.Refr
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.RefreshTokenNotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.UserNotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.RefreshTokenMapper;
-import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtResponse;
+import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationResponse;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtView;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenPostRequest;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenView;
@@ -46,7 +46,7 @@ public class JwtServiceImpl implements JwtService {
     this.userRepository = userRepository;
   }
 
-  public JwtResponse refreshToken(RefreshTokenPostRequest dto) {
+  public AuthenticationResponse refreshToken(RefreshTokenPostRequest dto) {
     RefreshToken refreshToken = refreshTokenRepository
         .findById(dto.token())
         .orElseThrow(() -> new RefreshTokenNotFoundException(dto.token()));
@@ -59,14 +59,14 @@ public class JwtServiceImpl implements JwtService {
     JwtView jwtView = generateJwtToken(refreshToken.getUser().getEmail());
     RefreshTokenView refreshTokenView = refreshTokenMapper.toView(refreshToken);
 
-    return new JwtResponse(jwtView, refreshTokenView);
+    return new AuthenticationResponse(jwtView, refreshTokenView);
   }
 
-  public JwtResponse generateToken(String email) {
+  public AuthenticationResponse generateToken(String email) {
     JwtView jwtView = generateJwtToken(email);
     RefreshTokenView refreshTokenView = generateRefreshToken(email);
 
-    return new JwtResponse(jwtView, refreshTokenView);
+    return new AuthenticationResponse(jwtView, refreshTokenView);
   }
 
   public Boolean isJwtTokenExpired(String token) {

@@ -5,15 +5,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -30,22 +27,28 @@ public class SecurityConfig {
 
   private static final String[] WHITE_LIST = {
       "/v2/api-docs",
-      "/swagger-resources/**",
-      "/swagger-ui.html",
-      "/webjars/**",
+      "/v3/api-docs",
       "/v3/api-docs/**",
+      "/swagger-resources",
+      "/swagger-resources/**",
+      "/configuration/ui",
+      "/configuration/security",
       "/swagger-ui/**",
+      "/webjars/**",
+      "/swagger-ui.html",
       "/api/v1/auth",
-      "/api/v1/auth/refresh"
+      "/api/v1/auth/refresh",
   };
 
   @Value("${cors.allowed-origins}")
   private List<String> allowedOrigins;
 
   private final JwtRequestFilter jwtRequestFilter;
+  private final AuthenticationProvider authenticationProvider;
 
-  public SecurityConfig(JwtRequestFilter jwtRequestFilter) {
+  public SecurityConfig(JwtRequestFilter jwtRequestFilter, AuthenticationProvider authenticationProvider) {
     this.jwtRequestFilter = jwtRequestFilter;
+    this.authenticationProvider = authenticationProvider;
   }
 
   @Bean
@@ -59,10 +62,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                 .anyRequest().authenticated()
         )
-        .sessionManagement(sessionManagement ->
-            sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authenticationProvider(authenticationProvider)
         .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
     return http.build();
   }
 
@@ -77,13 +80,4 @@ public class SecurityConfig {
     return source;
   }
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
-
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-    return authenticationConfiguration.getAuthenticationManager();
-  }
 }

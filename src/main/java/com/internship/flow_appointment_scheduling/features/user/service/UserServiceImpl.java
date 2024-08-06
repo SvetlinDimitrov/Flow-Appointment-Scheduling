@@ -8,7 +8,7 @@ import com.internship.flow_appointment_scheduling.features.user.entity.enums.Use
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.UserNotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.UserMapper;
-import com.internship.flow_appointment_scheduling.infrastructure.security.dto.UserAuth;
+import com.internship.flow_appointment_scheduling.infrastructure.security.dto.CustomUserDetails;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -40,10 +40,10 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserView getById(Long id) {
-    UserAuth userAuth = extractUserFromAuth();
+    CustomUserDetails userDetails = extractCurrentUser();
 
-    if (userAuth.getAuthorities().contains(getRole(UserRoles.CLIENT))
-        && !userAuth.getEntity().getId().equals(id))
+    if (userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT))
+        && !userDetails.user().getId().equals(id))
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
     return userRepository.findById(id)
@@ -61,11 +61,11 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserView update(Long id, UserPutRequest putDto) {
-    UserAuth userAuth = extractUserFromAuth();
+    CustomUserDetails userDetails = extractCurrentUser();
 
-    if (!userAuth.getEntity().getId().equals(id) && (
-        userAuth.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
-            userAuth.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
+    if (!userDetails.user().getId().equals(id) && (
+        userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
+            userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
     )
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
@@ -79,11 +79,11 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public void delete(Long id) {
-    UserAuth userAuth = extractUserFromAuth();
+    CustomUserDetails userDetails = extractCurrentUser();
 
-    if (!userAuth.getEntity().getId().equals(id) && (
-        userAuth.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
-            userAuth.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
+    if (!userDetails.user().getId().equals(id) && (
+        userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
+            userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
     )
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
@@ -93,10 +93,10 @@ public class UserServiceImpl implements UserService {
     userRepository.deleteById(id);
   }
 
-  private UserAuth extractUserFromAuth() {
+  private CustomUserDetails extractCurrentUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication != null && authentication.getPrincipal() instanceof UserAuth) {
-      return (UserAuth) authentication.getPrincipal();
+    if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
+      return (CustomUserDetails) authentication.getPrincipal();
     }
     throw new ResponseStatusException(HttpStatus.FORBIDDEN);
   }

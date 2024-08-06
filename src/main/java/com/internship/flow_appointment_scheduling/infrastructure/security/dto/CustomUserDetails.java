@@ -8,28 +8,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-
-public class UserAuth implements UserDetails {
-
-  private final User entity;
-
-  public UserAuth(User entity) {
-    this.entity = entity;
-  }
+public record CustomUserDetails(User user) implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of(new SimpleGrantedAuthority("ROLE_" + entity.getRole().name()));
+    return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
   }
 
   @Override
   public String getPassword() {
-    return entity.getPassword();
+    return user.getPassword();
   }
 
   @Override
   public String getUsername() {
-    return entity.getEmail();
+    return user.getEmail();
   }
 
   @Override
@@ -50,9 +43,5 @@ public class UserAuth implements UserDetails {
   @Override
   public boolean isEnabled() {
     return UserDetails.super.isEnabled();
-  }
-
-  public User getEntity() {
-    return entity;
   }
 }

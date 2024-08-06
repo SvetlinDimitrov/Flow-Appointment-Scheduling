@@ -1,8 +1,8 @@
-package com.internship.flow_appointment_scheduling.web;
+package com.internship.flow_appointment_scheduling.infrastructure.security.web;
 
 import com.internship.flow_appointment_scheduling.infrastructure.openapi.AuthenticationControllerDocumentation;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationRequest;
-import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtResponse;
+import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationResponse;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenPostRequest;
 import com.internship.flow_appointment_scheduling.infrastructure.security.service.JwtServiceImpl;
 import jakarta.validation.Valid;
@@ -27,7 +27,7 @@ public class AuthenticationController implements AuthenticationControllerDocumen
   }
 
   @PostMapping
-  public ResponseEntity<JwtResponse> createAuthenticationToken(@Valid @RequestBody AuthenticationRequest authenticationRequest) {
+  public ResponseEntity<AuthenticationResponse> createAuthenticationToken(@Valid @RequestBody AuthenticationRequest authenticationRequest) {
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(authenticationRequest.email(), authenticationRequest.password())
     );
@@ -38,7 +38,7 @@ public class AuthenticationController implements AuthenticationControllerDocumen
   }
 
   @PostMapping("/refresh")
-  public ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshTokenPostRequest dto) {
+  public ResponseEntity<AuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenPostRequest dto) {
     return ResponseEntity
         .ok()
         .body(jwtService.refreshToken(dto));

@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationRequest;
-import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtResponse;
+import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationResponse;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenPostRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,14 +35,14 @@ public interface AuthenticationControllerDocumentation {
   )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Successfully created authentication token",
-          content = @Content(mediaType = "application/json", schema = @Schema(implementation = JwtResponse.class))
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationResponse.class))
       ),
       @ApiResponse(responseCode = "400", description = "Invalid input",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
   })
   @PostMapping
-  ResponseEntity<JwtResponse> createAuthenticationToken(@Valid @RequestBody AuthenticationRequest authenticationRequest);
+  ResponseEntity<AuthenticationResponse> createAuthenticationToken(@Valid @RequestBody AuthenticationRequest authenticationRequest);
 
   @Operation(
       summary = "Refresh authentication token",
@@ -55,12 +55,12 @@ public interface AuthenticationControllerDocumentation {
   )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Successfully refreshed authentication token",
-          content = @Content(mediaType = "application/json", schema = @Schema(implementation = JwtResponse.class))
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationResponse.class))
       ),
       @ApiResponse(responseCode = "400", description = "Invalid input or token expired",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
   })
   @PostMapping("/refresh")
-  ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshTokenPostRequest dto);
+  ResponseEntity<AuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenPostRequest dto);
 }
