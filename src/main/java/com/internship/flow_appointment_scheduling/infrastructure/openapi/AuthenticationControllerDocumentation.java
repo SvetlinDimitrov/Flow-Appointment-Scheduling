@@ -42,7 +42,8 @@ public interface AuthenticationControllerDocumentation {
               schema = @Schema(implementation = ProblemDetail.class))}),
   })
   @PostMapping
-  ResponseEntity<AuthenticationResponse> createAuthenticationToken(@Valid @RequestBody AuthenticationRequest authenticationRequest);
+  ResponseEntity<AuthenticationResponse> createAuthenticationToken(
+      @Valid @RequestBody AuthenticationRequest authenticationRequest);
 
   @Operation(
       summary = "Refresh authentication token",
@@ -62,5 +63,6 @@ public interface AuthenticationControllerDocumentation {
               schema = @Schema(implementation = ProblemDetail.class))}),
   })
   @PostMapping("/refresh")
-  ResponseEntity<AuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenPostRequest dto);
+  ResponseEntity<AuthenticationResponse> refreshToken(
+      @Valid @RequestBody RefreshTokenPostRequest dto);
 }

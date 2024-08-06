@@ -4,6 +4,7 @@ import com.internship.flow_appointment_scheduling.infrastructure.security.dto.Au
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenPostRequest;
 
 public interface JwtService {
+
   AuthenticationResponse refreshToken(RefreshTokenPostRequest dto);
 
   AuthenticationResponse generateToken(String email);

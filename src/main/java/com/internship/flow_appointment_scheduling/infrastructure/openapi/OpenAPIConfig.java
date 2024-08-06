@@ -15,7 +15,8 @@ public class OpenAPIConfig {
     return GroupedOpenApi.builder()
         .group("public-api")
         .pathsToMatch("/api/**")
-        .packagesToScan("com.internship.flow_appointment_scheduling.web" , "com.internship.flow_appointment_scheduling.infrastructure")
+        .packagesToScan("com.internship.flow_appointment_scheduling.web",
+            "com.internship.flow_appointment_scheduling.infrastructure")
         .build();
   }
 

@@ -9,4 +9,5 @@ public record AuthenticationRequest(
 
     String password
 ) {
+
 }

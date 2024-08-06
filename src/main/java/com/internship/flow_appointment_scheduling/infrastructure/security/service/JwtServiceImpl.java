@@ -16,31 +16,28 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JwtServiceImpl implements JwtService {
 
-  @Value("${refresh-token.expiration-time}")
-  private long refreshTokenDuration;
-
-  @Value("${jwt.secret}")
-  private String secret;
-
-  @Value("${jwt.expiration-time}")
-  private long expirationTime;
-
   private final RefreshTokenRepository refreshTokenRepository;
   private final RefreshTokenMapper refreshTokenMapper;
   private final UserRepository userRepository;
+  @Value("${refresh-token.expiration-time}")
+  private long refreshTokenDuration;
+  @Value("${jwt.secret}")
+  private String secret;
+  @Value("${jwt.expiration-time}")
+  private long expirationTime;
 
-  public JwtServiceImpl(RefreshTokenRepository refreshTokenRepository, RefreshTokenMapper refreshTokenMapper, UserRepository userRepository) {
+  public JwtServiceImpl(RefreshTokenRepository refreshTokenRepository,
+      RefreshTokenMapper refreshTokenMapper, UserRepository userRepository) {
     this.refreshTokenRepository = refreshTokenRepository;
     this.refreshTokenMapper = refreshTokenMapper;
     this.userRepository = userRepository;
@@ -90,7 +87,8 @@ public class JwtServiceImpl implements JwtService {
         .signWith(getSigningKey(), SignatureAlgorithm.HS256)
         .compact();
 
-    LocalDateTime expirationTime = LocalDateTime.ofInstant(expirationDate.toInstant(), ZoneId.systemDefault());
+    LocalDateTime expirationTime = LocalDateTime.ofInstant(expirationDate.toInstant(),
+        ZoneId.systemDefault());
 
     return new JwtView(token, expirationTime);
   }
@@ -100,7 +98,9 @@ public class JwtServiceImpl implements JwtService {
         .findByEmail(email)
         .orElseThrow(() -> new UserNotFoundException(email));
 
-    if (user.getRefreshToken() != null) refreshTokenRepository.delete(user.getRefreshToken());
+    if (user.getRefreshToken() != null) {
+      refreshTokenRepository.delete(user.getRefreshToken());
+    }
 
     RefreshToken refreshToken = new RefreshToken();
     refreshToken.setUser(user);

@@ -31,4 +31,5 @@ public record UserPostRequest(
     UserRoles role
 
 ) {
+
 }

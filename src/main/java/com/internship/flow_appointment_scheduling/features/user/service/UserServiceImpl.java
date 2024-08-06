@@ -26,7 +26,8 @@ public class UserServiceImpl implements UserService {
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
 
-  public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+  public UserServiceImpl(UserRepository userRepository, UserMapper userMapper,
+      PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.userMapper = userMapper;
     this.passwordEncoder = passwordEncoder;
@@ -43,8 +44,9 @@ public class UserServiceImpl implements UserService {
     CustomUserDetails userDetails = extractCurrentUser();
 
     if (userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT))
-        && !userDetails.user().getId().equals(id))
+        && !userDetails.user().getId().equals(id)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
 
     return userRepository.findById(id)
         .map(userMapper::toView)
@@ -66,8 +68,9 @@ public class UserServiceImpl implements UserService {
     if (!userDetails.user().getId().equals(id) && (
         userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
             userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
-    )
+    ) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
 
     User entity = userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(id));
@@ -84,11 +87,13 @@ public class UserServiceImpl implements UserService {
     if (!userDetails.user().getId().equals(id) && (
         userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
             userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
-    )
+    ) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
 
-    if (!userRepository.existsById(id))
+    if (!userRepository.existsById(id)) {
       throw new UserNotFoundException(id);
+    }
 
     userRepository.deleteById(id);
   }

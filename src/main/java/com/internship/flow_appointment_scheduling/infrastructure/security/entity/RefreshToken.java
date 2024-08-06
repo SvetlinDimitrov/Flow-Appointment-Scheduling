@@ -5,23 +5,20 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.UuidGenerator;
-
 import java.time.LocalDateTime;
 import java.util.Objects;
+import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "refresh_tokens")
 public class RefreshToken {
 
+  LocalDateTime expiryDate;
+  @OneToOne
+  User user;
   @Id
   @UuidGenerator
   private String id;
-
-  LocalDateTime expiryDate;
-
-  @OneToOne
-  User user;
 
   public String getId() {
     return id;
@@ -49,8 +46,12 @@ public class RefreshToken {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     RefreshToken that = (RefreshToken) o;
     return Objects.equals(id, that.id);
   }

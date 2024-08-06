@@ -1,6 +1,8 @@
 package com.internship.flow_appointment_scheduling.infrastructure.security.config;
 
 import com.internship.flow_appointment_scheduling.infrastructure.security.filters.JwtRequestFilter;
+import java.util.Arrays;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -39,14 +38,13 @@ public class SecurityConfig {
       "/api/v1/auth",
       "/api/v1/auth/refresh",
   };
-
+  private final JwtRequestFilter jwtRequestFilter;
+  private final AuthenticationProvider authenticationProvider;
   @Value("${cors.allowed-origins}")
   private List<String> allowedOrigins;
 
-  private final JwtRequestFilter jwtRequestFilter;
-  private final AuthenticationProvider authenticationProvider;
-
-  public SecurityConfig(JwtRequestFilter jwtRequestFilter, AuthenticationProvider authenticationProvider) {
+  public SecurityConfig(JwtRequestFilter jwtRequestFilter,
+      AuthenticationProvider authenticationProvider) {
     this.jwtRequestFilter = jwtRequestFilter;
     this.authenticationProvider = authenticationProvider;
   }
@@ -62,7 +60,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                 .anyRequest().authenticated()
         )
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider)
         .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 

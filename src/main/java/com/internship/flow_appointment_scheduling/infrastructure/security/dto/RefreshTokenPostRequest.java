@@ -7,4 +7,5 @@ public record RefreshTokenPostRequest(
     @NotBlank(message = "Refresh token is mandatory")
     String token
 ) {
+
 }

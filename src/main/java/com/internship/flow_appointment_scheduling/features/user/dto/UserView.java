@@ -7,4 +7,5 @@ public record UserView(
     String email,
     String role
 ) {
+
 }

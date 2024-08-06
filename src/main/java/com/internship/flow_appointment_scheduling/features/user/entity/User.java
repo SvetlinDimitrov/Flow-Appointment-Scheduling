@@ -2,8 +2,16 @@ package com.internship.flow_appointment_scheduling.features.user.entity;
 
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.infrastructure.security.entity.RefreshToken;
-import jakarta.persistence.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.util.Objects;
 
 @Entity
@@ -20,7 +28,7 @@ public class User {
   @Column(columnDefinition = "varchar(255)")
   private String lastName;
 
-  @Column(columnDefinition = "varchar(255)", unique = true , nullable = false)
+  @Column(columnDefinition = "varchar(255)", unique = true, nullable = false)
   private String email;
 
   @Column(columnDefinition = "varchar(255)", nullable = false)
@@ -30,7 +38,7 @@ public class User {
   @Column(nullable = false)
   private UserRoles role;
 
-  @OneToOne(mappedBy = "user" , cascade = {CascadeType.REMOVE})
+  @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE})
   private RefreshToken refreshToken;
 
   public Long getId() {
@@ -91,8 +99,12 @@ public class User {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     User user = (User) o;
     return Objects.equals(id, user.id);
   }

@@ -23,7 +23,8 @@ public class EmailValidator implements ConstraintValidator<UniqueEmail, String> 
 
     if (userRepository.existsByEmail(email)) {
       context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate(String.format(ExceptionMessages.USER_ALREADY_EXISTS.message, email))
+      context.buildConstraintViolationWithTemplate(
+              String.format(ExceptionMessages.USER_ALREADY_EXISTS.message, email))
           .addConstraintViolation();
       return false;
     }

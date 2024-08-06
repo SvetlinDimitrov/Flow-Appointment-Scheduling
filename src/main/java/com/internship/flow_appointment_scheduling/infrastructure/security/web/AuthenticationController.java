@@ -21,15 +21,18 @@ public class AuthenticationController implements AuthenticationControllerDocumen
   private final AuthenticationManager authenticationManager;
   private final JwtServiceImpl jwtService;
 
-  public AuthenticationController(AuthenticationManager authenticationManager, JwtServiceImpl refreshTokenService) {
+  public AuthenticationController(AuthenticationManager authenticationManager,
+      JwtServiceImpl refreshTokenService) {
     this.authenticationManager = authenticationManager;
     this.jwtService = refreshTokenService;
   }
 
   @PostMapping
-  public ResponseEntity<AuthenticationResponse> createAuthenticationToken(@Valid @RequestBody AuthenticationRequest authenticationRequest) {
+  public ResponseEntity<AuthenticationResponse> createAuthenticationToken(
+      @Valid @RequestBody AuthenticationRequest authenticationRequest) {
     authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(authenticationRequest.email(), authenticationRequest.password())
+        new UsernamePasswordAuthenticationToken(authenticationRequest.email(),
+            authenticationRequest.password())
     );
 
     return ResponseEntity
@@ -38,7 +41,8 @@ public class AuthenticationController implements AuthenticationControllerDocumen
   }
 
   @PostMapping("/refresh")
-  public ResponseEntity<AuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenPostRequest dto) {
+  public ResponseEntity<AuthenticationResponse> refreshToken(
+      @Valid @RequestBody RefreshTokenPostRequest dto) {
     return ResponseEntity
         .ok()
         .body(jwtService.refreshToken(dto));
