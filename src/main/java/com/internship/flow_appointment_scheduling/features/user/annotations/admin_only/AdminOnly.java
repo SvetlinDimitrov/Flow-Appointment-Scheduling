@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.user.annotations.adminOnly;
+package com.internship.flow_appointment_scheduling.features.user.annotations.admin_only;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

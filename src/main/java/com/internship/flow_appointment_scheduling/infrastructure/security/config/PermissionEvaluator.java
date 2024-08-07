@@ -22,8 +22,8 @@ public class PermissionEvaluator {
 
       return userRepository.findById(id)
           .filter(value -> userDetails.user().getEmail().equals(value.getEmail()) ||
-              (!userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT)) &&
-                  !userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
+              (userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
+                  userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
           ).isPresent();
 
     }

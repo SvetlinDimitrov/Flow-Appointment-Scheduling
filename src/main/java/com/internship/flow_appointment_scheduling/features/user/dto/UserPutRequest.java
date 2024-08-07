@@ -1,6 +1,6 @@
 package com.internship.flow_appointment_scheduling.features.user.dto;
 
-import com.internship.flow_appointment_scheduling.features.user.annotations.adminOnly.AdminOnly;
+import com.internship.flow_appointment_scheduling.features.user.annotations.admin_only.AdminOnly;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
