@@ -10,6 +10,8 @@ services:
       - '3306:3306'
     networks:
       - flow-network
+    volumes:
+      - my-db:/var/lib/mysql
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
       start_period: 5s
