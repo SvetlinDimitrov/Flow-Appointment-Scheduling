@@ -53,15 +53,18 @@ public class JwtServiceImpl implements JwtService {
       throw new RefreshTokenExpiredException();
     }
 
-    JwtView jwtView = generateJwtToken(refreshToken.getUser().getEmail());
+    JwtView jwtView = generateJwtToken(refreshToken.getUser());
     RefreshTokenView refreshTokenView = refreshTokenMapper.toView(refreshToken);
 
     return new AuthenticationResponse(jwtView, refreshTokenView);
   }
 
   public AuthenticationResponse generateToken(String email) {
-    JwtView jwtView = generateJwtToken(email);
-    RefreshTokenView refreshTokenView = generateRefreshToken(email);
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new UserNotFoundException(email));
+
+    JwtView jwtView = generateJwtToken(user);
+    RefreshTokenView refreshTokenView = generateRefreshToken(user);
 
     return new AuthenticationResponse(jwtView, refreshTokenView);
   }
@@ -76,12 +79,13 @@ public class JwtServiceImpl implements JwtService {
     return claims.getSubject();
   }
 
-  private JwtView generateJwtToken(String email) {
+  private JwtView generateJwtToken(User user) {
     Date now = new Date();
     Date expirationDate = new Date(now.getTime() + expirationTime);
 
     String token = Jwts.builder()
-        .setSubject(email)
+        .setSubject(user.getEmail())
+        .claim("userId", user.getId())
         .setIssuedAt(now)
         .setExpiration(expirationDate)
         .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -93,10 +97,7 @@ public class JwtServiceImpl implements JwtService {
     return new JwtView(token, expirationTime);
   }
 
-  private RefreshTokenView generateRefreshToken(String email) {
-    User user = userRepository
-        .findByEmail(email)
-        .orElseThrow(() -> new UserNotFoundException(email));
+  private RefreshTokenView generateRefreshToken(User user) {
 
     if (user.getRefreshToken() != null) {
       refreshTokenRepository.delete(user.getRefreshToken());

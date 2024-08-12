@@ -25,10 +25,7 @@ public record UserPostRequest(
     String firstName,
 
     @Size(min = 3, max = 255, message = "Last name must not exceed 255 characters and must be at least 3 characters")
-    String lastName,
-
-    @NotNull(message = "Role must not be blank")
-    UserRoles role
+    String lastName
 
 ) {
 

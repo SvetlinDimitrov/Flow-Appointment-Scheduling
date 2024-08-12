@@ -4,6 +4,7 @@ import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequ
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
+import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.UserNotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.UserMapper;
@@ -43,6 +44,7 @@ public class UserServiceImpl implements UserService {
   public UserView create(UserPostRequest createDto) {
     User userToSave = userMapper.toEntity(createDto);
     userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
+    userToSave.setRole(UserRoles.CLIENT);
 
     return userMapper.toView(userRepository.save(userToSave));
   }
