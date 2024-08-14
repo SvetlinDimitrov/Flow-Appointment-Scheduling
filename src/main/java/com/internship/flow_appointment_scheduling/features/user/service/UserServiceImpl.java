@@ -6,7 +6,7 @@ import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.UserNotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.users.UserNotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.UserMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

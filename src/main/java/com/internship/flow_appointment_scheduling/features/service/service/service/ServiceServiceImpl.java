@@ -3,13 +3,15 @@ package com.internship.flow_appointment_scheduling.features.service.service.serv
 import com.internship.flow_appointment_scheduling.features.service.dto.ServicePostPutRequest;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
+import com.internship.flow_appointment_scheduling.features.service.entity.WorkSpace;
 import com.internship.flow_appointment_scheduling.features.service.repository.ServiceRepository;
 import com.internship.flow_appointment_scheduling.features.service.service.work_space.WorkSpaceService;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.ServiceNotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.ServiceNotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.UserAlreadyAssignToThatServiceException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.UserNotFoundInTheServiceException;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.ServiceMapper;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -49,7 +51,11 @@ public class ServiceServiceImpl implements ServiceService {
     Service service = findById(serviceId);
     User user = userService.findByEmail(employeeEmail);
 
-    service.getUsers().add(user);
+    List<User> users = service.getUsers();
+    if (users.contains(user)) {
+      throw new UserAlreadyAssignToThatServiceException(serviceId, user.getEmail());
+    }
+    users.add(user);
 
     return serviceMapper.toView(serviceRepository.save(service));
   }
@@ -59,7 +65,12 @@ public class ServiceServiceImpl implements ServiceService {
     Service service = findById(serviceId);
     User user = userService.findByEmail(employeeEmail);
 
-    service.getUsers().remove(user);
+    List<User> users = service.getUsers();
+    if (users.contains(user)) {
+      users.remove(user);
+    } else {
+      throw new UserNotFoundInTheServiceException(serviceId, user.getEmail());
+    }
 
     return serviceMapper.toView(serviceRepository.save(service));
   }
@@ -67,12 +78,11 @@ public class ServiceServiceImpl implements ServiceService {
   @Override
   public ServiceView create(ServicePostPutRequest createDto, String userEmail) {
     Service service = serviceMapper.toEntity(createDto);
+    User user = userService.findByEmail(userEmail);
+    WorkSpace workSpace = workSpaceService.findByName(createDto.workSpaceName());
 
-    List<User> users = new ArrayList<>();
-    users.add(userService.findByEmail(userEmail));
-
-    service.setUsers(users);
-    service.setWorkSpace(workSpaceService.findByName(createDto.workSpaceName()));
+    service.setUsers(List.of(user));
+    service.setWorkSpace(workSpace);
 
     return serviceMapper.toView(serviceRepository.save(service));
   }

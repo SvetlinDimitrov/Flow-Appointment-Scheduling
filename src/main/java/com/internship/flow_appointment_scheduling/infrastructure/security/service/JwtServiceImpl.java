@@ -2,9 +2,9 @@ package com.internship.flow_appointment_scheduling.infrastructure.security.servi
 
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.RefreshTokenExpiredException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.RefreshTokenNotFoundException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.UserNotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.auth.RefreshTokenExpiredException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.auth.RefreshTokenNotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.users.UserNotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.RefreshTokenMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationResponse;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtView;

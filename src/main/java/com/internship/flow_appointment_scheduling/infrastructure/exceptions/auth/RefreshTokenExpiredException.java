@@ -1,5 +1,6 @@
-package com.internship.flow_appointment_scheduling.infrastructure.exceptions;
+package com.internship.flow_appointment_scheduling.infrastructure.exceptions.auth;
 
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.GeneralException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.ExceptionMessages;
 
 public class RefreshTokenExpiredException extends RuntimeException implements GeneralException {

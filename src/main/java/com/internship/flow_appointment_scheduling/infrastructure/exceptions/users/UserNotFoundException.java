@@ -1,5 +1,6 @@
-package com.internship.flow_appointment_scheduling.infrastructure.exceptions;
+package com.internship.flow_appointment_scheduling.infrastructure.exceptions.users;
 
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.GeneralException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.ExceptionMessages;
 
 public class UserNotFoundException extends RuntimeException implements GeneralException {

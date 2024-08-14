@@ -2,7 +2,7 @@ package com.internship.flow_appointment_scheduling.features.service.service.work
 
 import com.internship.flow_appointment_scheduling.features.service.entity.WorkSpace;
 import com.internship.flow_appointment_scheduling.features.service.repository.WorkSpaceRepository;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.WorkSpaceNotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.WorkSpaceNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
