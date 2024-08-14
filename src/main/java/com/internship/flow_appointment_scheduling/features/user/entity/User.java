@@ -1,5 +1,6 @@
 package com.internship.flow_appointment_scheduling.features.user.entity;
 
+import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.infrastructure.security.entity.RefreshToken;
 import jakarta.persistence.CascadeType;
@@ -10,8 +11,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -40,6 +43,9 @@ public class User {
 
   @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE})
   private RefreshToken refreshToken;
+
+  @ManyToMany(mappedBy = "users")
+  private List<Service> services;
 
   public Long getId() {
     return id;
@@ -95,6 +101,15 @@ public class User {
 
   public void setRefreshToken(RefreshToken refreshToken) {
     this.refreshToken = refreshToken;
+  }
+
+  public List<Service> getServices() {
+    return services;
+  }
+
+  public void setServices(
+      List<Service> services) {
+    this.services = services;
   }
 
   @Override
