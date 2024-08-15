@@ -14,9 +14,15 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "services")
+@Getter
+@Setter
+@ToString
 public class Service {
 
   @Id
@@ -46,64 +52,6 @@ public class Service {
   )
   private List<User> users;
 
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public Integer getDuration() {
-    return duration;
-  }
-
-  public void setDuration(Integer duration) {
-    this.duration = duration;
-  }
-
-  public BigDecimal getPrice() {
-    return price;
-  }
-
-  public void setPrice(BigDecimal price) {
-    this.price = price;
-  }
-
-  public WorkSpace getWorkSpace() {
-    return workSpace;
-  }
-
-  public void setWorkSpace(
-      WorkSpace workSpace) {
-    this.workSpace = workSpace;
-  }
-
-  public List<User> getUsers() {
-    return users;
-  }
-
-  public void setUsers(
-      List<User> users) {
-    this.users = users;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -119,18 +67,5 @@ public class Service {
   @Override
   public int hashCode() {
     return Objects.hashCode(id);
-  }
-
-  @Override
-  public String toString() {
-    return "Service{" +
-        "id=" + id +
-        ", name='" + name + '\'' +
-        ", description='" + description + '\'' +
-        ", duration=" + duration +
-        ", price=" + price +
-        ", workSpace=" + workSpace +
-        ", users=" + users +
-        '}';
   }
 }

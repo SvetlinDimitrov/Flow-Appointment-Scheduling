@@ -9,9 +9,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
 import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "work_spaces")
+@Getter
+@Setter
+@ToString
 public class WorkSpace {
 
   @Id
@@ -26,39 +32,6 @@ public class WorkSpace {
 
   @OneToMany(mappedBy = "workSpace")
   private List<Service> services;
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public Integer getAvailableSlots() {
-    return availableSlots;
-  }
-
-  public void setAvailableSlots(Integer capacity) {
-    this.availableSlots = capacity;
-  }
-
-  public List<Service> getServices() {
-    return services;
-  }
-
-  public void setServices(
-      List<Service> services) {
-    this.services = services;
-  }
 
   @Override
   public boolean equals(Object o) {
@@ -75,15 +48,5 @@ public class WorkSpace {
   @Override
   public int hashCode() {
     return Objects.hashCode(id);
-  }
-
-  @Override
-  public String toString() {
-    return "WorkSpace{" +
-        "id=" + id +
-        ", name='" + name + '\'' +
-        ", capacity=" + availableSlots +
-        ", services=" + services +
-        '}';
   }
 }
