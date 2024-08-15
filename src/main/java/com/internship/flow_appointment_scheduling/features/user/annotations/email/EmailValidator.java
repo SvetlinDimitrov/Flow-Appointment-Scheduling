@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.user.annotations.email;
 
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.ExceptionMessages;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ public class EmailValidator implements ConstraintValidator<UniqueEmail, String> 
     if (userRepository.existsByEmail(email)) {
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate(
-              String.format(ExceptionMessages.USER_ALREADY_EXISTS.message, email))
+              String.format(Exceptions.USER_ALREADY_EXISTS.message, email))
           .addConstraintViolation();
       return false;
     }

@@ -1,12 +1,5 @@
 package com.internship.flow_appointment_scheduling.infrastructure.exceptions;
 
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.auth.RefreshTokenExpiredException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.auth.RefreshTokenNotFoundException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.ServiceNotFoundException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.UserAlreadyAssignToThatServiceException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.UserNotFoundInTheServiceException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.WorkSpaceNotFoundException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.users.UserNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -23,11 +16,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler({
-      UserNotFoundException.class, RefreshTokenNotFoundException.class,
-      ServiceNotFoundException.class, WorkSpaceNotFoundException.class,
-  })
-  public ResponseEntity<ProblemDetail> handleUserNotFoundException(GeneralException e) {
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleUserNotFoundException(NotFoundException e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND,
         e.getMessage());
 
@@ -36,11 +26,8 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(problemDetail, HttpStatus.NOT_FOUND);
   }
 
-  @ExceptionHandler({
-      RefreshTokenExpiredException.class, UserNotFoundInTheServiceException.class,
-      UserAlreadyAssignToThatServiceException.class,
-  })
-  public ResponseEntity<ProblemDetail> handleRefreshTokenExpiredException(GeneralException e) {
+  @ExceptionHandler(BadRequestException.class)
+  public ResponseEntity<ProblemDetail> handleRefreshTokenExpiredException(BadRequestException e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
         e.getMessage());
 

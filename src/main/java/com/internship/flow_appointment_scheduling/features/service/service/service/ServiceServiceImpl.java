@@ -8,9 +8,9 @@ import com.internship.flow_appointment_scheduling.features.service.repository.Se
 import com.internship.flow_appointment_scheduling.features.service.service.work_space.WorkSpaceService;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.ServiceNotFoundException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.UserAlreadyAssignToThatServiceException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.services.UserNotFoundInTheServiceException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.ServiceMapper;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +53,11 @@ public class ServiceServiceImpl implements ServiceService {
 
     List<User> users = service.getUsers();
     if (users.contains(user)) {
-      throw new UserAlreadyAssignToThatServiceException(serviceId, user.getEmail());
+      throw new BadRequestException(
+          Exceptions.USER_ALREADY_ASSIGN_TO_SERVICE,
+          user.getEmail(),
+          serviceId
+      );
     }
     users.add(user);
 
@@ -69,7 +73,10 @@ public class ServiceServiceImpl implements ServiceService {
     if (users.contains(user)) {
       users.remove(user);
     } else {
-      throw new UserNotFoundInTheServiceException(serviceId, user.getEmail());
+      throw new BadRequestException(
+          Exceptions.USER_NOT_FOUND_IN_SERVICE,
+          user.getEmail(),
+          serviceId);
     }
 
     return serviceMapper.toView(serviceRepository.save(service));
@@ -104,6 +111,6 @@ public class ServiceServiceImpl implements ServiceService {
   private Service findById(Long id) {
     return serviceRepository
         .findById(id)
-        .orElseThrow(() -> new ServiceNotFoundException(id));
+        .orElseThrow(() -> new NotFoundException(Exceptions.SERVICE_NOT_FOUND, id));
   }
 }
