@@ -23,15 +23,16 @@ public class Service {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "varchar(255)")
   private String name;
 
+  @Column(nullable = false , columnDefinition = "text")
   private String description;
 
   @Column(nullable = false , name = "duration_minutes")
   private Integer duration;
 
-  @Column(nullable = false)
+  @Column(nullable = false , columnDefinition = "decimal(10,2)")
   private BigDecimal price;
 
   @ManyToOne

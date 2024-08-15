@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
-public record ServicePostPutRequest(
+public record ServiceDTO(
 
     @NotBlank(message = "Name is mandatory")
     @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")

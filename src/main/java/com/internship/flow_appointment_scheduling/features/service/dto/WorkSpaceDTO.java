@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record WorkSpacePostPutRequest(
+public record WorkSpaceDTO(
 
     @NotBlank(message = "Name is mandatory")
     @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")

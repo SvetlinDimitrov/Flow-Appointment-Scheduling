@@ -1,6 +1,6 @@
 package com.internship.flow_appointment_scheduling.features.service.service.service;
 
-import com.internship.flow_appointment_scheduling.features.service.dto.ServicePostPutRequest;
+import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import com.internship.flow_appointment_scheduling.features.service.entity.WorkSpace;
@@ -76,7 +76,7 @@ public class ServiceServiceImpl implements ServiceService {
   }
 
   @Override
-  public ServiceView create(ServicePostPutRequest createDto, String userEmail) {
+  public ServiceView create(ServiceDTO createDto, String userEmail) {
     Service service = serviceMapper.toEntity(createDto);
     User user = userService.findByEmail(userEmail);
     WorkSpace workSpace = workSpaceService.findByName(createDto.workSpaceName());
@@ -88,7 +88,7 @@ public class ServiceServiceImpl implements ServiceService {
   }
 
   @Override
-  public ServiceView update(Long id, ServicePostPutRequest putDto) {
+  public ServiceView update(Long id, ServiceDTO putDto) {
     Service entity = findById(id);
 
     serviceMapper.updateEntity(entity, putDto);

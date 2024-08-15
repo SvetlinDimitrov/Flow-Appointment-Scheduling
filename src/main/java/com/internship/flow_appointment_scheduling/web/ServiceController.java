@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.web;
 
 import com.internship.flow_appointment_scheduling.features.service.annotations.employee_or_admin.EmployeeOrAdmin;
-import com.internship.flow_appointment_scheduling.features.service.dto.ServicePostPutRequest;
+import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import com.internship.flow_appointment_scheduling.features.service.service.service.ServiceService;
 import com.internship.flow_appointment_scheduling.infrastructure.openapi.ServiceControllerDocumentation;
@@ -49,7 +49,7 @@ public class ServiceController implements ServiceControllerDocumentation {
   @PostMapping
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
   public ResponseEntity<ServiceView> create(
-      @Valid @RequestBody ServicePostPutRequest createDto,
+      @Valid @RequestBody ServiceDTO createDto,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     return ResponseEntity.ok(serviceService.create(createDto, customUserDetails.getUsername()));
   }
@@ -74,7 +74,7 @@ public class ServiceController implements ServiceControllerDocumentation {
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
   public ResponseEntity<ServiceView> update(
       @PathVariable Long id,
-      @Valid @RequestBody ServicePostPutRequest putDto) {
+      @Valid @RequestBody ServiceDTO putDto) {
     return ResponseEntity.ok(serviceService.update(id, putDto));
   }
 

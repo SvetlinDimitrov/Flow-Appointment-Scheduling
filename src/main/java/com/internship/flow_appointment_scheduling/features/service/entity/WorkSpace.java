@@ -21,8 +21,8 @@ public class WorkSpace {
   @Column(nullable = false , unique = true)
   private String name;
 
-  @Column(name = "available_slots_at_a_time")
-  private Integer capacity;
+  @Column(nullable = false, name = "available_slots")
+  private Integer availableSlots;
 
   @OneToMany(mappedBy = "workSpace")
   private List<Service> services;
@@ -43,12 +43,12 @@ public class WorkSpace {
     this.name = name;
   }
 
-  public Integer getCapacity() {
-    return capacity;
+  public Integer getAvailableSlots() {
+    return availableSlots;
   }
 
-  public void setCapacity(Integer capacity) {
-    this.capacity = capacity;
+  public void setAvailableSlots(Integer capacity) {
+    this.availableSlots = capacity;
   }
 
   public List<Service> getServices() {
@@ -82,7 +82,7 @@ public class WorkSpace {
     return "WorkSpace{" +
         "id=" + id +
         ", name='" + name + '\'' +
-        ", capacity=" + capacity +
+        ", capacity=" + availableSlots +
         ", services=" + services +
         '}';
   }

@@ -1,7 +1,7 @@
 CREATE TABLE work_spaces (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
-    available_slots_at_a_time INT NOT NULL
+    available_slots INT NOT NULL
 );
 
 CREATE TABLE services (
@@ -24,7 +24,7 @@ CREATE TABLE users_services (
 );
 
 -- Insert default work spaces
-INSERT INTO work_spaces (name, available_slots_at_a_time) VALUES
+INSERT INTO work_spaces (name, available_slots) VALUES
 ('Gym', 10),
 ('Spa', 5),
 ('Clinic', 3);

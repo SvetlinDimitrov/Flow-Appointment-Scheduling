@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
 import com.internship.flow_appointment_scheduling.features.service.annotations.employee_or_admin.EmployeeOrAdmin;
-import com.internship.flow_appointment_scheduling.features.service.dto.ServicePostPutRequest;
+import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,7 +63,7 @@ public interface ServiceControllerDocumentation {
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = ServicePostPutRequest.class),
+              schema = @Schema(implementation = ServiceDTO.class),
               examples = @ExampleObject(
                   name = "CreateService",
                   summary = "Example of creating a service",
@@ -93,7 +93,7 @@ public interface ServiceControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping
-  ResponseEntity<ServiceView> create(@Valid @RequestBody ServicePostPutRequest createDto, @AuthenticationPrincipal CustomUserDetails customUserDetails);
+  ResponseEntity<ServiceView> create(@Valid @RequestBody ServiceDTO createDto, @AuthenticationPrincipal CustomUserDetails customUserDetails);
 
   @Operation(summary = "Assign an employee to a service")
   @ApiResponses(value = {
@@ -140,7 +140,7 @@ public interface ServiceControllerDocumentation {
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = ServicePostPutRequest.class),
+              schema = @Schema(implementation = ServiceDTO.class),
               examples = @ExampleObject(
                   name = "UpdateServiceExample",
                   summary = "Example of updating a service",
@@ -174,7 +174,7 @@ public interface ServiceControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PutMapping("/{id}")
-  ResponseEntity<ServiceView> update(@PathVariable Long id, @Valid @RequestBody ServicePostPutRequest putDto);
+  ResponseEntity<ServiceView> update(@PathVariable Long id, @Valid @RequestBody ServiceDTO putDto);
 
   @Operation(summary = "Delete a service")
   @ApiResponses(value = {
