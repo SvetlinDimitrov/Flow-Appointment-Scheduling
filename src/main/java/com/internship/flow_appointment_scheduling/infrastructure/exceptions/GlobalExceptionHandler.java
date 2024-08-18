@@ -16,8 +16,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler({UserNotFoundException.class, RefreshTokenNotFoundException.class})
-  public ResponseEntity<ProblemDetail> handleUserNotFoundException(GeneralException e) {
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleUserNotFoundException(NotFoundException e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND,
         e.getMessage());
 
@@ -26,9 +26,8 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(problemDetail, HttpStatus.NOT_FOUND);
   }
 
-  @ExceptionHandler(RefreshTokenExpiredException.class)
-  public ResponseEntity<ProblemDetail> handleRefreshTokenExpiredException(
-      RefreshTokenExpiredException e) {
+  @ExceptionHandler(BadRequestException.class)
+  public ResponseEntity<ProblemDetail> handleRefreshTokenExpiredException(BadRequestException e) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
         e.getMessage());
 

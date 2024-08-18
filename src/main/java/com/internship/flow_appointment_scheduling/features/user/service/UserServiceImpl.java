@@ -6,7 +6,8 @@ import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.UserNotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.UserMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +38,7 @@ public class UserServiceImpl implements UserService {
   public UserView getById(Long id) {
     return userRepository.findById(id)
         .map(userMapper::toView)
-        .orElseThrow(() -> new UserNotFoundException(id));
+        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND, id));
   }
 
   @Override
@@ -52,7 +53,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserView update(Long id, UserPutRequest putDto) {
     User entity = userRepository.findById(id)
-        .orElseThrow(() -> new UserNotFoundException(id));
+        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND, id));
 
     userMapper.updateEntity(entity, putDto);
 
@@ -62,9 +63,15 @@ public class UserServiceImpl implements UserService {
   @Override
   public void delete(Long id) {
     if (!userRepository.existsById(id)) {
-      throw new UserNotFoundException(id);
+      throw new NotFoundException(Exceptions.USER_NOT_FOUND, id);
     }
 
     userRepository.deleteById(id);
+  }
+
+  @Override
+  public User findByEmail(String email) {
+    return userRepository.findByEmail(email)
+        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
   }
 }

@@ -2,9 +2,9 @@ package com.internship.flow_appointment_scheduling.infrastructure.security.servi
 
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.RefreshTokenExpiredException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.RefreshTokenNotFoundException;
-import com.internship.flow_appointment_scheduling.infrastructure.exceptions.UserNotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.RefreshTokenMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationResponse;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtView;
@@ -46,11 +46,11 @@ public class JwtServiceImpl implements JwtService {
   public AuthenticationResponse refreshToken(RefreshTokenPostRequest dto) {
     RefreshToken refreshToken = refreshTokenRepository
         .findById(dto.token())
-        .orElseThrow(() -> new RefreshTokenNotFoundException(dto.token()));
+        .orElseThrow(() -> new NotFoundException(Exceptions.REFRESH_TOKEN_NOT_FOUND, dto.token()));
 
     if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
       refreshTokenRepository.delete(refreshToken);
-      throw new RefreshTokenExpiredException();
+      throw new BadRequestException(Exceptions.REFRESH_TOKEN_EXPIRED);
     }
 
     JwtView jwtView = generateJwtToken(refreshToken.getUser());
@@ -61,7 +61,7 @@ public class JwtServiceImpl implements JwtService {
 
   public AuthenticationResponse generateToken(String email) {
     User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new UserNotFoundException(email));
+        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
 
     JwtView jwtView = generateJwtToken(user);
     RefreshTokenView refreshTokenView = generateRefreshToken(user);
