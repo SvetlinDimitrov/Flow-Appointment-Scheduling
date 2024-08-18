@@ -1,5 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.user.service;
 
+import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeHireDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
@@ -20,4 +22,8 @@ public interface UserService {
   void delete(Long id);
 
   User findByEmail(String email);
+
+  UserView hireEmployee(EmployeeHireDto userPostRequest);
+
+  UserView modifyEmployee(Long id, EmployeeModifyDto userPutRequest);
 }

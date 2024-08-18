@@ -53,6 +53,9 @@ public class User {
   @ManyToMany(mappedBy = "users")
   private List<Service> services;
 
+  @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE , CascadeType.PERSIST})
+  private EmployeeDetails employeeDetails;
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

@@ -86,6 +86,7 @@ public class JwtServiceImpl implements JwtService {
     String token = Jwts.builder()
         .setSubject(user.getEmail())
         .claim("userId", user.getId())
+        .claim("role", user.getRole())
         .setIssuedAt(now)
         .setExpiration(expirationDate)
         .signWith(getSigningKey(), SignatureAlgorithm.HS256)

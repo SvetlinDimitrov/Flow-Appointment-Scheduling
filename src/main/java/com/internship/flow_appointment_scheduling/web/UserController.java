@@ -1,5 +1,7 @@
 package com.internship.flow_appointment_scheduling.web;
 
+import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeHireDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
@@ -65,5 +67,20 @@ public class UserController implements UserControllerDocumentation {
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();
+  }
+
+  @PostMapping("/hire")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
+  public ResponseEntity<UserView> hireEmployee(@Valid @RequestBody EmployeeHireDto hireDto) {
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(userService.hireEmployee(hireDto));
+  }
+
+  @PutMapping("/{id}/employee")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
+  public ResponseEntity<UserView> modifyEmployee(@PathVariable Long id,
+      @Valid @RequestBody EmployeeModifyDto modifyDto) {
+    return ResponseEntity.ok(userService.modifyEmployee(id, modifyDto));
   }
 }

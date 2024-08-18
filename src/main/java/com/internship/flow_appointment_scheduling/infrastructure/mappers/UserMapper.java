@@ -7,16 +7,15 @@ import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring", implementationName = "UserMapperImpl")
+@Mapper(componentModel = "spring", uses = EmployeeDetailsMapper.class, implementationName = "UserMapperImpl")
 public interface UserMapper {
 
+  @Mapping(source = "employeeDetails", target = "employeeDetails")
   UserView toView(User entity);
 
   User toEntity(UserPostRequest dto);
 
-  @Mapping(target = "role" , nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   void updateEntity(@MappingTarget User toUpdate, UserPutRequest dto);
 
 }
