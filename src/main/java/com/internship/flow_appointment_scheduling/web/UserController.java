@@ -5,6 +5,7 @@ import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeModi
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
+import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
 import com.internship.flow_appointment_scheduling.infrastructure.openapi.UserControllerDocumentation;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -34,8 +36,9 @@ public class UserController implements UserControllerDocumentation {
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE')")
-  public ResponseEntity<Page<UserView>> getAll(Pageable pageable) {
-    return ResponseEntity.ok(userService.getAll(pageable));
+  public ResponseEntity<Page<UserView>> getAll(Pageable pageable,
+      @RequestParam(required = false) UserRoles userRole) {
+    return ResponseEntity.ok(userService.getAll(pageable , userRole));
   }
 
   @GetMapping("/{id}")

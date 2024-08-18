@@ -5,6 +5,7 @@ import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeModi
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
+import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 public interface UserControllerDocumentation {
 
@@ -38,7 +40,8 @@ public interface UserControllerDocumentation {
   })
   @GetMapping
   @SecurityRequirement(name = "bearerAuth")
-  ResponseEntity<Page<UserView>> getAll(Pageable pageable);
+  ResponseEntity<Page<UserView>> getAll(Pageable pageable,
+      @RequestParam(required = false) UserRoles userRole);
 
   @Operation(summary = "Get a user by ID")
   @ApiResponses(value = {

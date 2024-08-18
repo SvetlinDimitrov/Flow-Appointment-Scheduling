@@ -16,6 +16,7 @@ import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enum
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.EmployeeDetailsMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.UserMapper;
 import java.math.BigDecimal;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,8 +39,10 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public Page<UserView> getAll(Pageable pageable) {
-    return userRepository.findAll(pageable)
+  public Page<UserView> getAll(Pageable pageable, UserRoles userRole) {
+    return Optional.ofNullable(userRole)
+        .map(role -> userRepository.findAllByRole(role, pageable))
+        .orElseGet(() -> userRepository.findAll(pageable))
         .map(userMapper::toView);
   }
 
