@@ -16,6 +16,7 @@ import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enum
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.EmployeeDetailsMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.UserMapper;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -76,7 +77,11 @@ public class UserServiceImpl implements UserService {
   @Override
   public User findByEmail(String email) {
     return userRepository.findByEmail(email)
-        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
+        .orElseThrow(
+            () -> new NotFoundException(
+                Exceptions.USER_NOT_FOUND_BY_EMAIL,
+                List.of(email))
+        );
   }
 
   @Override
@@ -121,6 +126,6 @@ public class UserServiceImpl implements UserService {
 
   private User findById(Long id) {
     return userRepository.findById(id)
-        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND, id));
+        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND, List.of(id.toString())));
   }
 }

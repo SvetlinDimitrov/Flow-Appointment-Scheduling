@@ -20,6 +20,7 @@ import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +47,9 @@ public class JwtServiceImpl implements JwtService {
   public AuthenticationResponse refreshToken(RefreshTokenPostRequest dto) {
     RefreshToken refreshToken = refreshTokenRepository
         .findById(dto.token())
-        .orElseThrow(() -> new NotFoundException(Exceptions.REFRESH_TOKEN_NOT_FOUND, dto.token()));
+        .orElseThrow(
+            () -> new NotFoundException(Exceptions.REFRESH_TOKEN_NOT_FOUND, List.of(dto.token()))
+        );
 
     if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
       refreshTokenRepository.delete(refreshToken);
@@ -61,7 +64,9 @@ public class JwtServiceImpl implements JwtService {
 
   public AuthenticationResponse generateToken(String email) {
     User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
+        .orElseThrow(
+            () -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, List.of(email))
+        );
 
     JwtView jwtView = generateJwtToken(user);
     RefreshTokenView refreshTokenView = generateRefreshToken(user);
