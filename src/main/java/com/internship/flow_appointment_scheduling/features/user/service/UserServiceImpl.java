@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
         .orElseThrow(
             () -> new NotFoundException(
                 Exceptions.USER_NOT_FOUND_BY_EMAIL,
-                List.of(email))
+                email)
         );
   }
 
@@ -126,6 +126,6 @@ public class UserServiceImpl implements UserService {
 
   private User findById(Long id) {
     return userRepository.findById(id)
-        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND, List.of(id.toString())));
+        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND, id));
   }
 }

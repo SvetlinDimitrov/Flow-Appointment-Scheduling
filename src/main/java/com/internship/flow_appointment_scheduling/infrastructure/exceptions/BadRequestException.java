@@ -1,14 +1,13 @@
 package com.internship.flow_appointment_scheduling.infrastructure.exceptions;
 
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
-import java.util.List;
 
 public class BadRequestException extends RuntimeException {
 
   private final Exceptions exceptionMessage;
 
-  public BadRequestException(Exceptions exceptionMessage, List<String> values) {
-    super(String.format(exceptionMessage.message, values.toArray()));
+  public BadRequestException(Exceptions exceptionMessage, Object... values) {
+    super(String.format(exceptionMessage.message, values));
     this.exceptionMessage = exceptionMessage;
   }
 

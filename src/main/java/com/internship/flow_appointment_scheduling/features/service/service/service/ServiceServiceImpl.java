@@ -55,7 +55,7 @@ public class ServiceServiceImpl implements ServiceService {
     if (users.contains(user)) {
       throw new BadRequestException(
           Exceptions.USER_ALREADY_ASSIGN_TO_SERVICE,
-          List.of(user.getEmail(), serviceId.toString())
+          user.getEmail(), serviceId
       );
     }
     users.add(user);
@@ -74,7 +74,7 @@ public class ServiceServiceImpl implements ServiceService {
     } else {
       throw new BadRequestException(
           Exceptions.USER_NOT_FOUND_IN_SERVICE,
-          List.of(user.getEmail(), serviceId.toString())
+          user.getEmail(), serviceId
       );
     }
 
@@ -112,7 +112,7 @@ public class ServiceServiceImpl implements ServiceService {
         .findById(id)
         .orElseThrow(() -> new NotFoundException(
             Exceptions.SERVICE_NOT_FOUND,
-            List.of(id.toString()))
+            id)
         );
   }
 }
