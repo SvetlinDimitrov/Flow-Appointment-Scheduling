@@ -95,9 +95,9 @@ public interface ServiceControllerDocumentation {
   @PostMapping
   ResponseEntity<ServiceView> create(@Valid @RequestBody ServiceDTO createDto, @AuthenticationPrincipal CustomUserDetails customUserDetails);
 
-  @Operation(summary = "Assign an employee to a service")
+  @Operation(summary = "Assign an staff to a service")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Employee assigned",
+      @ApiResponse(responseCode = "200", description = "Staff assigned",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ServiceView.class))}),
       @ApiResponse(responseCode = "400", description = "User already assigned to service",
@@ -113,11 +113,11 @@ public interface ServiceControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping("/{id}/assign")
-  ResponseEntity<ServiceView> assignEmployee(@PathVariable Long id, @RequestParam @EmployeeOrAdmin String employeeEmail);
+  ResponseEntity<ServiceView> assignStaff(@PathVariable Long id, @RequestParam @EmployeeOrAdmin String employeeEmail);
 
-  @Operation(summary = "Unassign an employee from a service")
+  @Operation(summary = "Unassign an staff from a service")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Employee unassigned",
+      @ApiResponse(responseCode = "200", description = "Staff unassigned",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ServiceView.class))}),
       @ApiResponse(responseCode = "400", description = "User not assigned to service",
@@ -133,7 +133,7 @@ public interface ServiceControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PutMapping("/{id}/unassign")
-  ResponseEntity<ServiceView> unassignEmployee(@PathVariable Long id, @RequestParam String employeeEmail);
+  ResponseEntity<ServiceView> unassignStaff(@PathVariable Long id, @RequestParam String employeeEmail);
 
   @Operation(
       summary = "Update an existing service",

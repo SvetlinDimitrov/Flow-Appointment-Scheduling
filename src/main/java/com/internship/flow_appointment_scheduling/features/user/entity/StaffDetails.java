@@ -16,12 +16,12 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "employee_details")
+@Table(name = "staff_details")
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode
-public class EmployeeDetails {
+@ToString(exclude = "user")
+@EqualsAndHashCode(exclude = "user")
+public class StaffDetails {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

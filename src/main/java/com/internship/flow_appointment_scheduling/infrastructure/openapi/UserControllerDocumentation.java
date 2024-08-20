@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeHireDto;
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
@@ -145,13 +145,13 @@ public interface UserControllerDocumentation {
   ResponseEntity<Void> delete(@PathVariable Long id);
 
   @Operation(
-      summary = "Hire a new employee",
+      summary = "Hire a new staff",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = EmployeeHireDto.class),
+              schema = @Schema(implementation = StaffHireDto.class),
               examples = @ExampleObject(
-                  name = "EmployeeHireBodyExample",
+                  name = "StaffHireBodyExample",
                   value = "{" +
                       "\"userInfo\": {" +
                       "\"firstName\": \"John\"," +
@@ -160,7 +160,7 @@ public interface UserControllerDocumentation {
                       "\"role\": \"EMPLOYEE\"," +
                       "\"password\": \"password123A!\"" +
                       "}," +
-                      "\"employeeDetailsDto\": {" +
+                      "\"staffDetailsDto\": {" +
                       "\"salary\": 50000," +
                       "\"beginWorkingHour\": \"09:00\"," +
                       "\"endWorkingHour\": \"17:00\"" +
@@ -171,7 +171,7 @@ public interface UserControllerDocumentation {
       )
   )
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "201", description = "Employee hired",
+      @ApiResponse(responseCode = "201", description = "Staff hired",
           content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserView.class))
       ),
       @ApiResponse(responseCode = "400", description = "Invalid input",
@@ -184,16 +184,16 @@ public interface UserControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping("/hire")
-  ResponseEntity<UserView> hireEmployee(@Valid @RequestBody EmployeeHireDto hireDto);
+  ResponseEntity<UserView> hireStaff(@Valid @RequestBody StaffHireDto hireDto);
 
   @Operation(
-      summary = "Modify an existing employee",
+      summary = "Modify an existing staff",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = EmployeeModifyDto.class),
+              schema = @Schema(implementation = StaffModifyDto.class),
               examples = @ExampleObject(
-                  name = "EmployeeModifyBodyExample",
+                  name = "StaffModifyBodyExample",
                   value = "{" +
                       "\"userRole\": \"EMPLOYEE\"," +
                       "\"salary\": 50000," +
@@ -206,13 +206,13 @@ public interface UserControllerDocumentation {
       )
   )
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Employee modified",
+      @ApiResponse(responseCode = "200", description = "Staff modified",
           content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserView.class))
       ),
       @ApiResponse(responseCode = "400", description = "Invalid input",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "404", description = "Employee not found",
+      @ApiResponse(responseCode = "404", description = "Staff not found",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden",
@@ -221,7 +221,7 @@ public interface UserControllerDocumentation {
           content = {@Content(mediaType = "application/json")}),
   })
   @SecurityRequirement(name = "bearerAuth")
-  @PutMapping("/{id}/employee")
-  ResponseEntity<UserView> modifyEmployee(@PathVariable Long id,
-      @Valid @RequestBody EmployeeModifyDto modifyDto);
+  @PutMapping("/{id}/staff")
+  ResponseEntity<UserView> modifyStaff(@PathVariable Long id,
+      @Valid @RequestBody StaffModifyDto modifyDto);
 }

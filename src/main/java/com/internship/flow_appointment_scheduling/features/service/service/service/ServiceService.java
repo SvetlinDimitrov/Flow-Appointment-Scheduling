@@ -7,13 +7,13 @@ import org.springframework.data.domain.Pageable;
 
 public interface ServiceService {
 
-  Page<ServiceView> getAll(Pageable pageable, String employeeEmail);
+  Page<ServiceView> getAll(Pageable pageable, String staffEmail);
 
   ServiceView getById(Long id);
 
-  ServiceView assignEmployee(Long serviceId, String employeeEmail);
+  ServiceView assignStaff(Long serviceId, String staffEmail);
 
-  ServiceView unassignEmployee(Long serviceId, String employeeEmail);
+  ServiceView unassignStaff(Long serviceId, String staffEmail);
 
   ServiceView create(ServiceDTO createDto, String userEmail);
 

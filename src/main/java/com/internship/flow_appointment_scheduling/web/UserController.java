@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.web;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeHireDto;
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
@@ -54,14 +54,14 @@ public class UserController implements UserControllerDocumentation {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.halfClientEmployeeAccess(authentication, #id)")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.halfClientStaffAccess(authentication, #id)")
   public ResponseEntity<UserView> update(@PathVariable Long id,
       @Valid @RequestBody UserPutRequest updateDto) {
     return ResponseEntity.ok(userService.update(id, updateDto));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.halfClientEmployeeAccess(authentication, #id)")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.halfClientStaffAccess(authentication, #id)")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     userService.delete(id);
 
@@ -72,16 +72,16 @@ public class UserController implements UserControllerDocumentation {
 
   @PostMapping("/hire")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
-  public ResponseEntity<UserView> hireEmployee(@Valid @RequestBody EmployeeHireDto hireDto) {
+  public ResponseEntity<UserView> hireStaff(@Valid @RequestBody StaffHireDto hireDto) {
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(userService.hireEmployee(hireDto));
+        .body(userService.hireStaff(hireDto));
   }
 
-  @PutMapping("/{id}/employee")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
-  public ResponseEntity<UserView> modifyEmployee(@PathVariable Long id,
-      @Valid @RequestBody EmployeeModifyDto modifyDto) {
-    return ResponseEntity.ok(userService.modifyEmployee(id, modifyDto));
+  @PutMapping("/{id}/staff")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.currentStaffAccessOnly(authentication, #id)")
+  public ResponseEntity<UserView> modifyStaff(@PathVariable Long id,
+      @Valid @RequestBody StaffModifyDto modifyDto) {
+    return ResponseEntity.ok(userService.modifyStaff(id, modifyDto));
   }
 }

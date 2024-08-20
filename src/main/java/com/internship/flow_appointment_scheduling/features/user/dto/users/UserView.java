@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.user.dto.users;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeDetailsView;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffDetailsView;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record UserView(
@@ -10,7 +10,7 @@ public record UserView(
     String lastName,
     String email,
     String role,
-    EmployeeDetailsView employeeDetails
+    StaffDetailsView staffDetails
 ) {
 
 }

@@ -14,7 +14,7 @@ public class PermissionEvaluator {
 
   private final UserRepository userRepository;
 
-  public boolean halfClientEmployeeAccess(Authentication authentication, Long id) {
+  public boolean halfClientStaffAccess(Authentication authentication, Long id) {
     if (authentication != null
         && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
 
@@ -35,6 +35,18 @@ public class PermissionEvaluator {
       return userRepository.findById(id)
           .filter(value -> userDetails.user().getEmail().equals(value.getEmail()) ||
               !userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT))
+          ).isPresent();
+    }
+    return false;
+  }
+
+  public boolean currentStaffAccessOnly(Authentication authentication, Long id) {
+    if (authentication != null
+        && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+
+      return userRepository.findById(id)
+          .filter(value -> userDetails.user().getEmail().equals(value.getEmail()) &&
+              userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE))
           ).isPresent();
     }
     return false;

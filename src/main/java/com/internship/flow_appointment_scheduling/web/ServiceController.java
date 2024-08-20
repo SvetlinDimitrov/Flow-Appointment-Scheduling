@@ -54,18 +54,18 @@ public class ServiceController implements ServiceControllerDocumentation {
 
   @PostMapping("/{id}/assign")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
-  public ResponseEntity<ServiceView> assignEmployee(
+  public ResponseEntity<ServiceView> assignStaff(
       @PathVariable Long id,
       @RequestParam @EmployeeOrAdmin String employeeEmail) {
-    return ResponseEntity.ok(serviceService.assignEmployee(id, employeeEmail));
+    return ResponseEntity.ok(serviceService.assignStaff(id, employeeEmail));
   }
 
   @PutMapping("/{id}/unassign")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
-  public ResponseEntity<ServiceView> unassignEmployee(
+  public ResponseEntity<ServiceView> unassignStaff(
       @PathVariable Long id,
       @RequestParam String employeeEmail) {
-    return ResponseEntity.ok(serviceService.unassignEmployee(id, employeeEmail));
+    return ResponseEntity.ok(serviceService.unassignStaff(id, employeeEmail));
   }
 
   @PutMapping("/{id}")

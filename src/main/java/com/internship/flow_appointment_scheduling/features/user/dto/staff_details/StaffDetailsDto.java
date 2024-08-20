@@ -1,12 +1,13 @@
-package com.internship.flow_appointment_scheduling.features.user.dto.employee_details;
+package com.internship.flow_appointment_scheduling.features.user.dto.staff_details;
 
 import com.internship.flow_appointment_scheduling.features.user.annotations.working_hours.ValidWorkingHours;
+import com.internship.flow_appointment_scheduling.features.user.annotations.working_hours.WorkingHours;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalTime;
 
 @ValidWorkingHours
-public record EmployeeDetailsDto(
+public record StaffDetailsDto(
 
     @NotNull(message = "Salary must not be null")
     @Min(value = 0, message = "Salary must be at least 0")
@@ -17,6 +18,15 @@ public record EmployeeDetailsDto(
 
     @NotNull(message = "End working hour must not be null")
     LocalTime endWorkingHour
-) {
+) implements WorkingHours {
 
+    @Override
+    public LocalTime getBeginWorkingHour() {
+        return beginWorkingHour;
+    }
+
+    @Override
+    public LocalTime getEndWorkingHour() {
+        return endWorkingHour;
+    }
 }

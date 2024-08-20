@@ -1,10 +1,10 @@
-package com.internship.flow_appointment_scheduling.features.user.dto.employee_details;
+package com.internship.flow_appointment_scheduling.features.user.dto.staff_details;
 
 import com.internship.flow_appointment_scheduling.features.user.annotations.working_hours.ValidWorkingHours;
 import jakarta.validation.constraints.NotNull;
 
 @ValidWorkingHours
-public record EmployeeAvailability(
+public record StaffAvailabilityDto(
 
     @NotNull(message = "Is available must not be null")
     Boolean isAvailable,
