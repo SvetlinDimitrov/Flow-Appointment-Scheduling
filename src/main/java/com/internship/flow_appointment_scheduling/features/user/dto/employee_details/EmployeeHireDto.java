@@ -1,7 +1,6 @@
 package com.internship.flow_appointment_scheduling.features.user.dto.employee_details;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeDetailsDto;
-import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 

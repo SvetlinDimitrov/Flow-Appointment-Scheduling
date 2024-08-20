@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.user.dto;
+package com.internship.flow_appointment_scheduling.features.user.dto.employee_details;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

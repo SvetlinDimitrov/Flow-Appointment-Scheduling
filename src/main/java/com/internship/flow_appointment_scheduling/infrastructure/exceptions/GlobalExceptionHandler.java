@@ -1,5 +1,6 @@
 package com.internship.flow_appointment_scheduling.infrastructure.exceptions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -39,7 +40,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ProblemDetail> handleValidationExceptions(
       MethodArgumentNotValidException ex) {
-    List<String> errors = ex.getBindingResult()
+    List<String> fieldErrors = ex.getBindingResult()
         .getFieldErrors()
         .stream()
         .collect(Collectors.groupingBy(
@@ -50,7 +51,17 @@ public class GlobalExceptionHandler {
         .entrySet()
         .stream()
         .map(entry -> entry.getKey() + ": " + String.join(", ", entry.getValue()))
-        .collect(Collectors.toList());
+        .toList();
+
+    List<String> globalErrors = ex.getBindingResult()
+        .getGlobalErrors()
+        .stream()
+        .map(DefaultMessageSourceResolvable::getDefaultMessage)
+        .toList();
+
+    List<String> errors = new ArrayList<>();
+    errors.addAll(fieldErrors);
+    errors.addAll(globalErrors);
 
     ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
     problemDetail.setTitle("Validation Error");

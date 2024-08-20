@@ -22,8 +22,8 @@ import lombok.ToString;
 @Table(name = "services")
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode
+@ToString(exclude = {"users", "workSpace"})
+@EqualsAndHashCode(exclude = {"users", "workSpace"})
 public class Service {
 
   @Id
