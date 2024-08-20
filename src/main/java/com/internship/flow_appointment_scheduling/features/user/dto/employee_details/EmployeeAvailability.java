@@ -4,7 +4,10 @@ import com.internship.flow_appointment_scheduling.features.user.annotations.work
 import jakarta.validation.constraints.NotNull;
 
 @ValidWorkingHours
-public record EmployeeWorkingHours(
+public record EmployeeAvailability(
+
+    @NotNull(message = "Is available must not be null")
+    Boolean isAvailable,
 
     @NotNull(message = "Begin working hour must not be null")
     String beginWorkingHour,

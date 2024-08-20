@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.user.dto;
+package com.internship.flow_appointment_scheduling.features.user.dto.employee_details;
 
 import com.internship.flow_appointment_scheduling.features.user.annotations.not_client_role.NotClientRole;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
@@ -15,6 +15,9 @@ public record EmployeeModifyDto(
     @NotNull(message = "Salary must not be null")
     @Min(value = 0, message = "Salary must be at least 0")
     Double salary,
+
+    @NotNull(message = "Available must not be null")
+    Boolean isAvailable,
 
     @NotNull(message = "Begin working hour must not be null")
     LocalTime beginWorkingHour,

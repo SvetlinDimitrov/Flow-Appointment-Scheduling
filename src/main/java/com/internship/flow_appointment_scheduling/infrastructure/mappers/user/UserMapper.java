@@ -1,8 +1,8 @@
 package com.internship.flow_appointment_scheduling.infrastructure.mappers.user;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
-import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
-import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.infrastructure.security.utils.PasswordEncoderComponent;
 import org.mapstruct.Mapper;

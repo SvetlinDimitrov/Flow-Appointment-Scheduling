@@ -1,0 +1,2 @@
+ALTER TABLE employee_details ADD COLUMN availability BOOLEAN NOT NULL DEFAULT TRUE;
+

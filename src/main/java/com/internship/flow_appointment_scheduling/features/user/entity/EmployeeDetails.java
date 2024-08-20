@@ -39,6 +39,9 @@ public class EmployeeDetails {
   @Column(name = "start_date", nullable = false)
   private LocalDate startDate = LocalDate.now();
 
+  @Column(name = "availability", nullable = false)
+  private Boolean isAvailable = true;
+
   @Column(name = "begin_working_hour", nullable = false)
   private LocalTime beginWorkingHour;
 

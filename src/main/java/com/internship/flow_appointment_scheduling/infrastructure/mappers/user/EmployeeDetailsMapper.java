@@ -1,8 +1,8 @@
 package com.internship.flow_appointment_scheduling.infrastructure.mappers.user;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeDetailsDto;
-import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeDetailsView;
-import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeDetailsDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeDetailsView;
+import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.entity.EmployeeDetails;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;

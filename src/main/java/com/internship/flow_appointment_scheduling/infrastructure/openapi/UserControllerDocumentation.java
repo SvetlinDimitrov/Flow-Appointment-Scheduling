@@ -1,10 +1,10 @@
 package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeModifyDto;
-import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
-import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
-import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
 import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeHireDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -197,6 +197,7 @@ public interface UserControllerDocumentation {
                   value = "{" +
                       "\"userRole\": \"EMPLOYEE\"," +
                       "\"salary\": 50000," +
+                      "\"isAvailable\": true," +
                       "\"beginWorkingHour\": \"09:00\"," +
                       "\"endWorkingHour\": \"17:00\"" +
                       "}"

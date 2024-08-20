@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.user.dto;
+package com.internship.flow_appointment_scheduling.features.user.dto.users;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

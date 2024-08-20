@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.user.dto;
+package com.internship.flow_appointment_scheduling.features.user.dto.users;
 
 import com.internship.flow_appointment_scheduling.features.user.annotations.email.UniqueEmail;
 import com.internship.flow_appointment_scheduling.features.user.annotations.password.ValidPassword;
