@@ -1,10 +1,10 @@
 package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeHireDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
+import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeHireDto;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
