@@ -32,7 +32,7 @@ public interface AuthenticationControllerDocumentation {
                           "}"
                   ),
                   @ExampleObject(
-                      name = "Employee Example",
+                      name = "Staff Example",
                       value = "{" +
                           "\"email\": \"jane.doe@example.com\"," +
                           "\"password\": \"password123A!\"" +

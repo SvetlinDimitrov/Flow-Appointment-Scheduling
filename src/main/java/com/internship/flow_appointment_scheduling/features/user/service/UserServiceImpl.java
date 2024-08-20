@@ -75,28 +75,28 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserView hireStaff(StaffHireDto dto) {
-    User employeeToSave = userMapper.toEntity(dto.userInfo());
-    StaffDetails employeeDetails = staffDetailsMapper.toEntity(dto.staffDetailsDto());
+    User staffToSave = userMapper.toEntity(dto.userInfo());
+    StaffDetails staffDetails = staffDetailsMapper.toEntity(dto.staffDetailsDto());
 
-    employeeToSave.setRole(UserRoles.EMPLOYEE);
-    employeeToSave.setStaffDetails(employeeDetails);
-    employeeDetails.setUser(employeeToSave);
+    staffToSave.setRole(UserRoles.EMPLOYEE);
+    staffToSave.setStaffDetails(staffDetails);
+    staffDetails.setUser(staffToSave);
 
-    return userMapper.toView(userRepository.save(employeeToSave));
+    return userMapper.toView(userRepository.save(staffToSave));
   }
 
   @Override
   public UserView modifyStaff(Long id, StaffModifyDto dto) {
-    User employee = findById(id);
-    StaffDetails staffDetails = employee.getStaffDetails();
+    User staff = findById(id);
+    StaffDetails staffDetails = staff.getStaffDetails();
 
-    if (employee.getRole().equals(UserRoles.CLIENT)) {
+    if (staff.getRole().equals(UserRoles.CLIENT)) {
       throw new BadRequestException(Exceptions.USER_IS_NOT_AN_STAFF);
     }
 
     staffDetailsMapper.updateEntity(staffDetails, dto);
 
-    return userMapper.toView(userRepository.save(employee));
+    return userMapper.toView(userRepository.save(staff));
   }
 
   private User findById(Long id) {

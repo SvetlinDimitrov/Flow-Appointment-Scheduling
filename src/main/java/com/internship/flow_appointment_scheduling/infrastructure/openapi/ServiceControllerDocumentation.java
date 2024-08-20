@@ -1,6 +1,6 @@
 package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
-import com.internship.flow_appointment_scheduling.features.service.annotations.employee_or_admin.EmployeeOrAdmin;
+import com.internship.flow_appointment_scheduling.features.service.annotations.staff_or_admin.StaffOrAdmin;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.CustomUserDetails;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 public interface ServiceControllerDocumentation {
 
-  @Operation(summary = "Get all services")
+  @Operation(summary = "Get all services", description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the services",
           content = {@Content(mediaType = "application/json",
@@ -39,9 +39,10 @@ public interface ServiceControllerDocumentation {
   })
   @GetMapping
   @SecurityRequirement(name = "bearerAuth")
-  ResponseEntity<Page<ServiceView>> getAll(Pageable pageable, @RequestParam(required = false) String employeeEmail);
+  ResponseEntity<Page<ServiceView>> getAll(Pageable pageable,
+      @RequestParam(required = false) String staffEmail);
 
-  @Operation(summary = "Get a service by ID")
+  @Operation(summary = "Get a service by ID", description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the service",
           content = {@Content(mediaType = "application/json",
@@ -59,6 +60,7 @@ public interface ServiceControllerDocumentation {
   ResponseEntity<ServiceView> getById(@PathVariable Long id);
 
   @Operation(
+      description = "Accessible by ADMINISTRATOR role",
       summary = "Create a service",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
@@ -71,6 +73,7 @@ public interface ServiceControllerDocumentation {
                 {
                   "name": "Gym instructor",
                   "description": "Become the next Chris Bumstead",
+                        "availability": true,
                   "duration": 60,
                   "price": 99.99,
                   "workSpaceName": "Gym"
@@ -95,7 +98,7 @@ public interface ServiceControllerDocumentation {
   @PostMapping
   ResponseEntity<ServiceView> create(@Valid @RequestBody ServiceDTO createDto, @AuthenticationPrincipal CustomUserDetails customUserDetails);
 
-  @Operation(summary = "Assign an staff to a service")
+  @Operation(summary = "Assign an staff to a service", description = "Accessible by ADMINISTRATOR role")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Staff assigned",
           content = {@Content(mediaType = "application/json",
@@ -105,7 +108,7 @@ public interface ServiceControllerDocumentation {
               schema = @Schema(implementation = ProblemDetail.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden",
           content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "404", description = "Service or employee not found",
+      @ApiResponse(responseCode = "404", description = "Service or staff not found",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
       @ApiResponse(responseCode = "401", description = "Unauthorized",
@@ -113,9 +116,10 @@ public interface ServiceControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping("/{id}/assign")
-  ResponseEntity<ServiceView> assignStaff(@PathVariable Long id, @RequestParam @EmployeeOrAdmin String employeeEmail);
+  ResponseEntity<ServiceView> assignStaff(@PathVariable Long id,
+      @RequestParam @StaffOrAdmin String staffEmail);
 
-  @Operation(summary = "Unassign an staff from a service")
+  @Operation(summary = "Unassign an staff from a service", description = "Accessible by ADMINISTRATOR role")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Staff unassigned",
           content = {@Content(mediaType = "application/json",
@@ -125,7 +129,7 @@ public interface ServiceControllerDocumentation {
               schema = @Schema(implementation = ProblemDetail.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden",
           content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "404", description = "Service or employee not found",
+      @ApiResponse(responseCode = "404", description = "Service or staff not found",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
       @ApiResponse(responseCode = "401", description = "Unauthorized",
@@ -133,10 +137,11 @@ public interface ServiceControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PutMapping("/{id}/unassign")
-  ResponseEntity<ServiceView> unassignStaff(@PathVariable Long id, @RequestParam String employeeEmail);
+  ResponseEntity<ServiceView> unassignStaff(@PathVariable Long id, @RequestParam String staffEmail);
 
   @Operation(
       summary = "Update an existing service",
+      description = "Accessible by ADMINISTRATOR role",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
@@ -148,6 +153,7 @@ public interface ServiceControllerDocumentation {
                       {
                         "name": "Gym instructor",
                         "description": "Become the next Chris Bumstead",
+                        "availability": true,
                         "duration": 60,
                         "price": 99.99,
                         "workSpaceName": "Gym"
@@ -176,7 +182,7 @@ public interface ServiceControllerDocumentation {
   @PutMapping("/{id}")
   ResponseEntity<ServiceView> update(@PathVariable Long id, @Valid @RequestBody ServiceDTO putDto);
 
-  @Operation(summary = "Delete a service")
+  @Operation(summary = "Delete a service", description = "Accessible by ADMINISTRATOR role")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "204", description = "Service deleted",
           content = @Content),

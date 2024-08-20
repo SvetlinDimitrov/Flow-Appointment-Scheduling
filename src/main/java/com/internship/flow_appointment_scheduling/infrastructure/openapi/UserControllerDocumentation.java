@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 public interface UserControllerDocumentation {
 
-  @Operation(summary = "Get all users")
+  @Operation(summary = "Get all users", description = "Accessible by ADMINISTRATOR, EMPLOYEE roles")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the users",
           content = {@Content(mediaType = "application/json",
@@ -43,7 +43,7 @@ public interface UserControllerDocumentation {
   ResponseEntity<Page<UserView>> getAll(Pageable pageable,
       @RequestParam(required = false) UserRoles userRole);
 
-  @Operation(summary = "Get a user by ID")
+  @Operation(summary = "Get a user by ID" , description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the user",
           content = {@Content(mediaType = "application/json",
@@ -72,7 +72,6 @@ public interface UserControllerDocumentation {
                       "\"firstName\": \"John\"," +
                       "\"lastName\": \"Wick\"," +
                       "\"email\": \"abv@example.com\"," +
-                      "\"role\": \"CLIENT\"," +
                       "\"password\": \"password123A!\"" +
                       "}"
               )
@@ -91,7 +90,7 @@ public interface UserControllerDocumentation {
   ResponseEntity<UserView> create(@Valid @RequestBody UserPostRequest createDto);
 
   @Operation(
-      summary = "Update an existing user",
+      summary = "Update an existing user", description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
@@ -128,7 +127,7 @@ public interface UserControllerDocumentation {
   ResponseEntity<UserView> update(@PathVariable Long id,
       @Valid @RequestBody UserPutRequest updateDto);
 
-  @Operation(summary = "Delete a user")
+  @Operation(summary = "Delete a user" , description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "204", description = "User deleted",
           content = @Content),
@@ -145,6 +144,7 @@ public interface UserControllerDocumentation {
   ResponseEntity<Void> delete(@PathVariable Long id);
 
   @Operation(
+      description = "Accessible by ADMINISTRATOR role",
       summary = "Hire a new staff",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
@@ -188,6 +188,7 @@ public interface UserControllerDocumentation {
 
   @Operation(
       summary = "Modify an existing staff",
+      description = "Accessible by ADMINISTRATOR and EMPLOYEE roles",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
