@@ -11,27 +11,21 @@ import com.internship.flow_appointment_scheduling.features.user.service.UserServ
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
-import com.internship.flow_appointment_scheduling.infrastructure.mappers.ServiceMapper;
+import com.internship.flow_appointment_scheduling.infrastructure.mappers.service.ServiceMapper;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 @org.springframework.stereotype.Service
+@RequiredArgsConstructor
 public class ServiceServiceImpl implements ServiceService {
 
   private final ServiceRepository serviceRepository;
   private final ServiceMapper serviceMapper;
   private final UserService userService;
   private final WorkSpaceService workSpaceService;
-
-  public ServiceServiceImpl(ServiceRepository serviceRepository, ServiceMapper serviceMapper,
-      UserService userService, WorkSpaceService workSpaceService) {
-    this.serviceRepository = serviceRepository;
-    this.serviceMapper = serviceMapper;
-    this.userService = userService;
-    this.workSpaceService = workSpaceService;
-  }
 
   @Override
   public Page<ServiceView> getAll(Pageable pageable, String employeeEmail) {

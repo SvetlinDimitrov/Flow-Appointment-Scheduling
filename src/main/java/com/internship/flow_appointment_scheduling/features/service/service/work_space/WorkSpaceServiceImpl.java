@@ -4,16 +4,14 @@ import com.internship.flow_appointment_scheduling.features.service.entity.WorkSp
 import com.internship.flow_appointment_scheduling.features.service.repository.WorkSpaceRepository;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class WorkSpaceServiceImpl implements WorkSpaceService {
 
   private final WorkSpaceRepository workSpaceRepository;
-
-  public WorkSpaceServiceImpl(WorkSpaceRepository workSpaceRepository) {
-    this.workSpaceRepository = workSpaceRepository;
-  }
 
   @Override
   public WorkSpace findByName(String name) {

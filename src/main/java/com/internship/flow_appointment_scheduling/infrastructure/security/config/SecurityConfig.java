@@ -3,6 +3,7 @@ package com.internship.flow_appointment_scheduling.infrastructure.security.confi
 import com.internship.flow_appointment_scheduling.infrastructure.security.filters.JwtRequestFilter;
 import java.util.Arrays;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
   private static final String[] WHITE_LIST = {
@@ -42,12 +44,6 @@ public class SecurityConfig {
   private final AuthenticationProvider authenticationProvider;
   @Value("${cors.allowed-origins}")
   private List<String> allowedOrigins;
-
-  public SecurityConfig(JwtRequestFilter jwtRequestFilter,
-      AuthenticationProvider authenticationProvider) {
-    this.jwtRequestFilter = jwtRequestFilter;
-    this.authenticationProvider = authenticationProvider;
-  }
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

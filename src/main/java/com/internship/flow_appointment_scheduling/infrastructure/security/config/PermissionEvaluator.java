@@ -3,18 +3,16 @@ package com.internship.flow_appointment_scheduling.infrastructure.security.confi
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.CustomUserDetails;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 @Component(value = "permissionEvaluator")
+@RequiredArgsConstructor
 public class PermissionEvaluator {
 
   private final UserRepository userRepository;
-
-  public PermissionEvaluator(UserRepository userRepository) {
-    this.userRepository = userRepository;
-  }
 
   public boolean halfClientEmployeeAccess(Authentication authentication, Long id) {
     if (authentication != null

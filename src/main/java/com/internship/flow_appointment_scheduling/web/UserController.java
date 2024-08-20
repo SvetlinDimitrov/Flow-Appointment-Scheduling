@@ -9,6 +9,7 @@ import com.internship.flow_appointment_scheduling.features.user.entity.enums.Use
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
 import com.internship.flow_appointment_scheduling.infrastructure.openapi.UserControllerDocumentation;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -26,13 +27,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class UserController implements UserControllerDocumentation {
 
   private final UserService userService;
-
-  public UserController(UserService userService) {
-    this.userService = userService;
-  }
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE')")

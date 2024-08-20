@@ -15,7 +15,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,6 +25,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode
 public class User {
 
   @Id
@@ -45,7 +46,7 @@ public class User {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private UserRoles role;
+  private UserRoles role = UserRoles.CLIENT;
 
   @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE})
   private RefreshToken refreshToken;
@@ -55,21 +56,4 @@ public class User {
 
   @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE , CascadeType.PERSIST})
   private EmployeeDetails employeeDetails;
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    User user = (User) o;
-    return Objects.equals(id, user.id);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(id);
-  }
 }

@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.infrastructure.mappers;
+package com.internship.flow_appointment_scheduling.infrastructure.mappers.user;
 
 import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeDetailsDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeDetailsView;

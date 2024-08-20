@@ -1,6 +1,7 @@
 package com.internship.flow_appointment_scheduling.infrastructure.security.config;
 
 import com.internship.flow_appointment_scheduling.infrastructure.security.service.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,13 +12,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
+@RequiredArgsConstructor
 public class ApplicationConfig {
 
   private final UserDetailsServiceImpl userDetailsService;
-
-  public ApplicationConfig(UserDetailsServiceImpl userDetailsService) {
-    this.userDetailsService = userDetailsService;
-  }
 
   @Bean
   public AuthenticationProvider authenticationProvider() {

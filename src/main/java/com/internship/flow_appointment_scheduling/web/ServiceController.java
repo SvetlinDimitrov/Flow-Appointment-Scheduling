@@ -7,6 +7,7 @@ import com.internship.flow_appointment_scheduling.features.service.service.servi
 import com.internship.flow_appointment_scheduling.infrastructure.openapi.ServiceControllerDocumentation;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.CustomUserDetails;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,13 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/services")
+@RequiredArgsConstructor
 public class ServiceController implements ServiceControllerDocumentation {
 
   private final ServiceService serviceService;
-
-  public ServiceController(ServiceService serviceService) {
-    this.serviceService = serviceService;
-  }
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE', 'CLIENT')")

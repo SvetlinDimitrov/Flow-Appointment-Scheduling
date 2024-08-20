@@ -162,7 +162,6 @@ public interface UserControllerDocumentation {
                       "}," +
                       "\"employeeDetailsDto\": {" +
                       "\"salary\": 50000," +
-                      "\"experience\": 5," +
                       "\"beginWorkingHour\": \"09:00\"," +
                       "\"endWorkingHour\": \"17:00\"" +
                       "}" +
@@ -198,7 +197,6 @@ public interface UserControllerDocumentation {
                   value = "{" +
                       "\"userRole\": \"EMPLOYEE\"," +
                       "\"salary\": 50000," +
-                      "\"experience\": 5," +
                       "\"beginWorkingHour\": \"09:00\"," +
                       "\"endWorkingHour\": \"17:00\"" +
                       "}"

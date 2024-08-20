@@ -1,6 +1,5 @@
 package com.internship.flow_appointment_scheduling.features.user.service;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeDetailsDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeHireDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.EmployeeModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
@@ -13,31 +12,21 @@ import com.internship.flow_appointment_scheduling.features.user.repository.UserR
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
-import com.internship.flow_appointment_scheduling.infrastructure.mappers.EmployeeDetailsMapper;
-import com.internship.flow_appointment_scheduling.infrastructure.mappers.UserMapper;
-import java.math.BigDecimal;
-import java.util.List;
+import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.EmployeeDetailsMapper;
+import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.UserMapper;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
-  private final PasswordEncoder passwordEncoder;
   private final UserMapper userMapper;
   private final EmployeeDetailsMapper employeeDetailsMapper;
-
-  public UserServiceImpl(UserRepository userRepository, UserMapper userMapper,
-      PasswordEncoder passwordEncoder, EmployeeDetailsMapper employeeDetailsMapper) {
-    this.userRepository = userRepository;
-    this.userMapper = userMapper;
-    this.passwordEncoder = passwordEncoder;
-    this.employeeDetailsMapper = employeeDetailsMapper;
-  }
 
   @Override
   public Page<UserView> getAll(Pageable pageable, UserRoles userRole) {
@@ -54,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserView create(UserPostRequest createDto) {
-    User userToSave = createUser(createDto);
+    User userToSave = userMapper.toEntity(createDto);
     return userMapper.toView(userRepository.save(userToSave));
   }
 
@@ -86,8 +75,8 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserView hireEmployee(EmployeeHireDto dto) {
-    User employeeToSave = createUser(dto.userInfo());
-    EmployeeDetails employeeDetails = createEmployeeDetails(dto.employeeDetailsDto());
+    User employeeToSave = userMapper.toEntity(dto.userInfo());
+    EmployeeDetails employeeDetails = employeeDetailsMapper.toEntity(dto.employeeDetailsDto());
 
     employeeToSave.setEmployeeDetails(employeeDetails);
     employeeDetails.setUser(employeeToSave);
@@ -108,20 +97,6 @@ public class UserServiceImpl implements UserService {
     employee.setRole(dto.userRole());
 
     return userMapper.toView(userRepository.save(employee));
-  }
-
-  private User createUser(UserPostRequest createDto) {
-    User userToSave = userMapper.toEntity(createDto);
-    userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
-    userToSave.setRole(UserRoles.CLIENT);
-    return userToSave;
-  }
-
-  private EmployeeDetails createEmployeeDetails(EmployeeDetailsDto dto) {
-    EmployeeDetails employeeDetails = employeeDetailsMapper.toEntity(dto);
-    employeeDetails.setProfit(new BigDecimal(0));
-    employeeDetails.setCompletedAppointments(0);
-    return employeeDetails;
   }
 
   private User findById(Long id) {

@@ -8,8 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,6 +20,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode
 public class EmployeeDetails {
 
   @Id
@@ -29,13 +31,13 @@ public class EmployeeDetails {
   private BigDecimal salary;
 
   @Column(nullable = false)
-  private BigDecimal profit;
+  private BigDecimal profit = BigDecimal.ZERO;
 
   @Column(name = "completed_appointments", nullable = false)
-  private Integer completedAppointments;
+  private Integer completedAppointments = 0;
 
-  @Column(nullable = false)
-  private Double experience;
+  @Column(name = "start_date", nullable = false)
+  private LocalDate startDate = LocalDate.now();
 
   @Column(name = "begin_working_hour", nullable = false)
   private LocalTime beginWorkingHour;
@@ -46,26 +48,4 @@ public class EmployeeDetails {
   @OneToOne
   private User user;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    EmployeeDetails that = (EmployeeDetails) o;
-    return Objects.equals(id, that.id) && Objects.equals(salary, that.salary)
-        && Objects.equals(profit, that.profit) && Objects.equals(
-        completedAppointments, that.completedAppointments) && Objects.equals(experience,
-        that.experience) && Objects.equals(beginWorkingHour, that.beginWorkingHour)
-        && Objects.equals(endWorkingHour, that.endWorkingHour) && Objects.equals(
-        user, that.user);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, salary, profit, completedAppointments, experience, beginWorkingHour,
-        endWorkingHour, user);
-  }
 }

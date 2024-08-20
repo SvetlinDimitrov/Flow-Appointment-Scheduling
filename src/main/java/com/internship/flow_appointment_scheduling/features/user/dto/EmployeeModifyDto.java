@@ -16,10 +16,6 @@ public record EmployeeModifyDto(
     @Min(value = 0, message = "Salary must be at least 0")
     Double salary,
 
-    @NotNull(message = "Experience must not be null")
-    @Min(value = 0, message = "Salary must be at least 0")
-    Double experience,
-
     @NotNull(message = "Begin working hour must not be null")
     LocalTime beginWorkingHour,
 
