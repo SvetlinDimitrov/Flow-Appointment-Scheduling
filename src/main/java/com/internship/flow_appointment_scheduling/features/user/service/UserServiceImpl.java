@@ -78,6 +78,7 @@ public class UserServiceImpl implements UserService {
     User employeeToSave = userMapper.toEntity(dto.userInfo());
     EmployeeDetails employeeDetails = employeeDetailsMapper.toEntity(dto.employeeDetailsDto());
 
+    employeeToSave.setRole(UserRoles.EMPLOYEE);
     employeeToSave.setEmployeeDetails(employeeDetails);
     employeeDetails.setUser(employeeToSave);
 
