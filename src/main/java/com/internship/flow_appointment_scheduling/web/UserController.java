@@ -1,11 +1,15 @@
 package com.internship.flow_appointment_scheduling.web;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.UserPostRequest;
-import com.internship.flow_appointment_scheduling.features.user.dto.UserPutRequest;
-import com.internship.flow_appointment_scheduling.features.user.dto.UserView;
+import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeHireDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
+import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
 import com.internship.flow_appointment_scheduling.infrastructure.openapi.UserControllerDocumentation;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -18,22 +22,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class UserController implements UserControllerDocumentation {
 
   private final UserService userService;
 
-  public UserController(UserService userService) {
-    this.userService = userService;
-  }
-
   @GetMapping
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE')")
-  public ResponseEntity<Page<UserView>> getAll(Pageable pageable) {
-    return ResponseEntity.ok(userService.getAll(pageable));
+  public ResponseEntity<Page<UserView>> getAll(Pageable pageable,
+      @RequestParam(required = false) UserRoles userRole) {
+    return ResponseEntity.ok(userService.getAll(pageable , userRole));
   }
 
   @GetMapping("/{id}")
@@ -65,5 +68,20 @@ public class UserController implements UserControllerDocumentation {
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();
+  }
+
+  @PostMapping("/hire")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
+  public ResponseEntity<UserView> hireEmployee(@Valid @RequestBody EmployeeHireDto hireDto) {
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(userService.hireEmployee(hireDto));
+  }
+
+  @PutMapping("/{id}/employee")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
+  public ResponseEntity<UserView> modifyEmployee(@PathVariable Long id,
+      @Valid @RequestBody EmployeeModifyDto modifyDto) {
+    return ResponseEntity.ok(userService.modifyEmployee(id, modifyDto));
   }
 }

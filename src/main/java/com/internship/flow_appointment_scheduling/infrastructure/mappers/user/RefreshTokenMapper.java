@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.infrastructure.mappers;
+package com.internship.flow_appointment_scheduling.infrastructure.mappers.user;
 
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenView;
 import com.internship.flow_appointment_scheduling.infrastructure.security.entity.RefreshToken;

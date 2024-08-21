@@ -5,7 +5,7 @@ import com.internship.flow_appointment_scheduling.features.user.repository.UserR
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
-import com.internship.flow_appointment_scheduling.infrastructure.mappers.RefreshTokenMapper;
+import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.RefreshTokenMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationResponse;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtView;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenPostRequest;
@@ -20,10 +20,12 @@ import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class JwtServiceImpl implements JwtService {
 
   private final RefreshTokenRepository refreshTokenRepository;
@@ -36,17 +38,12 @@ public class JwtServiceImpl implements JwtService {
   @Value("${jwt.expiration-time}")
   private long expirationTime;
 
-  public JwtServiceImpl(RefreshTokenRepository refreshTokenRepository,
-      RefreshTokenMapper refreshTokenMapper, UserRepository userRepository) {
-    this.refreshTokenRepository = refreshTokenRepository;
-    this.refreshTokenMapper = refreshTokenMapper;
-    this.userRepository = userRepository;
-  }
-
   public AuthenticationResponse refreshToken(RefreshTokenPostRequest dto) {
     RefreshToken refreshToken = refreshTokenRepository
         .findById(dto.token())
-        .orElseThrow(() -> new NotFoundException(Exceptions.REFRESH_TOKEN_NOT_FOUND, dto.token()));
+        .orElseThrow(
+            () -> new NotFoundException(Exceptions.REFRESH_TOKEN_NOT_FOUND, dto.token())
+        );
 
     if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
       refreshTokenRepository.delete(refreshToken);
@@ -61,7 +58,9 @@ public class JwtServiceImpl implements JwtService {
 
   public AuthenticationResponse generateToken(String email) {
     User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
+        .orElseThrow(
+            () -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email)
+        );
 
     JwtView jwtView = generateJwtToken(user);
     RefreshTokenView refreshTokenView = generateRefreshToken(user);
@@ -86,6 +85,7 @@ public class JwtServiceImpl implements JwtService {
     String token = Jwts.builder()
         .setSubject(user.getEmail())
         .claim("userId", user.getId())
+        .claim("role", user.getRole())
         .setIssuedAt(now)
         .setExpiration(expirationDate)
         .signWith(getSigningKey(), SignatureAlgorithm.HS256)

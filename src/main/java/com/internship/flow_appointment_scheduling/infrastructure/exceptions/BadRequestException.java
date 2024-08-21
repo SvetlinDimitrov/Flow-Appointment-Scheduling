@@ -6,8 +6,8 @@ public class BadRequestException extends RuntimeException {
 
   private final Exceptions exceptionMessage;
 
-  public BadRequestException(Exceptions exceptionMessage, String value, Long value2) {
-    super(String.format(exceptionMessage.message, value, value2));
+  public BadRequestException(Exceptions exceptionMessage, Object... values) {
+    super(String.format(exceptionMessage.message, values));
     this.exceptionMessage = exceptionMessage;
   }
 
@@ -20,4 +20,3 @@ public class BadRequestException extends RuntimeException {
     return exceptionMessage.type;
   }
 }
-

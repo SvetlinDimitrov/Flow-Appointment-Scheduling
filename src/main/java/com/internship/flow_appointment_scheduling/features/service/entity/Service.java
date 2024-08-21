@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -22,7 +22,8 @@ import lombok.ToString;
 @Table(name = "services")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"users", "workSpace"})
+@EqualsAndHashCode(exclude = {"users", "workSpace"})
 public class Service {
 
   @Id
@@ -51,21 +52,4 @@ public class Service {
       inverseJoinColumns = @JoinColumn(name = "user_id")
   )
   private List<User> users;
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Service service = (Service) o;
-    return Objects.equals(id, service.id);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(id);
-  }
 }

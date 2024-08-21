@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,7 +17,8 @@ import lombok.ToString;
 @Table(name = "work_spaces")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "services")
+@EqualsAndHashCode(exclude = "services")
 public class WorkSpace {
 
   @Id
@@ -32,21 +33,4 @@ public class WorkSpace {
 
   @OneToMany(mappedBy = "workSpace")
   private List<Service> services;
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    WorkSpace workSpace = (WorkSpace) o;
-    return Objects.equals(id, workSpace.id);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(id);
-  }
 }

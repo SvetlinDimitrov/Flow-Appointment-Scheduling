@@ -14,6 +14,10 @@ public enum Exceptions {
       "User already exists with email: %s",
       "User already exists"
   ),
+  USER_IS_NOT_AN_EMPLOYEE(
+      "User is not an employee",
+      "User is not an employee"
+  ),
   REFRESH_TOKEN_NOT_FOUND(
       "Refresh token %s not found",
       "Refresh token not found"

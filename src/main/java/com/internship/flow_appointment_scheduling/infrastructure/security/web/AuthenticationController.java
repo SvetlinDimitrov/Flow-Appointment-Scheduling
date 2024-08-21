@@ -6,6 +6,7 @@ import com.internship.flow_appointment_scheduling.infrastructure.security.dto.Au
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.RefreshTokenPostRequest;
 import com.internship.flow_appointment_scheduling.infrastructure.security.service.JwtServiceImpl;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,16 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthenticationController implements AuthenticationControllerDocumentation {
 
   private final AuthenticationManager authenticationManager;
   private final JwtServiceImpl jwtService;
-
-  public AuthenticationController(AuthenticationManager authenticationManager,
-      JwtServiceImpl refreshTokenService) {
-    this.authenticationManager = authenticationManager;
-    this.jwtService = refreshTokenService;
-  }
 
   @PostMapping
   public ResponseEntity<AuthenticationResponse> createAuthenticationToken(
