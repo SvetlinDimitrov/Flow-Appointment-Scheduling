@@ -157,7 +157,6 @@ public interface UserControllerDocumentation {
                       "\"firstName\": \"John\"," +
                       "\"lastName\": \"Doe\"," +
                       "\"email\": \"john20.doe@example.com\"," +
-                      "\"role\": \"EMPLOYEE\"," +
                       "\"password\": \"password123A!\"" +
                       "}," +
                       "\"staffDetailsDto\": {" +
@@ -193,16 +192,26 @@ public interface UserControllerDocumentation {
           content = @Content(
               mediaType = "application/json",
               schema = @Schema(implementation = StaffModifyDto.class),
-              examples = @ExampleObject(
-                  name = "StaffModifyBodyExample",
-                  value = "{" +
-                      "\"userRole\": \"EMPLOYEE\"," +
-                      "\"salary\": 50000," +
-                      "\"isAvailable\": true," +
-                      "\"beginWorkingHour\": \"09:00\"," +
-                      "\"endWorkingHour\": \"17:00\"" +
-                      "}"
-              )
+              examples = {
+                  @ExampleObject(
+                      name = "AdminModifyBodyExample",
+                      value = "{" +
+                          "\"userRole\": \"EMPLOYEE\"," +
+                          "\"salary\": 50000," +
+                          "\"isAvailable\": true," +
+                          "\"beginWorkingHour\": \"09:00\"," +
+                          "\"endWorkingHour\": \"17:00\"" +
+                          "}"
+                  ),
+                  @ExampleObject(
+                      name = "StaffModifyBodyExample",
+                      value = "{" +
+                          "\"isAvailable\": true," +
+                          "\"beginWorkingHour\": \"09:00\"," +
+                          "\"endWorkingHour\": \"17:00\"" +
+                          "}"
+                  )
+              }
           )
       )
   )
