@@ -40,7 +40,7 @@ public class UserController implements UserControllerDocumentation {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE') || @permissionEvaluator.halfClientAccess(authentication, #id)")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE') || @permissionEvaluator.currentClientAccess(authentication, #id)")
   public ResponseEntity<UserView> getById(@PathVariable Long id) {
     return ResponseEntity.ok(userService.getById(id));
   }
@@ -54,14 +54,14 @@ public class UserController implements UserControllerDocumentation {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.halfClientStaffAccess(authentication, #id)")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
   public ResponseEntity<UserView> update(@PathVariable Long id,
       @Valid @RequestBody UserPutRequest updateDto) {
     return ResponseEntity.ok(userService.update(id, updateDto));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.halfClientStaffAccess(authentication, #id)")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     userService.delete(id);
 
@@ -79,7 +79,7 @@ public class UserController implements UserControllerDocumentation {
   }
 
   @PutMapping("/{id}/staff")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.currentStaffAccessOnly(authentication, #id)")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @permissionEvaluator.currentStaffAccess(authentication, #id)")
   public ResponseEntity<UserView> modifyStaff(@PathVariable Long id,
       @Valid @RequestBody StaffModifyDto modifyDto) {
     return ResponseEntity.ok(userService.modifyStaff(id, modifyDto));
