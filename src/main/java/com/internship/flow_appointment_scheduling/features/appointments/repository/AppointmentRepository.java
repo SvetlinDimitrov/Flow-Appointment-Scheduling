@@ -18,7 +18,19 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
   @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
       "FROM Appointment a " +
       "WHERE (a.client.email = :email OR a.staff.email = :email) " +
-      "AND (a.startDate < :endDate AND a.endDate > :startDate)")
+      "AND a.startDate <= :endDate " +
+      "AND a.endDate >= :startDate " +
+      "AND a.status = 'APPROVED'")
   boolean existsOverlappingAppointment(@Param("email") String email,
+      @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+  @Query("SELECT COUNT(a) " +
+      "FROM Appointment a " +
+      "JOIN a.service s " +
+      "WHERE s.workSpace.id = :workSpaceId " +
+      "AND a.startDate <= :endDate " +
+      "AND a.endDate >= :startDate " +
+      "AND a.status = 'APPROVED'")
+  int countAppointmentsInWorkspace(@Param("workSpaceId") Long workSpaceId,
       @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

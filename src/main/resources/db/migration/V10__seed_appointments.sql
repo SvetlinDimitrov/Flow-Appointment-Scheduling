@@ -15,5 +15,4 @@ INSERT INTO appointments (client_id, staff_id, start_date, end_date, status, ser
 (@client_id, @employee_id, '2023-10-01 14:00:00', '2023-10-01 15:00:00', 'APPROVED', @service_id),
 (@client_id, @employee_id, '2023-10-01 15:00:00', '2023-10-01 16:00:00', 'NOT_APPROVED', @service_id),
 (@client_id, @employee_id, '2023-10-01 16:00:00', '2023-10-01 17:00:00', 'NOT_APPROVED', @service_id),
-(@client_id, @employee_id, '2023-10-01 17:00:00', '2023-10-01 18:00:00', 'NOT_COMPLETED', @service_id),
 (@client_id, @employee_id, '2023-10-01 18:00:00', '2023-10-01 19:00:00', 'COMPLETED', @service_id);

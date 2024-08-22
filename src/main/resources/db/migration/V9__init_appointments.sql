@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     staff_id BIGINT NOT NULL,
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
-    status ENUM('NOT_APPROVED', 'APPROVED', 'NOT_COMPLETED', 'COMPLETED', 'CANCELED') NOT NULL,
+    status ENUM('NOT_APPROVED', 'APPROVED', 'COMPLETED', 'CANCELED') NOT NULL,
     service_id BIGINT NOT NULL,
     FOREIGN KEY (client_id) REFERENCES users(id),
     FOREIGN KEY (staff_id) REFERENCES users(id),

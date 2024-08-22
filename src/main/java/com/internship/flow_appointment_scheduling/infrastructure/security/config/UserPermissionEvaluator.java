@@ -8,9 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-@Component(value = "permissionEvaluator")
+@Component(value = "userPermissionEvaluator")
 @RequiredArgsConstructor
-public class PermissionEvaluator {
+public class UserPermissionEvaluator {
 
   private final UserRepository userRepository;
 

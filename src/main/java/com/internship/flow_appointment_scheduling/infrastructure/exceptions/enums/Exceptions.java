@@ -73,6 +73,14 @@ public enum Exceptions {
   APPOINTMENT_SERVICE_NOT_AVAILABLE(
       "Service with id: %s is not available at the given time",
       "Service not available"
+  ),
+  APPOINTMENT_STAFF_NOT_CONTAINING_SERVICE(
+      "Staff with email: %s is not containing service with id: %s",
+      "Staff not containing service"
+  ),
+  APPOINTMENT_WORK_SPACE_NOT_AVAILABLE(
+      "WorkSpace with id: %s is not available at the given time",
+      "WorkSpace not available"
   );
 
   public final String message;

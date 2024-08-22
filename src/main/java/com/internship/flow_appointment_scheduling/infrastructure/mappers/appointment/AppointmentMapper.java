@@ -8,15 +8,19 @@ import com.internship.flow_appointment_scheduling.infrastructure.mappers.service
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.UserMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring",
+@Mapper(
+    componentModel = "spring",
     uses = {UserMapper.class, ServiceMapper.class},
-    implementationName = "AppointmentMapperImpl")
+    implementationName = "AppointmentMapperImpl"
+)
 public interface AppointmentMapper {
 
   AppointmentView toView(Appointment entity);
 
+  @Mapping(target = "startDate", source = "date")
   Appointment toEntity(AppointmentCreate dto);
 
   @Mapping(
@@ -24,5 +28,5 @@ public interface AppointmentMapper {
       source = "date",
       nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
   )
-  void updateEntity(Appointment appointment, AppointmentUpdate dto);
+  void updateEntity(@MappingTarget Appointment appointment, AppointmentUpdate dto);
 }

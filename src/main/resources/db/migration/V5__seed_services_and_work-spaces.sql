@@ -1,7 +1,7 @@
 INSERT INTO work_spaces (name, available_slots)
 VALUES ('Gym', 10),
        ('Spa', 5),
-       ('Clinic', 3);
+       ('Clinic', 1);
 
 INSERT INTO services (name, description, duration_minutes, price, work_space_id)
 VALUES ('Fitness', 'Fitness training session', 60, 50.00,
