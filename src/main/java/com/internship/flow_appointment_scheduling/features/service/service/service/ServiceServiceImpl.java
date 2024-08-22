@@ -28,8 +28,8 @@ public class ServiceServiceImpl implements ServiceService {
   private final WorkSpaceService workSpaceService;
 
   @Override
-  public Page<ServiceView> getAll(Pageable pageable, String employeeEmail) {
-    return Optional.ofNullable(employeeEmail)
+  public Page<ServiceView> getAll(Pageable pageable, String staffEmail) {
+    return Optional.ofNullable(staffEmail)
         .map(email -> serviceRepository.findAllByUsersEmail(email, pageable))
         .orElse(serviceRepository.findAll(pageable))
         .map(serviceMapper::toView);
@@ -41,9 +41,9 @@ public class ServiceServiceImpl implements ServiceService {
   }
 
   @Override
-  public ServiceView assignEmployee(Long serviceId, String employeeEmail) {
+  public ServiceView assignStaff(Long serviceId, String staffEmail) {
     Service service = findById(serviceId);
-    User user = userService.findByEmail(employeeEmail);
+    User user = userService.findByEmail(staffEmail);
 
     List<User> users = service.getUsers();
     if (users.contains(user)) {
@@ -58,9 +58,9 @@ public class ServiceServiceImpl implements ServiceService {
   }
 
   @Override
-  public ServiceView unassignEmployee(Long serviceId, String employeeEmail) {
+  public ServiceView unassignStaff(Long serviceId, String staffEmail) {
     Service service = findById(serviceId);
-    User user = userService.findByEmail(employeeEmail);
+    User user = userService.findByEmail(staffEmail);
 
     List<User> users = service.getUsers();
     if (users.contains(user)) {

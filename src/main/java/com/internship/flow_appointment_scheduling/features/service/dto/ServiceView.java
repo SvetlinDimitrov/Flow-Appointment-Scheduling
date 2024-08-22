@@ -4,6 +4,7 @@ public record ServiceView(
     Long id,
     String name,
     String description,
+    Boolean availability,
     Double price,
     WorkSpaceView workSpace) {
 }

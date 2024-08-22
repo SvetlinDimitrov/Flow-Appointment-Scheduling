@@ -42,6 +42,9 @@ public class Service {
   @Column(nullable = false , columnDefinition = "decimal(10,2)")
   private BigDecimal price;
 
+  @Column(nullable = false)
+  private Boolean availability;
+
   @ManyToOne
   private WorkSpace workSpace;
 

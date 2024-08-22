@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.service.annotations.employee_or_admin;
+package com.internship.flow_appointment_scheduling.features.user.annotations.admin_filed_only;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -7,11 +7,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Constraint(validatedBy = EmployeeOrAdminValidator.class)
-@Target({ ElementType.PARAMETER })
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface EmployeeOrAdmin {
-    String message() default "User must have role EMPLOYEE or ADMINISTRATOR";
+@Constraint(validatedBy = AdminOnlyFieldValidator.class)
+public @interface AdminOnlyField {
+    String message() default "User must be an administrator to modify this field";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

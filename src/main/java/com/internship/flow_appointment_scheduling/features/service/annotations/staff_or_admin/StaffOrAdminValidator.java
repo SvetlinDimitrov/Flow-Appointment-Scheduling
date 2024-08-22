@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.service.annotations.employee_or_admin;
+package com.internship.flow_appointment_scheduling.features.service.annotations.staff_or_admin;
 
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
@@ -7,7 +7,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class EmployeeOrAdminValidator implements ConstraintValidator<EmployeeOrAdmin, String> {
+public class StaffOrAdminValidator implements ConstraintValidator<StaffOrAdmin, String> {
 
   @Autowired
   private UserService userService;

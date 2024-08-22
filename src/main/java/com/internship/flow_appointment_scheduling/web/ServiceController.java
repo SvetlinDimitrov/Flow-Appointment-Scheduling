@@ -1,6 +1,6 @@
 package com.internship.flow_appointment_scheduling.web;
 
-import com.internship.flow_appointment_scheduling.features.service.annotations.employee_or_admin.EmployeeOrAdmin;
+import com.internship.flow_appointment_scheduling.features.service.annotations.staff_or_admin.StaffOrAdmin;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import com.internship.flow_appointment_scheduling.features.service.service.service.ServiceService;
@@ -34,8 +34,8 @@ public class ServiceController implements ServiceControllerDocumentation {
   @GetMapping
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE', 'CLIENT')")
   public ResponseEntity<Page<ServiceView>> getAll(Pageable pageable,
-      @RequestParam(required = false) String employeeEmail) {
-    return ResponseEntity.ok(serviceService.getAll(pageable, employeeEmail));
+      @RequestParam(required = false) String staffEmail) {
+    return ResponseEntity.ok(serviceService.getAll(pageable, staffEmail));
   }
 
   @GetMapping("/{id}")
@@ -54,18 +54,18 @@ public class ServiceController implements ServiceControllerDocumentation {
 
   @PostMapping("/{id}/assign")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
-  public ResponseEntity<ServiceView> assignEmployee(
+  public ResponseEntity<ServiceView> assignStaff(
       @PathVariable Long id,
-      @RequestParam @EmployeeOrAdmin String employeeEmail) {
-    return ResponseEntity.ok(serviceService.assignEmployee(id, employeeEmail));
+      @RequestParam @StaffOrAdmin String staffEmail) {
+    return ResponseEntity.ok(serviceService.assignStaff(id, staffEmail));
   }
 
   @PutMapping("/{id}/unassign")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
-  public ResponseEntity<ServiceView> unassignEmployee(
+  public ResponseEntity<ServiceView> unassignStaff(
       @PathVariable Long id,
-      @RequestParam String employeeEmail) {
-    return ResponseEntity.ok(serviceService.unassignEmployee(id, employeeEmail));
+      @RequestParam String staffEmail) {
+    return ResponseEntity.ok(serviceService.unassignStaff(id, staffEmail));
   }
 
   @PutMapping("/{id}")

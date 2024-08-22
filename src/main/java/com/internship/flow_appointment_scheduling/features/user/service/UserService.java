@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.user.service;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeHireDto;
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
@@ -24,7 +24,7 @@ public interface UserService {
 
   User findByEmail(String email);
 
-  UserView hireEmployee(EmployeeHireDto userPostRequest);
+  UserView hireStaff(StaffHireDto userPostRequest);
 
-  UserView modifyEmployee(Long id, EmployeeModifyDto userPutRequest);
+  UserView modifyStaff(Long id, StaffModifyDto userPutRequest);
 }

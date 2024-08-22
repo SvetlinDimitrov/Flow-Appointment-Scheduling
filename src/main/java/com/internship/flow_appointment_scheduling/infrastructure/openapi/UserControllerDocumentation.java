@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeHireDto;
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 public interface UserControllerDocumentation {
 
-  @Operation(summary = "Get all users")
+  @Operation(summary = "Get all users", description = "Accessible by ADMINISTRATOR, EMPLOYEE roles")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the users",
           content = {@Content(mediaType = "application/json",
@@ -43,7 +43,7 @@ public interface UserControllerDocumentation {
   ResponseEntity<Page<UserView>> getAll(Pageable pageable,
       @RequestParam(required = false) UserRoles userRole);
 
-  @Operation(summary = "Get a user by ID")
+  @Operation(summary = "Get a user by ID" , description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the user",
           content = {@Content(mediaType = "application/json",
@@ -72,7 +72,6 @@ public interface UserControllerDocumentation {
                       "\"firstName\": \"John\"," +
                       "\"lastName\": \"Wick\"," +
                       "\"email\": \"abv@example.com\"," +
-                      "\"role\": \"CLIENT\"," +
                       "\"password\": \"password123A!\"" +
                       "}"
               )
@@ -91,7 +90,7 @@ public interface UserControllerDocumentation {
   ResponseEntity<UserView> create(@Valid @RequestBody UserPostRequest createDto);
 
   @Operation(
-      summary = "Update an existing user",
+      summary = "Update an existing user", description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
@@ -128,7 +127,7 @@ public interface UserControllerDocumentation {
   ResponseEntity<UserView> update(@PathVariable Long id,
       @Valid @RequestBody UserPutRequest updateDto);
 
-  @Operation(summary = "Delete a user")
+  @Operation(summary = "Delete a user" , description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "204", description = "User deleted",
           content = @Content),
@@ -145,22 +144,22 @@ public interface UserControllerDocumentation {
   ResponseEntity<Void> delete(@PathVariable Long id);
 
   @Operation(
-      summary = "Hire a new employee",
+      description = "Accessible by ADMINISTRATOR role",
+      summary = "Hire a new staff",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = EmployeeHireDto.class),
+              schema = @Schema(implementation = StaffHireDto.class),
               examples = @ExampleObject(
-                  name = "EmployeeHireBodyExample",
+                  name = "StaffHireBodyExample",
                   value = "{" +
                       "\"userInfo\": {" +
                       "\"firstName\": \"John\"," +
                       "\"lastName\": \"Doe\"," +
                       "\"email\": \"john20.doe@example.com\"," +
-                      "\"role\": \"EMPLOYEE\"," +
                       "\"password\": \"password123A!\"" +
                       "}," +
-                      "\"employeeDetailsDto\": {" +
+                      "\"staffDetailsDto\": {" +
                       "\"salary\": 50000," +
                       "\"beginWorkingHour\": \"09:00\"," +
                       "\"endWorkingHour\": \"17:00\"" +
@@ -171,7 +170,7 @@ public interface UserControllerDocumentation {
       )
   )
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "201", description = "Employee hired",
+      @ApiResponse(responseCode = "201", description = "Staff hired",
           content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserView.class))
       ),
       @ApiResponse(responseCode = "400", description = "Invalid input",
@@ -184,34 +183,46 @@ public interface UserControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping("/hire")
-  ResponseEntity<UserView> hireEmployee(@Valid @RequestBody EmployeeHireDto hireDto);
+  ResponseEntity<UserView> hireStaff(@Valid @RequestBody StaffHireDto hireDto);
 
   @Operation(
-      summary = "Modify an existing employee",
+      summary = "Modify an existing staff",
+      description = "Accessible by ADMINISTRATOR and EMPLOYEE roles",
       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
           content = @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = EmployeeModifyDto.class),
-              examples = @ExampleObject(
-                  name = "EmployeeModifyBodyExample",
-                  value = "{" +
-                      "\"userRole\": \"EMPLOYEE\"," +
-                      "\"salary\": 50000," +
-                      "\"beginWorkingHour\": \"09:00\"," +
-                      "\"endWorkingHour\": \"17:00\"" +
-                      "}"
-              )
+              schema = @Schema(implementation = StaffModifyDto.class),
+              examples = {
+                  @ExampleObject(
+                      name = "AdminModifyBodyExample",
+                      value = "{" +
+                          "\"userRole\": \"EMPLOYEE\"," +
+                          "\"salary\": 50000," +
+                          "\"isAvailable\": true," +
+                          "\"beginWorkingHour\": \"09:00\"," +
+                          "\"endWorkingHour\": \"17:00\"" +
+                          "}"
+                  ),
+                  @ExampleObject(
+                      name = "StaffModifyBodyExample",
+                      value = "{" +
+                          "\"isAvailable\": true," +
+                          "\"beginWorkingHour\": \"09:00\"," +
+                          "\"endWorkingHour\": \"17:00\"" +
+                          "}"
+                  )
+              }
           )
       )
   )
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Employee modified",
+      @ApiResponse(responseCode = "200", description = "Staff modified",
           content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserView.class))
       ),
       @ApiResponse(responseCode = "400", description = "Invalid input",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "404", description = "Employee not found",
+      @ApiResponse(responseCode = "404", description = "Staff not found",
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = ProblemDetail.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden",
@@ -220,7 +231,7 @@ public interface UserControllerDocumentation {
           content = {@Content(mediaType = "application/json")}),
   })
   @SecurityRequirement(name = "bearerAuth")
-  @PutMapping("/{id}/employee")
-  ResponseEntity<UserView> modifyEmployee(@PathVariable Long id,
-      @Valid @RequestBody EmployeeModifyDto modifyDto);
+  @PutMapping("/{id}/staff")
+  ResponseEntity<UserView> modifyStaff(@PathVariable Long id,
+      @Valid @RequestBody StaffModifyDto modifyDto);
 }

@@ -1,18 +1,18 @@
 package com.internship.flow_appointment_scheduling.features.user.service;
 
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeHireDto;
-import com.internship.flow_appointment_scheduling.features.user.dto.employee_details.EmployeeModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
-import com.internship.flow_appointment_scheduling.features.user.entity.EmployeeDetails;
+import com.internship.flow_appointment_scheduling.features.user.entity.StaffDetails;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
-import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.EmployeeDetailsMapper;
+import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.StaffDetailsMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.UserMapper;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
   private final UserMapper userMapper;
-  private final EmployeeDetailsMapper employeeDetailsMapper;
+  private final StaffDetailsMapper staffDetailsMapper;
 
   @Override
   public Page<UserView> getAll(Pageable pageable, UserRoles userRole) {
@@ -74,29 +74,29 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public UserView hireEmployee(EmployeeHireDto dto) {
-    User employeeToSave = userMapper.toEntity(dto.userInfo());
-    EmployeeDetails employeeDetails = employeeDetailsMapper.toEntity(dto.employeeDetailsDto());
+  public UserView hireStaff(StaffHireDto dto) {
+    User staffToSave = userMapper.toEntity(dto.userInfo());
+    StaffDetails staffDetails = staffDetailsMapper.toEntity(dto.staffDetailsDto());
 
-    employeeToSave.setRole(UserRoles.EMPLOYEE);
-    employeeToSave.setEmployeeDetails(employeeDetails);
-    employeeDetails.setUser(employeeToSave);
+    staffToSave.setRole(UserRoles.EMPLOYEE);
+    staffToSave.setStaffDetails(staffDetails);
+    staffDetails.setUser(staffToSave);
 
-    return userMapper.toView(userRepository.save(employeeToSave));
+    return userMapper.toView(userRepository.save(staffToSave));
   }
 
   @Override
-  public UserView modifyEmployee(Long id, EmployeeModifyDto dto) {
-    User employee = findById(id);
-    EmployeeDetails employeeDetails = employee.getEmployeeDetails();
+  public UserView modifyStaff(Long id, StaffModifyDto dto) {
+    User staff = findById(id);
+    StaffDetails staffDetails = staff.getStaffDetails();
 
-    if (employee.getRole().equals(UserRoles.CLIENT)) {
-      throw new BadRequestException(Exceptions.USER_IS_NOT_AN_EMPLOYEE);
+    if (staff.getRole().equals(UserRoles.CLIENT)) {
+      throw new BadRequestException(Exceptions.USER_IS_NOT_AN_STAFF);
     }
 
-    employeeDetailsMapper.updateEntity(employeeDetails, dto);
+    staffDetailsMapper.updateEntity(staffDetails, dto);
 
-    return userMapper.toView(userRepository.save(employee));
+    return userMapper.toView(userRepository.save(staff));
   }
 
   private User findById(Long id) {

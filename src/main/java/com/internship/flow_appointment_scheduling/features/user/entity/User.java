@@ -24,8 +24,8 @@ import lombok.ToString;
 @Table(name = "users")
 @Getter
 @Setter
-@ToString(exclude = {"services", "refreshToken", "employeeDetails"})
-@EqualsAndHashCode(exclude = {"services", "refreshToken", "employeeDetails"})
+@ToString(exclude = {"services", "refreshToken", "staffDetails"})
+@EqualsAndHashCode(exclude = {"services", "refreshToken", "staffDetails"})
 public class User {
 
   @Id
@@ -55,5 +55,5 @@ public class User {
   private List<Service> services;
 
   @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE , CascadeType.PERSIST})
-  private EmployeeDetails employeeDetails;
+  private StaffDetails staffDetails;
 }

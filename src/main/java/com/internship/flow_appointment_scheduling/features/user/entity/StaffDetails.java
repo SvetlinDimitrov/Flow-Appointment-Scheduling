@@ -16,12 +16,12 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "employee_details")
+@Table(name = "staff_details")
 @Getter
 @Setter
-@ToString(exclude = {"user"})
-@EqualsAndHashCode(exclude = {"user"})
-public class EmployeeDetails {
+@ToString(exclude = "user")
+@EqualsAndHashCode(exclude = "user")
+public class StaffDetails {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +38,9 @@ public class EmployeeDetails {
 
   @Column(name = "start_date", nullable = false)
   private LocalDate startDate = LocalDate.now();
+
+  @Column(name = "availability", nullable = false)
+  private Boolean isAvailable = true;
 
   @Column(name = "begin_working_hour", nullable = false)
   private LocalTime beginWorkingHour;

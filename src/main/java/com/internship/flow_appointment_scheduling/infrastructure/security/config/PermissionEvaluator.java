@@ -14,12 +14,13 @@ public class PermissionEvaluator {
 
   private final UserRepository userRepository;
 
-  public boolean halfClientEmployeeAccess(Authentication authentication, Long id) {
+  public boolean currentClientOrStaffAccess(Authentication authentication, Long id) {
     if (authentication != null
         && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
 
       return userRepository.findById(id)
-          .filter(value -> userDetails.user().getEmail().equals(value.getEmail()) ||
+          .filter(value ->
+              userDetails.user().getEmail().equals(value.getEmail()) &&
               (userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
                   userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
           ).isPresent();
@@ -28,13 +29,27 @@ public class PermissionEvaluator {
     return false;
   }
 
-  public boolean halfClientAccess(Authentication authentication, Long id) {
+  public boolean currentClientAccess(Authentication authentication, Long id) {
     if (authentication != null
         && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
 
       return userRepository.findById(id)
-          .filter(value -> userDetails.user().getEmail().equals(value.getEmail()) ||
-              !userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT))
+          .filter(value ->
+              userDetails.user().getEmail().equals(value.getEmail()) &&
+                  userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT))
+          ).isPresent();
+    }
+    return false;
+  }
+
+  public boolean currentStaffAccess(Authentication authentication, Long id) {
+    if (authentication != null
+        && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+
+      return userRepository.findById(id)
+          .filter(value ->
+              userDetails.user().getEmail().equals(value.getEmail()) &&
+              userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE))
           ).isPresent();
     }
     return false;

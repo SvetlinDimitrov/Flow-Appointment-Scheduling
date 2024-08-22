@@ -17,6 +17,9 @@ public record ServiceDTO(
     @NotBlank(message = "Description is mandatory")
     String description,
 
+    @NotNull(message = "Availability is mandatory")
+    Boolean availability,
+
     @NotNull(message = "Price is mandatory")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     BigDecimal price,
