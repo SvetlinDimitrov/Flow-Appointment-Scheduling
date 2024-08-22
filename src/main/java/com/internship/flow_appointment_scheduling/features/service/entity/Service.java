@@ -1,6 +1,5 @@
 package com.internship.flow_appointment_scheduling.features.service.entity;
 
-import com.internship.flow_appointment_scheduling.features.appointment.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,7 +10,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.List;

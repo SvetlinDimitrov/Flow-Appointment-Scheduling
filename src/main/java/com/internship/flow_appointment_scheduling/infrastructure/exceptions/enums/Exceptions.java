@@ -49,6 +49,30 @@ public enum Exceptions {
   WORK_SPACE_NOT_FOUND_BY_NAME(
       "WorkSpace not found with name: %s",
       "WorkSpace not found"
+  ),
+  APPOINTMENT_NOT_FOUND(
+      "Appointment not found with id: %s",
+      "Appointment not found"
+  ),
+  APPOINTMENT_WRONG_CLIENT_ROLE(
+      "User with email: %s is not an client",
+      "User is not an client"
+  ),
+  APPOINTMENT_WRONG_STAFF_ROLE(
+      "User with email: %s is not an staff",
+      "User is not an staff"
+  ),
+  APPOINTMENT_OVERLAP(
+      "Appointment overlap with another appointment",
+      "Appointment overlap"
+  ),
+  APPOINTMENT_STAFF_NOT_AVAILABLE(
+      "Staff with email: %s is not available at the given time",
+      "Staff not available"
+  ),
+  APPOINTMENT_SERVICE_NOT_AVAILABLE(
+      "Service with id: %s is not available at the given time",
+      "Service not available"
   );
 
   public final String message;

@@ -1,6 +1,6 @@
-package com.internship.flow_appointment_scheduling.features.appointment.entity;
+package com.internship.flow_appointment_scheduling.features.appointments.entity;
 
-import com.internship.flow_appointment_scheduling.features.appointment.entity.enums.AppointmentStatus;
+import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import jakarta.persistence.Column;
@@ -39,12 +39,15 @@ public class Appointment {
   @JoinColumn(name = "staff_id", nullable = false)
   private User staff;
 
-  @Column(name = "date", nullable = false)
-  private LocalDateTime date;
+  @Column(name = "start_date", nullable = false)
+  private LocalDateTime startDate;
+
+  @Column(name = "end_date", nullable = false)
+  private LocalDateTime endDate;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
-  private AppointmentStatus status;
+  private AppointmentStatus status = AppointmentStatus.NOT_APPROVED;
 
   @ManyToOne
   @JoinColumn(name = "service_id", nullable = false)

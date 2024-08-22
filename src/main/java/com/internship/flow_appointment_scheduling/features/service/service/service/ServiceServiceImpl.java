@@ -101,7 +101,7 @@ public class ServiceServiceImpl implements ServiceService {
     serviceRepository.delete(findById(id));
   }
 
-  private Service findById(Long id) {
+  public Service findById(Long id) {
     return serviceRepository
         .findById(id)
         .orElseThrow(() -> new NotFoundException(
