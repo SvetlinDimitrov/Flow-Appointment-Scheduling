@@ -3,6 +3,9 @@ package com.internship.flow_appointment_scheduling.features.appointments.service
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentCreate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentUpdate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
+import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -10,9 +13,11 @@ public interface AppointmentService {
 
   Page<AppointmentView> getAll(Pageable pageable);
 
-  Page<AppointmentView> getAllByUserEmail(String userEmail, Pageable pageable);
+  Page<AppointmentView> getAllByUserId(Long userId, Pageable pageable);
 
   Page<AppointmentView> getAllByServiceId(Long serviceId, Pageable pageable);
+
+  List<ShortAppointmentView> getAllByUserIdAndDate(Long userId, LocalDate date);
 
   AppointmentView getById(Long id);
 
@@ -22,5 +27,4 @@ public interface AppointmentService {
 
   void delete(Long id);
 
-//  List<AppointmentView> getAllUserEmailAndDay(String userEmail, String day);
 }

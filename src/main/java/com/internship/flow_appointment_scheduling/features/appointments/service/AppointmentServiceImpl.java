@@ -3,6 +3,7 @@ package com.internship.flow_appointment_scheduling.features.appointments.service
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentCreate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentUpdate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
+import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.appointments.repository.AppointmentRepository;
 import com.internship.flow_appointment_scheduling.features.appointments.utils.AppointmentValidator;
@@ -13,7 +14,9 @@ import com.internship.flow_appointment_scheduling.features.user.service.UserServ
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.appointment.AppointmentMapper;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,10 +42,19 @@ public class AppointmentServiceImpl implements AppointmentService {
   }
 
   @Override
-  public Page<AppointmentView> getAllByUserEmail(String userEmail, Pageable pageable) {
+  public Page<AppointmentView> getAllByUserId(Long userId, Pageable pageable) {
     return appointmentRepository
-        .findAllByUserEmail(userEmail, pageable)
+        .findAllByUserId(userId, pageable)
         .map(appointmentMapper::toView);
+  }
+
+  @Override
+  public List<ShortAppointmentView> getAllByUserIdAndDate(Long userId, LocalDate date) {
+    return appointmentRepository
+        .findAllByUserIdAndDate(userId, date)
+        .stream()
+        .map(appointmentMapper::toViewShort)
+        .toList();
   }
 
   @Override
@@ -79,6 +91,16 @@ public class AppointmentServiceImpl implements AppointmentService {
 
   @Override
   public AppointmentView update(Long id, AppointmentUpdate dto) {
+    /*
+      The following logic is applied:
+      1. When the status is canceled or completed, the date is not required,
+      and it will not be used.
+      2. When the status is approved or not approved,
+      the date is required to track the validations.
+      3. If the user sending the request is the client,
+      he can only change the status of the appointment
+      to cancel or not_approved, or exception will be thrown.
+    */
     Appointment appointment = getAppointmentById(id);
 
     return switch (dto.status()) {
@@ -89,10 +111,16 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         LocalDateTime endDate = dto.date().plusMinutes(service.getDuration());
 
+        //TODO:: Send email to the client and staff
         appointmentValidator.validateAppointment(staff, client, service, dto.date(), endDate);
 
         appointment.setEndDate(endDate);
         appointmentMapper.updateEntity(appointment, dto);
+        yield appointmentMapper.toView(appointmentRepository.save(appointment));
+      }
+      case COMPLETED -> {
+        appointment.setStatus(dto.status());
+        userService.handleCompletingTheAppointment(appointment);
         yield appointmentMapper.toView(appointmentRepository.save(appointment));
       }
       default -> {
@@ -112,6 +140,4 @@ public class AppointmentServiceImpl implements AppointmentService {
         .findById(id)
         .orElseThrow(() -> new NotFoundException(Exceptions.APPOINTMENT_NOT_FOUND, id));
   }
-
-
 }

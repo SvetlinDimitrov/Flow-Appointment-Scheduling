@@ -1,7 +1,9 @@
 package com.internship.flow_appointment_scheduling.features.appointments.repository;
 
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,8 +14,20 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
   Page<Appointment> findAllByServiceId(Long serviceId, Pageable pageable);
 
-  @Query("SELECT a FROM Appointment a WHERE a.client.email = :email OR a.staff.email = :email")
-  Page<Appointment> findAllByUserEmail(@Param("email") String email, Pageable pageable);
+  @Query("SELECT a FROM Appointment a WHERE a.client.id = :userId OR a.staff.id = :userId")
+  Page<Appointment> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
+
+  @Query("SELECT a FROM Appointment a " +
+      "WHERE (a.client.id = :userId OR a.staff.id = :userId) " +
+      "AND FUNCTION('DATE', a.startDate) = :date")
+  List<Appointment> findAllByUserIdAndDate(@Param("userId") Long userId,
+      @Param("date") LocalDate date);
+
+  @Query("SELECT a FROM Appointment a " +
+      "WHERE a.service.id = :serviceId " +
+      "AND FUNCTION('DATE', a.startDate) = :date")
+  List<Appointment> findAllByServiceIdAndDate(@Param("serviceId") Long serviceId,
+      @Param("date") LocalDate date);
 
   @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
       "FROM Appointment a " +
@@ -33,4 +47,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
       "AND a.status = 'APPROVED'")
   int countAppointmentsInWorkspace(@Param("workSpaceId") Long workSpaceId,
       @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
 }

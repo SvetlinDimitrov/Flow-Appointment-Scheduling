@@ -23,13 +23,13 @@ public class AppointmentValidator {
 
      /*
       Steps to create a new appointment:
-      1. Check if client, staff and service exist in the database.
-      2. Check if the client is a client and the staff is a staff.
-      3. Check if the staff is available at the given time.
-      4. Check if staff and service are available.
-      5. Check if staff has the requested service.
-      6. Check if the client and staff have overlapping appointments (they should be able to have only one appointment at a given time).
-      7. Check if the workSpace has the capacity for the given time.
+      1. Check if the client is a client and the staff is a staff.
+      2. Check if the staff is available at the given time.
+      3. Check if staff and service are available.
+      4. Check if staff has the requested service.
+      5. Check if the client and staff have overlapping appointments
+      (they should be able to have only one appointment at a given time).
+      6. Check if the workSpace has the capacity for the given time.
      */
 
     checkForUserRoles(client, staff);

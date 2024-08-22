@@ -3,6 +3,7 @@ package com.internship.flow_appointment_scheduling.infrastructure.mappers.appoin
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentCreate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentUpdate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
+import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.service.ServiceMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.UserMapper;
@@ -19,6 +20,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface AppointmentMapper {
 
   AppointmentView toView(Appointment entity);
+
+  ShortAppointmentView toViewShort(Appointment entity);
 
   @Mapping(target = "startDate", source = "date")
   Appointment toEntity(AppointmentCreate dto);

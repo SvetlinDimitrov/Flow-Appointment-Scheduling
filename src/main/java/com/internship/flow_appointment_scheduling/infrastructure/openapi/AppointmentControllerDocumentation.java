@@ -3,6 +3,7 @@ package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentCreate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentUpdate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
+import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,11 +13,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 public interface AppointmentControllerDocumentation {
 
@@ -32,6 +36,51 @@ public interface AppointmentControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   ResponseEntity<Page<AppointmentView>> getAll(Pageable pageable);
+
+  @Operation(summary = "Get all appointments by service ID", description = "Retrieve a paginated list of all appointments for a specific service")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Found the appointments",
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = Page.class))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
+          content = {@Content(mediaType = "application/json")}),
+  })
+  @SecurityRequirement(name = "bearerAuth")
+  ResponseEntity<Page<AppointmentView>> getAllByServiceId(
+      @Parameter(description = "ID of the service") @PathVariable Long serviceId,
+      Pageable pageable);
+
+  @Operation(summary = "Get all appointments by user ID", description = "Retrieve a paginated list of all appointments for a specific user")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Found the appointments",
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = Page.class))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
+          content = {@Content(mediaType = "application/json")}),
+  })
+  @SecurityRequirement(name = "bearerAuth")
+  ResponseEntity<Page<AppointmentView>> getAllByUserId(
+      @Parameter(description = "ID of the user") @PathVariable Long userId,
+      Pageable pageable);
+
+  @Operation(summary = "Get all short appointments by user ID and date", description = "Retrieve a list of all short appointments for a specific user on a given date")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Found the appointments",
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = List.class))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
+          content = {@Content(mediaType = "application/json")}),
+  })
+  @SecurityRequirement(name = "bearerAuth")
+  ResponseEntity<List<ShortAppointmentView>> getAllByUserIdAndDate(
+      @Parameter(description = "ID of the user") @PathVariable Long userId,
+      @Parameter(description = "Date of the appointments") @RequestParam LocalDate date);
 
   @Operation(summary = "Get appointment by ID", description = "Retrieve an appointment by its ID")
   @ApiResponses(value = {
