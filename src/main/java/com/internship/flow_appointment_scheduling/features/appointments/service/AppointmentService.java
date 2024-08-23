@@ -19,6 +19,8 @@ public interface AppointmentService {
 
   List<ShortAppointmentView> getAllByUserIdAndDate(Long userId, LocalDate date);
 
+  List<ShortAppointmentView> getAllByServiceIdAndDate(Long serviceId, LocalDate date);
+
   AppointmentView getById(Long id);
 
   AppointmentView create(AppointmentCreate dto);

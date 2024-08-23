@@ -71,7 +71,7 @@ public interface UserControllerDocumentation {
                   value = "{" +
                       "\"firstName\": \"John\"," +
                       "\"lastName\": \"Wick\"," +
-                      "\"email\": \"abv@example.com\"," +
+                      "\"email\": \"client2@abv.bg\"," +
                       "\"password\": \"password123A!\"" +
                       "}"
               )
@@ -156,7 +156,7 @@ public interface UserControllerDocumentation {
                       "\"userInfo\": {" +
                       "\"firstName\": \"John\"," +
                       "\"lastName\": \"Doe\"," +
-                      "\"email\": \"john20.doe@example.com\"," +
+                      "\"email\": \"staff2@abv.bg\"," +
                       "\"password\": \"password123A!\"" +
                       "}," +
                       "\"staffDetailsDto\": {" +

@@ -81,6 +81,10 @@ public enum Exceptions {
   APPOINTMENT_WORK_SPACE_NOT_AVAILABLE(
       "WorkSpace with id: %s is not available at the given time",
       "WorkSpace not available"
+  ),
+  APPOINTMENT_CANNOT_BE_MODIFIED(
+      "Completed or canceled appointment cannot be modified.",
+      "Appointment cannot be modified"
   );
 
   public final String message;

@@ -45,6 +45,14 @@ public class AppointmentController implements AppointmentControllerDocumentation
     return ResponseEntity.ok(appointmentService.getAllByServiceId(serviceId, pageable));
   }
 
+  @GetMapping("/service/{serviceId}/short")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'CLIENT', 'EMPLOYEE')")
+  public ResponseEntity<List<ShortAppointmentView>> getAllByServiceIdAndDate(
+      @PathVariable Long serviceId,
+      @RequestParam LocalDate date) {
+    return ResponseEntity.ok(appointmentService.getAllByServiceIdAndDate(serviceId, date));
+  }
+
   @GetMapping("/user/{userId}")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #userId)")
   public ResponseEntity<Page<AppointmentView>> getAllByUserId(
@@ -54,7 +62,7 @@ public class AppointmentController implements AppointmentControllerDocumentation
   }
 
   @GetMapping("/user/{userId}/short")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #userId)")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'CLIENT', 'EMPLOYEE')")
   public ResponseEntity<List<ShortAppointmentView>> getAllByUserIdAndDate(
       @PathVariable Long userId,
       @RequestParam LocalDate date) {

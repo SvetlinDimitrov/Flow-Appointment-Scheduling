@@ -1,6 +1,6 @@
 -- Retrieve user IDs
-SET @employee_id = (SELECT id FROM users WHERE email = 'jane.doe@example.com');
-SET @client_id = (SELECT id FROM users WHERE email = 'alice.smith@example.com');
+SET @employee_id = (SELECT id FROM users WHERE email = 'staff1@abv.bg');
+SET @client_id = (SELECT id FROM users WHERE email = 'client1@abv.bg');
 
 -- Retrieve service ID
 SET @service_id = (SELECT id FROM services WHERE name = 'Fitness');

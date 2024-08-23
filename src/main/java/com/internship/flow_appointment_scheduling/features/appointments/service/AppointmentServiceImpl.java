@@ -5,12 +5,14 @@ import com.internship.flow_appointment_scheduling.features.appointments.dto.Appo
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
+import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.repository.AppointmentRepository;
 import com.internship.flow_appointment_scheduling.features.appointments.utils.AppointmentValidator;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import com.internship.flow_appointment_scheduling.features.service.service.service.ServiceServiceImpl;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.service.UserServiceImpl;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.appointment.AppointmentMapper;
@@ -58,6 +60,15 @@ public class AppointmentServiceImpl implements AppointmentService {
   }
 
   @Override
+  public List<ShortAppointmentView> getAllByServiceIdAndDate(Long serviceId, LocalDate date) {
+    return appointmentRepository
+        .findAllByServiceIdAndDate(serviceId, date)
+        .stream()
+        .map(appointmentMapper::toViewShort)
+        .toList();
+  }
+
+  @Override
   public Page<AppointmentView> getAllByServiceId(Long serviceId, Pageable pageable) {
     return appointmentRepository
         .findAllByServiceId(serviceId, pageable)
@@ -78,7 +89,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     LocalDateTime endDate = dto.date().plusMinutes(service.getDuration());
 
-    appointmentValidator.validateAppointment(staff, client, service, dto.date(), endDate);
+    appointmentValidator.validateAppointment(staff, client, service, dto.date(), endDate , null);
 
     Appointment appointment = appointmentMapper.toEntity(dto);
     appointment.setEndDate(endDate);
@@ -100,8 +111,20 @@ public class AppointmentServiceImpl implements AppointmentService {
       3. If the user sending the request is the client,
       he can only change the status of the appointment
       to cancel or not_approved, or exception will be thrown.
+      4. If the appointment is canceled or completed, it should not be able to be modified.
+      My imagination is that the appointment is canceled and that's all,
+      it will be garbage collected by the system.
+      The same goes for the completed status.
+      Because imagine that you receive in the email that the appointment is canceled,
+      and after a minute you receive that is moved to another date.
+      In my opinion, it will be better to just create a new appointment for that.
     */
     Appointment appointment = getAppointmentById(id);
+
+    if(appointment.getStatus().equals(AppointmentStatus.CANCELED) ||
+        appointment.getStatus().equals(AppointmentStatus.COMPLETED)) {
+      throw new BadRequestException(Exceptions.APPOINTMENT_CANNOT_BE_MODIFIED);
+    }
 
     return switch (dto.status()) {
       case APPROVED, NOT_APPROVED -> {
@@ -111,8 +134,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         LocalDateTime endDate = dto.date().plusMinutes(service.getDuration());
 
-        //TODO:: Send email to the client and staff
-        appointmentValidator.validateAppointment(staff, client, service, dto.date(), endDate);
+        //TODO:: Send email to the client and staff in a feature milestone
+        appointmentValidator.validateAppointment(staff, client, service, dto.date(), endDate , appointment.getId());
 
         appointment.setEndDate(endDate);
         appointmentMapper.updateEntity(appointment, dto);

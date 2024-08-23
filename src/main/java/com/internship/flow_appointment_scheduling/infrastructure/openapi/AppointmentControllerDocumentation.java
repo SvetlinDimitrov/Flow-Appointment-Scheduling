@@ -6,6 +6,7 @@ import com.internship.flow_appointment_scheduling.features.appointments.dto.Appo
 import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -52,6 +53,22 @@ public interface AppointmentControllerDocumentation {
       @Parameter(description = "ID of the service") @PathVariable Long serviceId,
       Pageable pageable);
 
+  @Operation(summary = "Get all short appointments by service ID and date", description = "Retrieve a list of all short appointments for a specific service on a given date")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Found the appointments",
+          content = {@Content(mediaType = "application/json",
+              array = @ArraySchema(schema = @Schema(implementation = ShortAppointmentView.class)))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
+          content = {@Content(mediaType = "application/json")}),
+  })
+  @SecurityRequirement(name = "bearerAuth")
+  ResponseEntity<List<ShortAppointmentView>> getAllByServiceIdAndDate(
+      @Parameter(description = "ID of the service") @PathVariable Long serviceId,
+      @Parameter(description = "Date of the appointments") @RequestParam LocalDate date);
+
+
   @Operation(summary = "Get all appointments by user ID", description = "Retrieve a paginated list of all appointments for a specific user")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the appointments",
@@ -71,7 +88,7 @@ public interface AppointmentControllerDocumentation {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the appointments",
           content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = List.class))}),
+              array = @ArraySchema(schema = @Schema(implementation = ShortAppointmentView.class)))}),
       @ApiResponse(responseCode = "403", description = "Forbidden",
           content = {@Content(mediaType = "application/json")}),
       @ApiResponse(responseCode = "401", description = "Unauthorized",
@@ -106,8 +123,8 @@ public interface AppointmentControllerDocumentation {
               examples = @ExampleObject(value = """
                       {
                         "serviceId": 1,
-                        "clientEmail": "alice.smith@example.com",
-                        "staffEmail": "jane.doe@example.com",
+                        "clientEmail": "client1@abv.bg",
+                        "staffEmail": "staff1@abv.bg",
                         "date": "2025-10-01T10:00:00"
                       }
                   """)
