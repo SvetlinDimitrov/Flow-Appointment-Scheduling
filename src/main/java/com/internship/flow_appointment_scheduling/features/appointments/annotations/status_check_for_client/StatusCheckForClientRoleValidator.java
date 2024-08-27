@@ -1,6 +1,6 @@
 package com.internship.flow_appointment_scheduling.features.appointments.annotations.status_check_for_client;
 
-import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
+import com.internship.flow_appointment_scheduling.features.appointments.dto.enums.UpdateAppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -8,10 +8,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class StatusCheckForClientRoleValidator implements
-    ConstraintValidator<StatusCheckForClientRole, AppointmentStatus> {
+    ConstraintValidator<StatusCheckForClientRole, UpdateAppointmentStatus> {
 
   @Override
-  public boolean isValid(AppointmentStatus status, ConstraintValidatorContext context) {
+  public boolean isValid(UpdateAppointmentStatus status, ConstraintValidatorContext context) {
     if (status == null) {
       return true;
     }
@@ -22,9 +22,9 @@ public class StatusCheckForClientRoleValidator implements
         .stream()
         .anyMatch(a -> a.getAuthority().equals("ROLE_" + UserRoles.CLIENT));
 
-    if (isTheUserClient &&
-        (status == AppointmentStatus.APPROVED || status == AppointmentStatus.COMPLETED)) {
-      return false;
+    if (isTheUserClient) {
+      return status != UpdateAppointmentStatus.APPROVED
+          && status != UpdateAppointmentStatus.COMPLETED;
     }
     return true;
   }

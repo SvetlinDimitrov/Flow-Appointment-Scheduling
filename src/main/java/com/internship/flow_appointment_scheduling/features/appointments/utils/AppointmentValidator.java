@@ -9,7 +9,6 @@ import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadR
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +19,7 @@ public class AppointmentValidator {
   private final AppointmentRepository appointmentRepository;
 
   public void validateAppointment(User staff, User client, Service service,
-      LocalDateTime startDate, LocalDateTime endDate, Long appointmentId) {
+      LocalDateTime startDate, LocalDateTime endDate) {
 
      /*
       Steps to create a new appointment:
@@ -39,11 +38,7 @@ public class AppointmentValidator {
     checkForStaffAndServiceAvailability(staff, service);
     checkForStaffContainingService(staff, service);
     checkForWorkSpaceCapacity(service, startDate, endDate);
-    Optional.ofNullable(appointmentId)
-        .ifPresentOrElse(
-            id -> checkForOverlappingAppointmentsNotIncludingTheCurrentOne(
-                client, staff, startDate, endDate, id),
-            () -> checkForOverlappingAppointments(client, staff, startDate, endDate));
+    checkForOverlappingAppointments(client, staff, startDate, endDate);
   }
 
 
@@ -76,27 +71,6 @@ public class AppointmentValidator {
     }
 
     if (hasOverLappingAppointmentsForGivenUser(staff, startDate, endDate)) {
-      throw new BadRequestException(Exceptions.APPOINTMENT_OVERLAP);
-    }
-  }
-
-  private void checkForOverlappingAppointmentsNotIncludingTheCurrentOne(
-      User client, User staff, LocalDateTime startDate, LocalDateTime endDate, Long appId) {
-    /*
-     You have an example where you have an appointment for 11 am to 12 pm.
-     But you want to move it to be in between 10:30 am to 11:30 am.
-     If I just check for overlapping appointments, it will return the same appointment, and it
-     tells me that I have an overlapping appointment witch is not true
-     because I want to move it.
-     This is why I added the appId parameter.
-     Now I will check overlapping appointments, and I will not include the current one.
-    */
-
-    if (hasOverLappingAppointmentsForGivenUser(client, startDate, endDate, appId)) {
-      throw new BadRequestException(Exceptions.APPOINTMENT_OVERLAP);
-    }
-
-    if (hasOverLappingAppointmentsForGivenUser(staff, startDate, endDate, appId)) {
       throw new BadRequestException(Exceptions.APPOINTMENT_OVERLAP);
     }
   }
@@ -143,22 +117,9 @@ public class AppointmentValidator {
       User user, LocalDateTime startDate, LocalDateTime endDate) {
     /*
      In here, I am checking if their area any overlapping appointments for the given user.
-     I am checking only the Approved ones because I think
-     it will be better if the staff can receive multiple requests for the same date and time,
-     and he can choose which one to approve.
+     I am checking only the Approved and not_approved ones.
     */
     return appointmentRepository.existsOverlappingAppointment(user.getEmail(), startDate, endDate);
   }
 
-  private boolean hasOverLappingAppointmentsForGivenUser(
-      User user, LocalDateTime startDate, LocalDateTime endDate, Long appId) {
-    /*
-     In here, I am checking if their area any overlapping appointments for the given user.
-     I am checking only the Approved ones because I think
-     it will be better if the staff can receive multiple requests for the same date and time,
-     and he can choose which one to approve.
-    */
-    return appointmentRepository.existsOverlappingAppointment(user.getEmail(), startDate, endDate,
-        appId);
-  }
 }

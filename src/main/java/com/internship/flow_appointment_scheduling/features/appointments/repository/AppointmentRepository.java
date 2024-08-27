@@ -36,20 +36,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
       "WHERE (a.client.email = :email OR a.staff.email = :email) " +
       "AND a.startDate <= :endDate " +
       "AND a.endDate >= :startDate " +
-      "AND a.status = 'APPROVED'")
+      "AND (a.status = 'APPROVED' OR a.status = 'NOT_APPROVED')")
   boolean existsOverlappingAppointment(@Param("email") String email,
       @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
-
-  @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
-      "FROM Appointment a " +
-      "WHERE (a.client.email = :email OR a.staff.email = :email) " +
-      "AND a.startDate <= :endDate " +
-      "AND a.endDate >= :startDate " +
-      "AND a.status = 'APPROVED' " +
-      "AND a.id <> :appointmentId")
-  boolean existsOverlappingAppointment(@Param("email") String email,
-      @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate,
-      @Param("appointmentId") Long appointmentId);
 
   @Query("SELECT COUNT(a) " +
       "FROM Appointment a " +
@@ -57,7 +46,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
       "WHERE s.workSpace.id = :workSpaceId " +
       "AND a.startDate <= :endDate " +
       "AND a.endDate >= :startDate " +
-      "AND a.status = 'APPROVED'")
+      "AND (a.status = 'APPROVED' OR a.status = 'NOT_APPROVED')")
   int countAppointmentsInWorkspace(@Param("workSpaceId") Long workSpaceId,
       @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 

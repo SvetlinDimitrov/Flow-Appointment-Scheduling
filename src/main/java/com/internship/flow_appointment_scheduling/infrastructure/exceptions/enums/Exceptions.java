@@ -85,7 +85,15 @@ public enum Exceptions {
   APPOINTMENT_CANNOT_BE_MODIFIED(
       "Completed or canceled appointment cannot be modified.",
       "Appointment cannot be modified"
-  );
+  ),
+  APPOINTMENT_NOT_APPROVED(
+      "Appointment cannot be set to not approved.",
+      "Appointment cannot be set to not approved"
+  ),
+  APPOINTMENT_ALREADY_IS_APPROVED(
+      "Appointment is already approved.",
+      "Appointment is already approved"
+  ),;
 
   public final String message;
   public final String type;

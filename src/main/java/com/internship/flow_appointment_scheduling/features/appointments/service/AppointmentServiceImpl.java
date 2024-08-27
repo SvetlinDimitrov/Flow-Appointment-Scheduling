@@ -4,6 +4,7 @@ import com.internship.flow_appointment_scheduling.features.appointments.dto.Appo
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentUpdate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
+import com.internship.flow_appointment_scheduling.features.appointments.dto.enums.UpdateAppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.repository.AppointmentRepository;
@@ -89,7 +90,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     LocalDateTime endDate = dto.date().plusMinutes(service.getDuration());
 
-    appointmentValidator.validateAppointment(staff, client, service, dto.date(), endDate , null);
+    appointmentValidator.validateAppointment(staff, client, service, dto.date(), endDate);
 
     Appointment appointment = appointmentMapper.toEntity(dto);
     appointment.setEndDate(endDate);
@@ -103,21 +104,13 @@ public class AppointmentServiceImpl implements AppointmentService {
   @Override
   public AppointmentView update(Long id, AppointmentUpdate dto) {
     /*
-      The following logic is applied:
-      1. When the status is canceled or completed, the date is not required,
-      and it will not be used.
-      2. When the status is approved or not approved,
-      the date is required to track the validations.
-      3. If the user sending the request is the client,
-      he can only change the status of the appointment
-      to cancel or not_approved, or exception will be thrown.
-      4. If the appointment is canceled or completed, it should not be able to be modified.
-      My imagination is that the appointment is canceled and that's all,
-      it will be garbage collected by the system.
-      The same goes for the completed status.
-      Because imagine that you receive in the email that the appointment is canceled,
-      and after a minute you receive that is moved to another date.
-      In my opinion, it will be better to just create a new appointment for that.
+    Functionality:
+      1) Provide a way for the client to cancel the appointment.
+      2) Provide a way for the staff to approve, cancel or complete the appointment.
+    Considerations:
+      1) The client cannot approve or complete the appointment.
+      2) Ones the appointment is canceled or completed, it cannot be modified.
+      It will be garbage collected after a certain period of time.
     */
     Appointment appointment = getAppointmentById(id);
 
@@ -126,30 +119,20 @@ public class AppointmentServiceImpl implements AppointmentService {
       throw new BadRequestException(Exceptions.APPOINTMENT_CANNOT_BE_MODIFIED);
     }
 
+    appointmentMapper.updateEntity(appointment, dto);
+
     return switch (dto.status()) {
-      case APPROVED, NOT_APPROVED -> {
-        User client = appointment.getClient();
-        User staff = appointment.getStaff();
-        Service service = appointment.getService();
-
-        LocalDateTime endDate = dto.date().plusMinutes(service.getDuration());
-
-        //TODO:: Send email to the client and staff in a feature milestone
-        appointmentValidator.validateAppointment(staff, client, service, dto.date(), endDate , appointment.getId());
-
-        appointment.setEndDate(endDate);
-        appointmentMapper.updateEntity(appointment, dto);
-        yield appointmentMapper.toView(appointmentRepository.save(appointment));
-      }
+      /*
+          Appointment status APPROVED is set once when the staff approves the appointment.
+          After that user cannot provide this status.
+      */
+      //TODO:: Send email to the client and staff in a feature milestone
+      case APPROVED -> appointmentMapper.toView(appointmentRepository.save(appointment));
       case COMPLETED -> {
-        appointment.setStatus(dto.status());
         userService.handleCompletingTheAppointment(appointment);
         yield appointmentMapper.toView(appointmentRepository.save(appointment));
       }
-      default -> {
-        appointment.setStatus(dto.status());
-        yield appointmentMapper.toView(appointmentRepository.save(appointment));
-      }
+      case CANCELED -> appointmentMapper.toView(appointmentRepository.save(appointment));
     };
   }
 

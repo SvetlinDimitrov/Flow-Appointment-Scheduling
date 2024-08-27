@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -141,6 +142,7 @@ public interface AppointmentControllerDocumentation {
           content = {@Content(mediaType = "application/json")}),
       @ApiResponse(responseCode = "401", description = "Unauthorized",
           content = {@Content(mediaType = "application/json")}),
+
   })
   @SecurityRequirement(name = "bearerAuth")
   ResponseEntity<AppointmentView> create(@RequestBody @Valid AppointmentCreate dto);
@@ -153,8 +155,7 @@ public interface AppointmentControllerDocumentation {
               schema = @Schema(implementation = AppointmentUpdate.class),
               examples = @ExampleObject(value = """
                       {
-                        "status": "APPROVED",
-                        "date": "2025-10-01T10:00:00"
+                        "status": "APPROVED"
                       }
                   """)
           )
@@ -170,6 +171,9 @@ public interface AppointmentControllerDocumentation {
           content = {@Content(mediaType = "application/json")}),
       @ApiResponse(responseCode = "401", description = "Unauthorized",
           content = @Content),
+      @ApiResponse(responseCode = "400", description = "Invalid input",
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = ProblemDetail.class))}),
   })
   @SecurityRequirement(name = "bearerAuth")
   ResponseEntity<AppointmentView> update(
