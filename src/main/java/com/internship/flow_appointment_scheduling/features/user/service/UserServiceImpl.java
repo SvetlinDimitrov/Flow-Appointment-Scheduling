@@ -91,7 +91,7 @@ public class UserServiceImpl implements UserService {
     User staff = findById(id);
     StaffDetails staffDetails = staff.getStaffDetails();
 
-    if (staff.getRole().equals(UserRoles.CLIENT)) {
+    if (UserRoles.CLIENT == staff.getRole()) {
       throw new BadRequestException(Exceptions.USER_IS_NOT_AN_STAFF);
     }
 

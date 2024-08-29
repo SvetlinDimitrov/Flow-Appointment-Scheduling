@@ -4,7 +4,6 @@ import com.internship.flow_appointment_scheduling.features.appointments.dto.Appo
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentUpdate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
-import com.internship.flow_appointment_scheduling.features.appointments.dto.enums.UpdateAppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.repository.AppointmentRepository;
@@ -81,6 +80,27 @@ public class AppointmentServiceImpl implements AppointmentService {
     return appointmentMapper.toView(getAppointmentById(id));
   }
 
+  /**
+   * Creates a new appointment based on the provided AppointmentCreate DTO.
+   * <p>
+   * This is how this creates method works:
+   * <ul>
+   *   <li>When the AppointmentCreate DTO is sent, the method checks if the user has either clientEmail or staffEmail, or if the user is an administrator.</li>
+   *   <li>This is because administrators can create appointments for any client and staff member, but another staff member, for example, cannot create an appointment for another staff member.</li>
+   *   <li>If this happens, it will result in a 403 error, which is handled at the controller level.</li>
+   *   <li>Then, the method checks if everything is here. If not, a 404 error will be thrown.</li>
+   *   <li>Before that, the method checks in the DTO if everything is valid. If not, a 400 error will be thrown.</li>
+   *   <li>The logic here is to get the date from the DTO, which will be the starting date.</li>
+   *   <li>Then, the method gets the duration of the service and uses it to create the endDate.</li>
+   *   <li>In the AppointmentValidator, the logic for validating the appointment based on the hours is separated. The validator has documentation explaining what is happening there.</li>
+   *   <li>After that, the appointment is saved.</li>
+   * </ul>
+   *
+   * @param dto the data transfer object containing the appointment creation information
+   * @return the created appointment view
+   * @throws BadRequestException if the DTO is invalid (400 error)
+   * @throws NotFoundException if the user is unauthorized (404 error)
+   */
   @Override
   public AppointmentView create(AppointmentCreate dto) {
 
@@ -101,31 +121,44 @@ public class AppointmentServiceImpl implements AppointmentService {
     return appointmentMapper.toView(appointmentRepository.save(appointment));
   }
 
+  /**
+   * Updates an appointment based on the provided ID and update data transfer object (DTO).
+   * <p>
+   * Functionality:
+   * <ul>
+   *   <li>Provide a way for the client to cancel the appointment.</li>
+   *   <li>Provide a way for the staff to approve, cancel, or complete the appointment.</li>
+   * </ul>
+   * Considerations:
+   * <ul>
+   *   <li>The client cannot approve or complete the appointment.</li>
+   *   <li>Once the appointment is canceled or completed, it cannot be modified. It will be garbage collected after a certain period of time.</li>
+   * </ul>
+   * Status Handling:
+   * <ul>
+   *   <li>If the status is NOT_APPROVED, then any status is accepted.</li>
+   *   <li>If the status was APPROVED, then in the next request, either CANCELED or COMPLETED is expected. If another APPROVED status is sent, then nothing will happen.</li>
+   *   <li>If the status was CANCELED or COMPLETED and another request is sent again to modify the status, a BadRequestException will be thrown.</li>
+   * </ul>
+   *
+   * @param id the ID of the appointment to update
+   * @param dto the data transfer object containing the update information
+   * @return the updated appointment view
+   * @throws BadRequestException if the appointment is already canceled or completed
+   */
   @Override
   public AppointmentView update(Long id, AppointmentUpdate dto) {
-    /*
-    Functionality:
-      1) Provide a way for the client to cancel the appointment.
-      2) Provide a way for the staff to approve, cancel or complete the appointment.
-    Considerations:
-      1) The client cannot approve or complete the appointment.
-      2) Ones the appointment is canceled or completed, it cannot be modified.
-      It will be garbage collected after a certain period of time.
-    */
     Appointment appointment = getAppointmentById(id);
 
-    if(appointment.getStatus().equals(AppointmentStatus.CANCELED) ||
-        appointment.getStatus().equals(AppointmentStatus.COMPLETED)) {
+    if (AppointmentStatus.CANCELED == appointment.getStatus() ||
+        AppointmentStatus.COMPLETED == appointment.getStatus()) {
       throw new BadRequestException(Exceptions.APPOINTMENT_CANNOT_BE_MODIFIED);
     }
 
     appointmentMapper.updateEntity(appointment, dto);
 
+
     return switch (dto.status()) {
-      /*
-          Appointment status APPROVED is set once when the staff approves the appointment.
-          After that user cannot provide this status.
-      */
       //TODO:: Send email to the client and staff in a feature milestone
       case APPROVED -> appointmentMapper.toView(appointmentRepository.save(appointment));
       case COMPLETED -> {
