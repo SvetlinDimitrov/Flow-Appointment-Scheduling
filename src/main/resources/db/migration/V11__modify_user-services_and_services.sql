@@ -10,5 +10,5 @@ ALTER TABLE services
 DROP COLUMN duration_minutes;
 
 ALTER TABLE services
-ADD COLUMN duration NUMERIC NOT NULL;
+ADD COLUMN duration NUMERIC(21, 0) NOT NULL;
 
