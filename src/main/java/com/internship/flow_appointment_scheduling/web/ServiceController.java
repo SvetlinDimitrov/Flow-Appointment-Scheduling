@@ -32,14 +32,12 @@ public class ServiceController implements ServiceControllerDocumentation {
   private final ServiceService serviceService;
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE', 'CLIENT')")
   public ResponseEntity<Page<ServiceView>> getAll(Pageable pageable,
       @RequestParam(required = false) String staffEmail) {
     return ResponseEntity.ok(serviceService.getAll(pageable, staffEmail));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE', 'CLIENT')")
   public ResponseEntity<ServiceView> getById(@PathVariable Long id) {
     return ResponseEntity.ok(serviceService.getById(id));
   }

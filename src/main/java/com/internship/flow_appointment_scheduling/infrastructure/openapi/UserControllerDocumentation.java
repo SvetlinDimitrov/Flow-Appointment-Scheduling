@@ -43,6 +43,20 @@ public interface UserControllerDocumentation {
   ResponseEntity<Page<UserView>> getAll(Pageable pageable,
       @RequestParam(required = false) UserRoles userRole);
 
+  @Operation(summary = "Get all users by service ID", description = "Retrieve a paginated list of users associated with a specific service ID. Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Found the users",
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = Page.class))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
+          content = {@Content(mediaType = "application/json")}),
+  })
+  @SecurityRequirement(name = "bearerAuth")
+  @GetMapping("/service/{serviceId}")
+  ResponseEntity<Page<UserView>> getAllByServiceId(Pageable pageable, @PathVariable Long serviceId);
+
   @Operation(summary = "Get a user by ID" , description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Found the user",

@@ -125,7 +125,7 @@ public interface AppointmentControllerDocumentation {
                       {
                         "serviceId": 1,
                         "clientEmail": "client1@abv.bg",
-                        "staffEmail": "staff1@abv.bg",
+                        "staffEmail": "staff1@flow.com",
                         "date": "2025-10-01T10:00:00"
                       }
                   """)

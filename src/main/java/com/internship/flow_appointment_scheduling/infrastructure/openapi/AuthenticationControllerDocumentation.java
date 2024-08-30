@@ -27,14 +27,14 @@ public interface AuthenticationControllerDocumentation {
                   @ExampleObject(
                       name = "Admin Example",
                       value = "{" +
-                          "\"email\": \"admin@abv.bg\"," +
+                          "\"email\": \"admin1@flow.com\"," +
                           "\"password\": \"password123A!\"" +
                           "}"
                   ),
                   @ExampleObject(
                       name = "Staff Example",
                       value = "{" +
-                          "\"email\": \"staff1@abv.bg\"," +
+                          "\"email\": \"staff1@flow.com\"," +
                           "\"password\": \"password123A!\"" +
                           "}"
                   ),

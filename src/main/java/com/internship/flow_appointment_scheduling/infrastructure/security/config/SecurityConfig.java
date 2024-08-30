@@ -54,6 +54,9 @@ public class SecurityConfig {
             authorizeRequests
                 .requestMatchers(WHITE_LIST).permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/api/v1/services", "/api/v1/services/{id}").permitAll()
                 .anyRequest().authenticated()
         )
         .sessionManagement(

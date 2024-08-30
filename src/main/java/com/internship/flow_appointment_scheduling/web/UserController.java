@@ -39,6 +39,13 @@ public class UserController implements UserControllerDocumentation {
     return ResponseEntity.ok(userService.getAll(pageable , userRole));
   }
 
+  @GetMapping("/service/{serviceId}")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE' , 'CLIENT')")
+  public ResponseEntity<Page<UserView>> getAllByServiceId(Pageable pageable,
+      @PathVariable Long serviceId) {
+    return ResponseEntity.ok(userService.getAllByServiceId(pageable, serviceId));
+  }
+
   @GetMapping("/{id}")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE') || @userPermissionEvaluator.currentClientAccess(authentication, #id)")
   public ResponseEntity<UserView> getById(@PathVariable Long id) {
