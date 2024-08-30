@@ -18,8 +18,11 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -27,6 +30,9 @@ import lombok.ToString;
 @Table(name = "services")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @ToString(exclude = {"users", "workSpace"})
 @EqualsAndHashCode(exclude = {"users", "workSpace"})
 public class Service {

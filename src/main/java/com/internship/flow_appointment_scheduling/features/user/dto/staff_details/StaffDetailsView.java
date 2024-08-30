@@ -13,7 +13,7 @@ public record StaffDetailsView(
     LocalDate startDate,
     LocalTime beginWorkingHour,
     LocalTime endWorkingHour,
-    List<Long> servicesIds
+    List<Long> serviceIds
 ) {
 
 }
