@@ -38,6 +38,12 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public Page<UserView> getAllByServiceId(Pageable pageable, Long serviceId) {
+    return userRepository.findAllByServiceId(serviceId, pageable)
+        .map(userMapper::toView);
+  }
+
+  @Override
   public UserView getById(Long id) {
     return userMapper.toView(findById(id));
   }

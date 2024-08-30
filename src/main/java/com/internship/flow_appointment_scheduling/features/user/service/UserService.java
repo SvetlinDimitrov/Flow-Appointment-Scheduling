@@ -15,6 +15,8 @@ public interface UserService {
 
   Page<UserView> getAll(Pageable pageable , UserRoles userRole);
 
+  Page<UserView> getAllByServiceId(Pageable pageable, Long serviceId);
+
   UserView getById(Long id);
 
   UserView create(UserPostRequest userView);
