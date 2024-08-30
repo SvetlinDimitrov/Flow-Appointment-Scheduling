@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,8 +40,8 @@ public class Service {
   @Column(nullable = false , columnDefinition = "text")
   private String description;
 
-  @Column(nullable = false , name = "duration_minutes")
-  private Integer duration;
+  @Column(nullable = false)
+  private Duration duration;
 
   @Column(nullable = false , columnDefinition = "decimal(10,2)")
   private BigDecimal price;

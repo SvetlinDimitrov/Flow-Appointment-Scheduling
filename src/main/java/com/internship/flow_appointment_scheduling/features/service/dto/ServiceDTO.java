@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.time.Duration;
 
 public record ServiceDTO(
 
@@ -26,7 +27,7 @@ public record ServiceDTO(
 
     @NotNull(message = "Duration is mandatory")
     @Min(value = 1, message = "Duration must be greater than 0")
-    Integer duration,
+    Long durationInMinutes,
 
     @NotBlank(message = "WorkSpace name is mandatory")
     @ValidWorkSpaceName

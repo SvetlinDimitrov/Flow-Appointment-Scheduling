@@ -108,7 +108,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     User staff = userService.findByEmail(dto.staffEmail());
     Service service = serviceService.findById(dto.serviceId());
 
-    LocalDateTime endDate = dto.date().plusMinutes(service.getDuration());
+    LocalDateTime endDate = dto.date().plusMinutes(service.getDuration().toMinutes());
 
     appointmentValidator.validateAppointment(staff, client, service, dto.date(), endDate);
 
