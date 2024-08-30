@@ -47,9 +47,8 @@ public class ServiceController implements ServiceControllerDocumentation {
   @PostMapping
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
   public ResponseEntity<ServiceView> create(
-      @Valid @RequestBody ServiceDTO createDto,
-      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-    return ResponseEntity.ok(serviceService.create(createDto, customUserDetails.getUsername()));
+      @Valid @RequestBody ServiceDTO createDto) {
+    return ResponseEntity.ok(serviceService.create(createDto));
   }
 
   @PostMapping("/{id}/assign")

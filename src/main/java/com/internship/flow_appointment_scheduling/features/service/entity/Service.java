@@ -16,6 +16,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -58,8 +59,8 @@ public class Service {
       joinColumns = @JoinColumn(name = "service_id"),
       inverseJoinColumns = @JoinColumn(name = "user_id")
   )
-  private List<User> users;
+  private List<User> users = new ArrayList<>();
 
   @OneToMany(mappedBy = "service", cascade = CascadeType.REMOVE)
-  private List<Appointment> appointments;
+  private List<Appointment> appointments = new ArrayList<>();
 }

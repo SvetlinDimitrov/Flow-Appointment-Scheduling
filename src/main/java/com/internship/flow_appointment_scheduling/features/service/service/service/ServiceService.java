@@ -16,7 +16,7 @@ public interface ServiceService {
 
   ServiceView unassignStaff(Long serviceId, String staffEmail);
 
-  ServiceView create(ServiceDTO createDto, String userEmail);
+  ServiceView create(ServiceDTO createDto);
 
   ServiceView update(Long id, ServiceDTO putDto);
 

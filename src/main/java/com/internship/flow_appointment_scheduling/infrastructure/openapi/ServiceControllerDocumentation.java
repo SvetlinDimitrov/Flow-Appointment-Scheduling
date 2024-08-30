@@ -96,7 +96,7 @@ public interface ServiceControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping
-  ResponseEntity<ServiceView> create(@Valid @RequestBody ServiceDTO createDto, @AuthenticationPrincipal CustomUserDetails customUserDetails);
+  ResponseEntity<ServiceView> create(@Valid @RequestBody ServiceDTO createDto);
 
   @Operation(summary = "Assign an staff to a service", description = "Accessible by ADMINISTRATOR role")
   @ApiResponses(value = {
