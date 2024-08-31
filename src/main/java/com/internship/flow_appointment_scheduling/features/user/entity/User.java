@@ -53,6 +53,9 @@ public class User {
   @Column(columnDefinition = "varchar(255)", nullable = false)
   private String password;
 
+  @Column(columnDefinition = "varchar(255)" , name = "password_reset_token")
+  private String passwordResetToken;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   @Builder.Default

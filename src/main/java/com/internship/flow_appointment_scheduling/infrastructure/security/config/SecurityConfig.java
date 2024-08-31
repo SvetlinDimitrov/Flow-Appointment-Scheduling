@@ -39,6 +39,7 @@ public class SecurityConfig {
       "/swagger-ui.html",
       "/api/v1/auth",
       "/api/v1/auth/refresh",
+      "/api/v1/auth/reset-password",
   };
   private final JwtRequestFilter jwtRequestFilter;
   private final AuthenticationProvider authenticationProvider;

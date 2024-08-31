@@ -41,6 +41,26 @@ public class MailServiceImpl implements MailService {
     }
   }
 
+  @Override
+  public void sendResetPasswordEmail(String jwtToken, String userEmail) {
+    String subject = "Password Reset Request";
+    String userName = "User";
+    String resetLink = "http://localhost:3000/resetPassword?token=" + jwtToken;
+
+    Context context = new Context();
+    context.setVariable("userName", userName);
+    context.setVariable("resetLink", resetLink);
+
+    String htmlContent = templateEngine.process("password-reset", context);
+
+    try {
+      sendEmail(userEmail, subject, htmlContent);
+    } catch (MessagingException e) {
+      e.printStackTrace();
+    }
+  }
+
+
   private void sendEmail(String to, String subject, String htmlContent) throws MessagingException {
     MimeMessage message = mailSender.createMimeMessage();
     MimeMessageHelper helper = new MimeMessageHelper(message, true);

@@ -2,10 +2,12 @@ package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPasswordUpdate;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
+import com.internship.flow_appointment_scheduling.infrastructure.security.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -18,6 +20,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -248,4 +252,36 @@ public interface UserControllerDocumentation {
   @PutMapping("/{id}/staff")
   ResponseEntity<UserView> modifyStaff(@PathVariable Long id,
       @Valid @RequestBody StaffModifyDto modifyDto);
+
+  @Operation(
+      summary = "Reset user password",
+      description = "Accessible by ADMINISTRATOR and users with appropriate permissions. Allows a user to reset their password.",
+      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          content = @Content(
+              mediaType = "application/json",
+              schema = @Schema(implementation = UserPasswordUpdate.class),
+              examples = @ExampleObject(
+                  name = "UserPasswordUpdateExample",
+                  value = "{" +
+                      "\"newPassword\": \"newPassword123A!\"" +
+                      "}"
+              )
+          )
+      )
+  )
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Password reset successfully",
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserView.class))),
+      @ApiResponse(responseCode = "400", description = "Invalid input",
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class))),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = @Content(mediaType = "application/json")),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
+          content = @Content(mediaType = "application/json"))
+  })
+  @SecurityRequirement(name = "bearerAuth")
+  @PutMapping("/reset-password")
+  ResponseEntity<UserView> resetPassword(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @Valid @RequestBody UserPasswordUpdate dto);
 }

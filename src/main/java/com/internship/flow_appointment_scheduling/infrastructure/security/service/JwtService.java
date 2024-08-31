@@ -12,4 +12,7 @@ public interface JwtService {
   Boolean isJwtTokenExpired(String token);
 
   String getEmailFromToken(String token);
+
+  void sendEmailForRestingThePassword(String email);
+
 }

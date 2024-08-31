@@ -3,6 +3,7 @@ package com.internship.flow_appointment_scheduling.features.user.service;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPasswordUpdate;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
@@ -24,6 +25,8 @@ public interface UserService {
   UserView update(Long id, UserPutRequest userView);
 
   void delete(Long id);
+
+  UserView resetPassword(String email , UserPasswordUpdate dto);
 
   User findByEmail(String email);
 

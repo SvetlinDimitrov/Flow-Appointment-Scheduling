@@ -3,6 +3,7 @@ package com.internship.flow_appointment_scheduling.features.user.service;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPasswordUpdate;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
+
   private final UserMapper userMapper;
   private final StaffDetailsMapper staffDetailsMapper;
 
@@ -69,6 +71,15 @@ public class UserServiceImpl implements UserService {
     User user = findById(id);
 
     userRepository.delete(user);
+  }
+
+  @Override
+  public UserView resetPassword(String email, UserPasswordUpdate dto) {
+    User user = findByEmail(email);
+
+    userMapper.updateEntity(user, dto);
+
+    return userMapper.toView(userRepository.save(user));
   }
 
   @Override

@@ -1,5 +1,6 @@
 package com.internship.flow_appointment_scheduling.infrastructure.mappers.user;
 
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPasswordUpdate;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
@@ -22,6 +23,9 @@ public abstract class UserMapper {
 
   @Mapping(source = "password", target = "password", qualifiedByName = "encodePassword")
   public abstract User toEntity(UserPostRequest dto);
+
+  @Mapping(source = "newPassword", target = "password", qualifiedByName = "encodePassword")
+  public abstract void updateEntity(@MappingTarget User toUpdate, UserPasswordUpdate dto);
 
   public abstract void updateEntity(@MappingTarget User toUpdate, UserPutRequest dto);
 

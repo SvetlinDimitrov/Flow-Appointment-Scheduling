@@ -5,6 +5,7 @@ import com.internship.flow_appointment_scheduling.features.user.repository.UserR
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
+import com.internship.flow_appointment_scheduling.infrastructure.mail_service.MailService;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.RefreshTokenMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationResponse;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtView;
@@ -29,8 +30,12 @@ import org.springframework.stereotype.Service;
 public class JwtServiceImpl implements JwtService {
 
   private final RefreshTokenRepository refreshTokenRepository;
-  private final RefreshTokenMapper refreshTokenMapper;
   private final UserRepository userRepository;
+
+  private final MailService mailService;
+
+  private final RefreshTokenMapper refreshTokenMapper;
+
   @Value("${refresh-token.expiration-time}")
   private long refreshTokenDuration;
   @Value("${jwt.secret}")
@@ -77,6 +82,51 @@ public class JwtServiceImpl implements JwtService {
     Claims claims = extractAllClaims(token);
     return claims.getSubject();
   }
+
+
+  /**
+   * Sends an email for resetting the password.
+   * First, this method checks if there is an existing user with the provided email.
+   * If the user exists, it checks if the user already has an existing reset token.
+   * If a valid reset token is found, an exception is thrown to prevent spamming the request.
+   * If there is no valid reset token, a new one is created with a 15-minute lifespan.
+   * The reset token is then sent to the user's email.
+   * When the user clicks the link in the email,
+   * they will be redirected to a specific page in the frontend.
+   *
+   * @param email the email of the user requesting the password reset
+   * @throws NotFoundException if the user is not found by the provided email
+   * @throws BadRequestException if a valid reset token already exists
+   */
+  @Override
+  public void sendEmailForRestingThePassword(String email) {
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
+
+    if (user.getPasswordResetToken() != null) {
+      if (!isJwtTokenExpired(user.getPasswordResetToken())) {
+        throw new BadRequestException(Exceptions.RESET_TOKEN_ALREADY_EXISTS);
+      }
+    }
+
+    String token = generateShortLivedToken(email);
+
+    user.setPasswordResetToken(token);
+
+    mailService.sendResetPasswordEmail(email, token);
+  }
+
+  private String generateShortLivedToken(String userEmail) {
+    Date now = new Date();
+    Date expirationDate = new Date(now.getTime() + 15 * 60 * 1000);
+
+    return Jwts.builder()
+        .setSubject(userEmail)
+        .setIssuedAt(now)
+        .setExpiration(expirationDate)
+        .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+        .compact();
+}
 
   private JwtView generateJwtToken(User user) {
     Date now = new Date();

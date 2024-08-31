@@ -2,12 +2,14 @@ package com.internship.flow_appointment_scheduling.web;
 
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
+import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPasswordUpdate;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPutRequest;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
 import com.internship.flow_appointment_scheduling.infrastructure.openapi.UserControllerDocumentation;
+import com.internship.flow_appointment_scheduling.infrastructure.security.dto.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -90,5 +93,14 @@ public class UserController implements UserControllerDocumentation {
   public ResponseEntity<UserView> modifyStaff(@PathVariable Long id,
       @Valid @RequestBody StaffModifyDto modifyDto) {
     return ResponseEntity.ok(userService.modifyStaff(id, modifyDto));
+  }
+
+  @PutMapping("/reset-password")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #userDetails.user().id)")
+  public ResponseEntity<UserView> resetPassword(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @Valid @RequestBody UserPasswordUpdate dto) {
+    return ResponseEntity.ok(
+        userService.resetPassword(userDetails.getUsername(), dto));
   }
 }
