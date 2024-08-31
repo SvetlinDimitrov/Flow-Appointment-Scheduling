@@ -44,6 +44,7 @@ public class ServiceController implements ServiceControllerDocumentation {
   }
 
   @GetMapping("/workspaces")
+  @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
   public ResponseEntity<List<String>> getAllWorkSpacesNames() {
     return ResponseEntity.ok(workSpaceService.getAllNames());
   }

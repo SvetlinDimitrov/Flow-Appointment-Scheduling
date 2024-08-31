@@ -55,14 +55,19 @@ public class AppointmentSeedRunner implements ApplicationRunner {
       LocalTime startWorkingHour = staffDetails.getBeginWorkingHour();
       LocalTime endWorkingHour = staffDetails.getEndWorkingHour();
 
-      LocalDateTime startDateTime = currentDateTime.withHour(startWorkingHour.getHour())
+      LocalDateTime startDateTime = currentDateTime.plusDays(1)
+          .withHour(startWorkingHour.getHour())
           .withMinute(startWorkingHour.getMinute());
-      LocalDateTime endDateTime = startDateTime.plusMinutes(service.getDuration().toMinutes());
+
+      LocalDateTime endDateTime = startDateTime
+          .plusMinutes(service.getDuration().toMinutes());
 
       if (startDateTime.toLocalTime().isBefore(startWorkingHour) || startDateTime.toLocalTime()
           .isAfter(endWorkingHour)) {
-        currentDateTime = currentDateTime.plusDays(1).withHour(startWorkingHour.getHour())
+        currentDateTime = currentDateTime.plusDays(1)
+            .withHour(startWorkingHour.getHour())
             .withMinute(startWorkingHour.getMinute());
+
         startDateTime = currentDateTime;
         endDateTime = startDateTime.plusMinutes(90);
       }

@@ -159,17 +159,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     appointmentMapper.updateEntity(appointment, dto);
 
-
     return switch (dto.status()) {
       case APPROVED -> {
         mailService.sendAppointmentNotification(appointment);
         yield appointmentMapper.toView(appointmentRepository.save(appointment));
       }
-      case COMPLETED -> {
-        userService.handleCompletingTheAppointment(appointment);
-        yield appointmentMapper.toView(appointmentRepository.save(appointment));
-      }
-      case CANCELED -> appointmentMapper.toView(appointmentRepository.save(appointment));
+      case COMPLETED, CANCELED -> appointmentMapper.toView(appointmentRepository.save(appointment));
     };
   }
 
