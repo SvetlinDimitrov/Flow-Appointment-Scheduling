@@ -22,8 +22,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString(exclude = "services")
 @EqualsAndHashCode(exclude = "services")
 public class WorkSpace {
@@ -39,5 +39,6 @@ public class WorkSpace {
   private Integer availableSlots;
 
   @OneToMany(mappedBy = "workSpace")
+  @Builder.Default
   private List<Service> services = new ArrayList<>();
 }

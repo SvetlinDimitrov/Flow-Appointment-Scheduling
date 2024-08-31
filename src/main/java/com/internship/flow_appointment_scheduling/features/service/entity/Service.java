@@ -31,8 +31,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString(exclude = {"users", "workSpace"})
 @EqualsAndHashCode(exclude = {"users", "workSpace"})
 public class Service {
@@ -65,8 +65,10 @@ public class Service {
       joinColumns = @JoinColumn(name = "service_id"),
       inverseJoinColumns = @JoinColumn(name = "user_id")
   )
+  @Builder.Default
   private List<User> users = new ArrayList<>();
 
   @OneToMany(mappedBy = "service", cascade = CascadeType.REMOVE)
+  @Builder.Default
   private List<Appointment> appointments = new ArrayList<>();
 }

@@ -23,8 +23,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString(exclude = "user")
 @EqualsAndHashCode(exclude = "user")
 public class StaffDetails {
@@ -37,15 +37,18 @@ public class StaffDetails {
   private BigDecimal salary;
 
   @Column(nullable = false)
+  @Builder.Default
   private BigDecimal profit = BigDecimal.ZERO;
 
   @Column(name = "completed_appointments", nullable = false)
   private Integer completedAppointments = 0;
 
   @Column(name = "start_date", nullable = false)
+  @Builder.Default
   private LocalDate startDate = LocalDate.now();
 
   @Column(name = "availability", nullable = false)
+  @Builder.Default
   private Boolean isAvailable = true;
 
   @Column(name = "begin_working_hour", nullable = false)

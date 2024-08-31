@@ -15,6 +15,7 @@ import com.internship.flow_appointment_scheduling.features.user.service.UserServ
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
+import com.internship.flow_appointment_scheduling.infrastructure.mail_service.MailService;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.appointment.AppointmentMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
   private final UserServiceImpl userService;
   private final ServiceServiceImpl serviceService;
+  private final MailService mailService;
 
   private final AppointmentValidator appointmentValidator;
 
@@ -159,8 +161,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 
     return switch (dto.status()) {
-      //TODO:: Send email to the client and staff in a feature milestone
-      case APPROVED -> appointmentMapper.toView(appointmentRepository.save(appointment));
+      case APPROVED -> {
+        mailService.sendAppointmentNotification(appointment);
+        yield appointmentMapper.toView(appointmentRepository.save(appointment));
+      }
       case COMPLETED -> {
         userService.handleCompletingTheAppointment(appointment);
         yield appointmentMapper.toView(appointmentRepository.save(appointment));

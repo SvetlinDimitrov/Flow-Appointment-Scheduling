@@ -29,8 +29,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(exclude = {"client", "staff", "service"})
 @ToString(exclude = {"client", "staff", "service"})
 public class Appointment {
@@ -55,6 +55,7 @@ public class Appointment {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
+  @Builder.Default
   private AppointmentStatus status = AppointmentStatus.NOT_APPROVED;
 
   @ManyToOne
