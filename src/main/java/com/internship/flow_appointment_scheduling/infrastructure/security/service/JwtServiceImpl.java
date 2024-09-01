@@ -113,6 +113,8 @@ public class JwtServiceImpl implements JwtService {
 
     user.setPasswordResetToken(token);
 
+    userRepository.save(user);
+
     mailService.sendResetPasswordEmail(token , email);
   }
 
