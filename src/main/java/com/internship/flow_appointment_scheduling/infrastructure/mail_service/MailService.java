@@ -4,7 +4,11 @@ import com.internship.flow_appointment_scheduling.features.appointments.entity.A
 
 public interface MailService {
 
-  void sendAppointmentNotification(Appointment appointment);
+  void sendApprovedAppointmentNotification(Appointment appointment);
+
+  void sendNotApprovedAppointmentNotification(Appointment appointment);
+
+  void sendCanceledAppointmentNotificationToClient(Appointment appointment);
 
   void sendResetPasswordEmail(String jwtToken , String userEmail);
 }

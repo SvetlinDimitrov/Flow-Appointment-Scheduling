@@ -120,6 +120,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     appointment.setStaff(staff);
     appointment.setService(service);
 
+    mailService.sendNotApprovedAppointmentNotification(appointment);
+
     return appointmentMapper.toView(appointmentRepository.save(appointment));
   }
 
@@ -161,10 +163,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     return switch (dto.status()) {
       case APPROVED -> {
-        mailService.sendAppointmentNotification(appointment);
+        mailService.sendApprovedAppointmentNotification(appointment);
         yield appointmentMapper.toView(appointmentRepository.save(appointment));
       }
-      case COMPLETED, CANCELED -> appointmentMapper.toView(appointmentRepository.save(appointment));
+      case COMPLETED -> appointmentMapper.toView(appointmentRepository.save(appointment));
+      case CANCELED -> {
+        mailService.sendCanceledAppointmentNotificationToClient(appointment);
+        yield appointmentMapper.toView(appointmentRepository.save(appointment));
+      }
     };
   }
 
