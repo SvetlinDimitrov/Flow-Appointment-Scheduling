@@ -1,0 +1,12 @@
+site -> https://www.abv.bg/
+
+client test -> {
+    username: "flowclienttest",
+    password: "12345678a"
+}
+
+flowstafftest@abv.bg
+staff test -> {
+    username: "flowstafftest",
+    password: "12345678a"
+}

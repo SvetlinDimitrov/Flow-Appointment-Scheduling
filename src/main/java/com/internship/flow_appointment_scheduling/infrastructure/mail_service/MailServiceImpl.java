@@ -28,6 +28,7 @@ public class MailServiceImpl implements MailService {
     String subject = "Appointment Created Successfully";
 
     Context context = extractContext(appointment);
+    context.setVariable("staffName", appointment.getStaff().getFirstName());
 
     String clientNotification = templateEngine.process("client-approved-appointment-notification",
         context);

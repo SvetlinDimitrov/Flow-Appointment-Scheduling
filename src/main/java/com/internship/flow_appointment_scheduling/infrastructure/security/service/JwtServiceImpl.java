@@ -113,7 +113,7 @@ public class JwtServiceImpl implements JwtService {
 
     user.setPasswordResetToken(token);
 
-    mailService.sendResetPasswordEmail(email, token);
+    mailService.sendResetPasswordEmail(token , email);
   }
 
   private String generateShortLivedToken(String userEmail) {

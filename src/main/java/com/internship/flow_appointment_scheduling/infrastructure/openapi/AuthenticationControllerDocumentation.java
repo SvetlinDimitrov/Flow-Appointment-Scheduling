@@ -86,18 +86,7 @@ public interface AuthenticationControllerDocumentation {
 
   @Operation(
       summary = "Reset password",
-      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = String.class),
-              examples = {
-                  @ExampleObject(
-                      name = "Reset Password Example",
-                      value = "\"user@example.com\""
-                  )
-              }
-          )
-      )
+      description = "Send email with reset password link"
   )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Password reset email sent successfully"),

@@ -41,6 +41,7 @@ public class StaffDetails {
   private BigDecimal profit = BigDecimal.ZERO;
 
   @Column(name = "completed_appointments", nullable = false)
+  @Builder.Default
   private Integer completedAppointments = 0;
 
   @Column(name = "start_date", nullable = false)

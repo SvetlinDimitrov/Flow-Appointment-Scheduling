@@ -4,6 +4,7 @@ import com.internship.flow_appointment_scheduling.features.appointments.dto.Appo
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentUpdate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
+import com.internship.flow_appointment_scheduling.features.appointments.dto.enums.UpdateAppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.repository.AppointmentRepository;
@@ -157,6 +158,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     if (AppointmentStatus.CANCELED == appointment.getStatus() ||
         AppointmentStatus.COMPLETED == appointment.getStatus()) {
       throw new BadRequestException(Exceptions.APPOINTMENT_CANNOT_BE_MODIFIED);
+    }
+
+    if(AppointmentStatus.APPROVED == appointment.getStatus() && UpdateAppointmentStatus.APPROVED == dto.status()) {
+      return appointmentMapper.toView(appointment);
     }
 
     appointmentMapper.updateEntity(appointment, dto);
