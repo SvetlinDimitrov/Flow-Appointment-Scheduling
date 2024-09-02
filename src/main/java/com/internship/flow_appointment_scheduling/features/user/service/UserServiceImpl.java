@@ -1,5 +1,6 @@
 package com.internship.flow_appointment_scheduling.features.user.service;
 
+import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPostRequest;
@@ -90,13 +91,24 @@ public class UserServiceImpl implements UserService {
     User staff = findById(id);
     StaffDetails staffDetails = staff.getStaffDetails();
 
-    if (staff.getRole().equals(UserRoles.CLIENT)) {
+    if (UserRoles.CLIENT == staff.getRole()) {
       throw new BadRequestException(Exceptions.USER_IS_NOT_AN_STAFF);
     }
 
     staffDetailsMapper.updateEntity(staffDetails, dto);
 
     return userMapper.toView(userRepository.save(staff));
+  }
+
+  @Override
+  public void handleCompletingTheAppointment(Appointment appointment) {
+    User staff = appointment.getStaff();
+    StaffDetails staffDetails = staff.getStaffDetails();
+
+    staffDetails.setProfit(staffDetails.getProfit().add(appointment.getService().getPrice()));
+    staffDetails.setCompletedAppointments(staffDetails.getCompletedAppointments() + 1);
+
+    userRepository.save(staff);
   }
 
   private User findById(Long id) {

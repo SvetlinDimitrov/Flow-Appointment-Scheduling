@@ -27,21 +27,21 @@ public interface AuthenticationControllerDocumentation {
                   @ExampleObject(
                       name = "Admin Example",
                       value = "{" +
-                          "\"email\": \"john.wick@example.com\"," +
+                          "\"email\": \"admin@abv.bg\"," +
                           "\"password\": \"password123A!\"" +
                           "}"
                   ),
                   @ExampleObject(
                       name = "Staff Example",
                       value = "{" +
-                          "\"email\": \"jane.doe@example.com\"," +
+                          "\"email\": \"staff1@abv.bg\"," +
                           "\"password\": \"password123A!\"" +
                           "}"
                   ),
                   @ExampleObject(
                       name = "Customer Example",
                       value = "{" +
-                          "\"email\": \"alice.smith@example.com\"," +
+                          "\"email\": \"client1@abv.bg\"," +
                           "\"password\": \"password123A!\"" +
                           "}"
                   )

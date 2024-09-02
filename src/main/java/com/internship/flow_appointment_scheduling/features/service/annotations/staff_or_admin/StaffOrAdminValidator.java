@@ -18,7 +18,6 @@ public class StaffOrAdminValidator implements ConstraintValidator<StaffOrAdmin, 
     if (user == null) {
       return false;
     }
-    return user.getRole().equals(UserRoles.ADMINISTRATOR) ||
-        user.getRole().equals(UserRoles.EMPLOYEE);
+    return UserRoles.ADMINISTRATOR == user.getRole() || UserRoles.EMPLOYEE == user.getRole();
   }
 }

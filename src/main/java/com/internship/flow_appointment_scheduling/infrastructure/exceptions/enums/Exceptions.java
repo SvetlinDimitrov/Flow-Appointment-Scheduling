@@ -49,7 +49,51 @@ public enum Exceptions {
   WORK_SPACE_NOT_FOUND_BY_NAME(
       "WorkSpace not found with name: %s",
       "WorkSpace not found"
-  );
+  ),
+  APPOINTMENT_NOT_FOUND(
+      "Appointment not found with id: %s",
+      "Appointment not found"
+  ),
+  APPOINTMENT_WRONG_CLIENT_ROLE(
+      "User with email: %s is not an client",
+      "User is not an client"
+  ),
+  APPOINTMENT_WRONG_STAFF_ROLE(
+      "User with email: %s is not an staff",
+      "User is not an staff"
+  ),
+  APPOINTMENT_OVERLAP(
+      "Appointment overlap with another appointment",
+      "Appointment overlap"
+  ),
+  APPOINTMENT_STAFF_NOT_AVAILABLE(
+      "Staff with email: %s is not available at the given time",
+      "Staff not available"
+  ),
+  APPOINTMENT_SERVICE_NOT_AVAILABLE(
+      "Service with id: %s is not available at the given time",
+      "Service not available"
+  ),
+  APPOINTMENT_STAFF_NOT_CONTAINING_SERVICE(
+      "Staff with email: %s is not containing service with id: %s",
+      "Staff not containing service"
+  ),
+  APPOINTMENT_WORK_SPACE_NOT_AVAILABLE(
+      "WorkSpace with id: %s is not available at the given time",
+      "WorkSpace not available"
+  ),
+  APPOINTMENT_CANNOT_BE_MODIFIED(
+      "Completed or canceled appointment cannot be modified.",
+      "Appointment cannot be modified"
+  ),
+  APPOINTMENT_NOT_APPROVED(
+      "Appointment cannot be set to not approved.",
+      "Appointment cannot be set to not approved"
+  ),
+  APPOINTMENT_ALREADY_IS_APPROVED(
+      "Appointment is already approved.",
+      "Appointment is already approved"
+  ),;
 
   public final String message;
   public final String type;
