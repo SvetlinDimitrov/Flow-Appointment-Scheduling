@@ -2,10 +2,8 @@ package com.internship.flow_appointment_scheduling.features.user.dto.users;
 
 import com.internship.flow_appointment_scheduling.features.user.annotations.email.UniqueEmail;
 import com.internship.flow_appointment_scheduling.features.user.annotations.password.ValidPassword;
-import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record UserPostRequest(
