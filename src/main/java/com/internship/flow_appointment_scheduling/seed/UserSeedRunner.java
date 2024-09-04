@@ -32,6 +32,12 @@ public class UserSeedRunner implements ApplicationRunner {
   private final UserRepository userRepository;
   private final ServiceRepository serviceRepository;
 
+  /**
+   * The hashed password used for seeding users in the development environment. This hash
+   * corresponds to the plaintext password "password123A!".
+   */
+  private final static String PASSWORD = "$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm";
+
   @Override
   @Transactional
   public void run(ApplicationArguments args) {
@@ -65,7 +71,7 @@ public class UserSeedRunner implements ApplicationRunner {
   private List<User> initAdministrators() {
     User admin1 = User.builder()
         .email("admin1@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("George")
         .lastName("Smith")
         .role(UserRoles.ADMINISTRATOR)
@@ -85,7 +91,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User admin2 = User.builder()
         .email("admin2@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("John")
         .lastName("Doe")
         .role(UserRoles.ADMINISTRATOR)
@@ -105,7 +111,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User admin3 = User.builder()
         .email("admin3@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Jane")
         .lastName("Doe")
         .role(UserRoles.ADMINISTRATOR)
@@ -129,7 +135,7 @@ public class UserSeedRunner implements ApplicationRunner {
   private List<User> initStaffMembers() {
     User staff1 = User.builder()
         .email("staff1@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Alice")
         .lastName("Johnson")
         .role(UserRoles.EMPLOYEE)
@@ -149,7 +155,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User staff2 = User.builder()
         .email("staff2@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Bob")
         .lastName("Williams")
         .role(UserRoles.EMPLOYEE)
@@ -169,7 +175,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User staff3 = User.builder()
         .email("staff3@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Charlie")
         .lastName("Brown")
         .role(UserRoles.EMPLOYEE)
@@ -189,7 +195,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User staff4 = User.builder()
         .email("staff4@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("David")
         .lastName("Smith")
         .role(UserRoles.EMPLOYEE)
@@ -209,7 +215,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User staff5 = User.builder()
         .email("staff5@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Eve")
         .lastName("Davis")
         .role(UserRoles.EMPLOYEE)
@@ -229,7 +235,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User staff6 = User.builder()
         .email("staff6@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Frank")
         .lastName("Miller")
         .role(UserRoles.EMPLOYEE)
@@ -249,7 +255,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User staff7 = User.builder()
         .email("staff7@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Grace")
         .lastName("Wilson")
         .role(UserRoles.EMPLOYEE)
@@ -269,7 +275,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User staff8 = User.builder()
         .email("staff8@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Hank")
         .lastName("Moore")
         .role(UserRoles.EMPLOYEE)
@@ -289,7 +295,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User staff9 = User.builder()
         .email("staff9@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Ivy")
         .lastName("Taylor")
         .role(UserRoles.EMPLOYEE)
@@ -309,7 +315,7 @@ public class UserSeedRunner implements ApplicationRunner {
 
     User staff10 = User.builder()
         .email("staff10@flow.com")
-        .password("$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm")
+        .password(PASSWORD)
         .firstName("Jack")
         .lastName("Anderson")
         .role(UserRoles.EMPLOYEE)
@@ -333,12 +339,11 @@ public class UserSeedRunner implements ApplicationRunner {
 
   private List<User> initClients() {
     List<User> clients = new ArrayList<>();
-    String password = "$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm";
 
     for (int i = 1; i <= 20; i++) {
       User client = User.builder()
           .email("client" + i + "@abv.bg")
-          .password(password)
+          .password(PASSWORD)
           .firstName("FirstName" + i)
           .lastName("LastName" + i)
           .role(UserRoles.CLIENT)
