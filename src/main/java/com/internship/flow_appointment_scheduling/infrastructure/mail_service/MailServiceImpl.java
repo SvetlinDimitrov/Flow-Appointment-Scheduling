@@ -5,6 +5,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,6 +17,8 @@ import org.thymeleaf.context.Context;
 @Service
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
+
+  private static final Logger logger = LoggerFactory.getLogger(MailServiceImpl.class);
 
   private final JavaMailSender mailSender;
   private final TemplateEngine templateEngine;
@@ -39,7 +43,7 @@ public class MailServiceImpl implements MailService {
       sendEmail(clientEmail, subject, clientNotification);
       sendEmail(staffEmail, subject, staffNotification);
     } catch (MessagingException e) {
-      e.printStackTrace();
+      logger.error("Failed to send approved appointment notification", e);
     }
   }
 
@@ -61,7 +65,7 @@ public class MailServiceImpl implements MailService {
       sendEmail(clientEmail, subject, clientNotification);
       sendEmail(staffEmail, subject, staffNotification);
     } catch (MessagingException e) {
-      e.printStackTrace();
+      logger.error("Failed to send not approved appointment notification", e);
     }
   }
 
@@ -78,7 +82,7 @@ public class MailServiceImpl implements MailService {
     try {
       sendEmail(clientEmail, subject, clientNotification);
     } catch (MessagingException e) {
-      e.printStackTrace();
+      logger.error("Failed to send canceled appointment notification to client", e);
     }
   }
 
@@ -97,7 +101,7 @@ public class MailServiceImpl implements MailService {
     try {
       sendEmail(userEmail, subject, htmlContent);
     } catch (MessagingException e) {
-      e.printStackTrace();
+      logger.error("Failed to send reset password email", e);
     }
   }
 
