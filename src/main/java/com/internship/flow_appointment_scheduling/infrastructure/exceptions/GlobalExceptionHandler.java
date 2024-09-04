@@ -37,6 +37,16 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
   }
 
+  @ExceptionHandler(ServiceUnavailableException.class)
+  public ResponseEntity<ProblemDetail> handleServiceUnavailableException(ServiceUnavailableException e) {
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
+        e.getMessage());
+
+    problemDetail.setTitle(e.getTitle());
+
+    return new ResponseEntity<>(problemDetail, HttpStatus.SERVICE_UNAVAILABLE);
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ProblemDetail> handleValidationExceptions(
       MethodArgumentNotValidException ex) {

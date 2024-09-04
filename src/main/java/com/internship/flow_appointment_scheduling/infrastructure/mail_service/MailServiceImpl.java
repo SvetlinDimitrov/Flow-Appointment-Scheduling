@@ -1,6 +1,8 @@
 package com.internship.flow_appointment_scheduling.infrastructure.mail_service;
 
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.ServiceUnavailableException;
+import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +46,7 @@ public class MailServiceImpl implements MailService {
       sendEmail(staffEmail, subject, staffNotification);
     } catch (MessagingException e) {
       logger.error("Failed to send approved appointment notification", e);
+      throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
 
@@ -66,6 +69,7 @@ public class MailServiceImpl implements MailService {
       sendEmail(staffEmail, subject, staffNotification);
     } catch (MessagingException e) {
       logger.error("Failed to send not approved appointment notification", e);
+      throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
 
@@ -83,6 +87,7 @@ public class MailServiceImpl implements MailService {
       sendEmail(clientEmail, subject, clientNotification);
     } catch (MessagingException e) {
       logger.error("Failed to send canceled appointment notification to client", e);
+      throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
 
@@ -102,6 +107,7 @@ public class MailServiceImpl implements MailService {
       sendEmail(userEmail, subject, htmlContent);
     } catch (MessagingException e) {
       logger.error("Failed to send reset password email", e);
+      throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
 

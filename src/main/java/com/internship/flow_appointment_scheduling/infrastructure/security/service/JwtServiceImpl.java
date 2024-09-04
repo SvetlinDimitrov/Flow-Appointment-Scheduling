@@ -2,10 +2,10 @@ package com.internship.flow_appointment_scheduling.infrastructure.security.servi
 
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
+import com.internship.flow_appointment_scheduling.infrastructure.events.passowrd_reset.PasswordResetEvent;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
-import com.internship.flow_appointment_scheduling.infrastructure.mail_service.MailService;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.RefreshTokenMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.AuthenticationResponse;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.JwtView;
@@ -23,6 +23,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,7 +33,7 @@ public class JwtServiceImpl implements JwtService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final UserRepository userRepository;
 
-  private final MailService mailService;
+  private final ApplicationEventPublisher eventPublisher;
 
   private final RefreshTokenMapper refreshTokenMapper;
 
@@ -74,9 +75,13 @@ public class JwtServiceImpl implements JwtService {
   }
 
   public Boolean isJwtTokenExpired(String token) {
+  try {
     Date expiration = extractAllClaims(token).getExpiration();
     return expiration.before(new Date());
+  } catch (io.jsonwebtoken.ExpiredJwtException e) {
+    return true;
   }
+}
 
   public String getEmailFromToken(String token) {
     Claims claims = extractAllClaims(token);
@@ -115,7 +120,7 @@ public class JwtServiceImpl implements JwtService {
 
     userRepository.save(user);
 
-    mailService.sendResetPasswordEmail(token , email);
+    eventPublisher.publishEvent(new PasswordResetEvent(this , token , email));
   }
 
   private String generateShortLivedToken(String userEmail) {

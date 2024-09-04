@@ -13,15 +13,17 @@ import com.internship.flow_appointment_scheduling.features.service.entity.Servic
 import com.internship.flow_appointment_scheduling.features.service.service.service.ServiceServiceImpl;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.service.UserServiceImpl;
+import com.internship.flow_appointment_scheduling.infrastructure.events.appointments.AppointmentNotificationEvent;
+import com.internship.flow_appointment_scheduling.infrastructure.events.appointments.AppointmentNotificationEvent.NotificationType;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
-import com.internship.flow_appointment_scheduling.infrastructure.mail_service.MailService;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.appointment.AppointmentMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -35,7 +37,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
   private final UserServiceImpl userService;
   private final ServiceServiceImpl serviceService;
-  private final MailService mailService;
+
+  private final ApplicationEventPublisher eventPublisher;
 
   private final AppointmentValidator appointmentValidator;
 
@@ -121,7 +124,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     appointment.setStaff(staff);
     appointment.setService(service);
 
-    mailService.sendNotApprovedAppointmentNotification(appointment);
+    eventPublisher.publishEvent(
+        new AppointmentNotificationEvent(this, appointment, NotificationType.NOT_APPROVED)
+    );
 
     return appointmentMapper.toView(appointmentRepository.save(appointment));
   }
@@ -168,12 +173,16 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     return switch (dto.status()) {
       case APPROVED -> {
-        mailService.sendApprovedAppointmentNotification(appointment);
+        eventPublisher.publishEvent(
+            new AppointmentNotificationEvent(this, appointment, NotificationType.APPROVED)
+        );
         yield appointmentMapper.toView(appointmentRepository.save(appointment));
       }
       case COMPLETED -> appointmentMapper.toView(appointmentRepository.save(appointment));
       case CANCELED -> {
-        mailService.sendCanceledAppointmentNotificationToClient(appointment);
+        eventPublisher.publishEvent(
+            new AppointmentNotificationEvent(this, appointment, NotificationType.CANCELED)
+        );
         yield appointmentMapper.toView(appointmentRepository.save(appointment));
       }
     };
