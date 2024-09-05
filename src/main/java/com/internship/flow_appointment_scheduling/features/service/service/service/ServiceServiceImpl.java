@@ -76,12 +76,10 @@ public class ServiceServiceImpl implements ServiceService {
   }
 
   @Override
-  public ServiceView create(ServiceDTO createDto, String userEmail) {
+  public ServiceView create(ServiceDTO createDto) {
     Service service = serviceMapper.toEntity(createDto);
-    User user = userService.findByEmail(userEmail);
     WorkSpace workSpace = workSpaceService.findByName(createDto.workSpaceName());
 
-    service.setUsers(List.of(user));
     service.setWorkSpace(workSpace);
 
     return serviceMapper.toView(serviceRepository.save(service));
@@ -90,8 +88,10 @@ public class ServiceServiceImpl implements ServiceService {
   @Override
   public ServiceView update(Long id, ServiceDTO putDto) {
     Service entity = findById(id);
+    WorkSpace workSpace = workSpaceService.findByName(putDto.workSpaceName());
 
     serviceMapper.updateEntity(entity, putDto);
+    entity.setWorkSpace(workSpace);
 
     return serviceMapper.toView(serviceRepository.save(entity));
   }

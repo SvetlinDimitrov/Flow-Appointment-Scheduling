@@ -3,7 +3,6 @@ package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 import com.internship.flow_appointment_scheduling.features.service.annotations.staff_or_admin.StaffOrAdmin;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
-import com.internship.flow_appointment_scheduling.infrastructure.security.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -12,11 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +40,20 @@ public interface ServiceControllerDocumentation {
   @SecurityRequirement(name = "bearerAuth")
   ResponseEntity<Page<ServiceView>> getAll(Pageable pageable,
       @RequestParam(required = false) String staffEmail);
+
+  @Operation(summary = "Get all workspace names", description = "Accessible by ADMINISTRATOR role")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Found the workspace names",
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(type = "array", implementation = String.class))}),
+      @ApiResponse(responseCode = "403", description = "Forbidden",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "401", description = "Unauthorized",
+          content = {@Content(mediaType = "application/json")}),
+  })
+  @SecurityRequirement(name = "bearerAuth")
+  @GetMapping("/workspaces")
+  ResponseEntity<List<String>> getAllWorkSpacesNames();
 
   @Operation(summary = "Get a service by ID", description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
   @ApiResponses(value = {
@@ -96,7 +109,7 @@ public interface ServiceControllerDocumentation {
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping
-  ResponseEntity<ServiceView> create(@Valid @RequestBody ServiceDTO createDto, @AuthenticationPrincipal CustomUserDetails customUserDetails);
+  ResponseEntity<ServiceView> create(@Valid @RequestBody ServiceDTO createDto);
 
   @Operation(summary = "Assign an staff to a service", description = "Accessible by ADMINISTRATOR role")
   @ApiResponses(value = {

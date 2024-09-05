@@ -93,6 +93,14 @@ public enum Exceptions {
   APPOINTMENT_ALREADY_IS_APPROVED(
       "Appointment is already approved.",
       "Appointment is already approved"
+  ),
+  RESET_TOKEN_ALREADY_EXISTS(
+      "A valid reset token already exists",
+      "Reset token already exists"
+  ),
+  MAIL_SERVICE_ERROR(
+      "Failed to send email",
+      "Mail service error"
   ),;
 
   public final String message;

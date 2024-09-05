@@ -1,6 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.appointments.repository;
 
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
+import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +14,14 @@ import org.springframework.data.repository.query.Param;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
   Page<Appointment> findAllByServiceId(Long serviceId, Pageable pageable);
+
+  List<Appointment> findAllByStatusIn(List<AppointmentStatus> statuses);
+
+  @Query("SELECT a FROM Appointment a " +
+      "WHERE a.status <> :status " +
+      "AND a.endDate < :currentDateTime")
+  List<Appointment> findAllByStatusAndEndDateBefore(@Param("status") AppointmentStatus status,
+      @Param("currentDateTime") LocalDateTime currentDateTime);
 
   @Query("SELECT a FROM Appointment a " +
       "WHERE a.client.id = :userId " +

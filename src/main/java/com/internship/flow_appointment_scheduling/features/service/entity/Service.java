@@ -16,9 +16,13 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -26,6 +30,9 @@ import lombok.ToString;
 @Table(name = "services")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ToString(exclude = {"users", "workSpace"})
 @EqualsAndHashCode(exclude = {"users", "workSpace"})
 public class Service {
@@ -58,8 +65,10 @@ public class Service {
       joinColumns = @JoinColumn(name = "service_id"),
       inverseJoinColumns = @JoinColumn(name = "user_id")
   )
-  private List<User> users;
+  @Builder.Default
+  private List<User> users = new ArrayList<>();
 
   @OneToMany(mappedBy = "service", cascade = CascadeType.REMOVE)
-  private List<Appointment> appointments;
+  @Builder.Default
+  private List<Appointment> appointments = new ArrayList<>();
 }

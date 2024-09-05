@@ -10,9 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -42,5 +44,11 @@ public class AuthenticationController implements AuthenticationControllerDocumen
     return ResponseEntity
         .ok()
         .body(jwtService.refreshToken(dto));
+  }
+
+  @GetMapping("/reset-password")
+  public ResponseEntity<Void> resetPassword(@RequestParam String email) {
+    jwtService.sendEmailForRestingThePassword(email);
+    return ResponseEntity.ok().build();
   }
 }

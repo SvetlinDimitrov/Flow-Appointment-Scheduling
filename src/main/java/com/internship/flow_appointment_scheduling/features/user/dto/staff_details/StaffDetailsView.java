@@ -3,6 +3,7 @@ package com.internship.flow_appointment_scheduling.features.user.dto.staff_detai
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public record StaffDetailsView(
     BigDecimal salary,
@@ -11,7 +12,8 @@ public record StaffDetailsView(
     Boolean isAvailable,
     LocalDate startDate,
     LocalTime beginWorkingHour,
-    LocalTime endWorkingHour
+    LocalTime endWorkingHour,
+    List<Long> serviceIds
 ) {
 
 }

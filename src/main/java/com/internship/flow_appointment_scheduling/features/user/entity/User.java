@@ -16,9 +16,13 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -26,6 +30,9 @@ import lombok.ToString;
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ToString(exclude = {"services", "refreshToken", "staffDetails"})
 @EqualsAndHashCode(exclude = {"services", "refreshToken", "staffDetails"})
 public class User {
@@ -46,22 +53,29 @@ public class User {
   @Column(columnDefinition = "varchar(255)", nullable = false)
   private String password;
 
+  @Column(columnDefinition = "varchar(255)" , name = "password_reset_token")
+  private String passwordResetToken;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
+  @Builder.Default
   private UserRoles role = UserRoles.CLIENT;
 
   @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE})
   private RefreshToken refreshToken;
 
   @ManyToMany(mappedBy = "users")
-  private List<Service> services;
+  @Builder.Default
+  private List<Service> services = new ArrayList<>();
 
   @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE , CascadeType.PERSIST})
   private StaffDetails staffDetails;
 
   @OneToMany(mappedBy = "client", cascade = {CascadeType.REMOVE})
-  private List<Appointment> appointments;
+  @Builder.Default
+  private List<Appointment> clientAppointments = new ArrayList<>();
 
   @OneToMany(mappedBy = "staff", cascade = {CascadeType.REMOVE})
-  private List<Appointment> appointmentsAsStaff;
+  @Builder.Default
+  private List<Appointment> staffAppointments = new ArrayList<>();
 }

@@ -4,6 +4,7 @@ import com.internship.flow_appointment_scheduling.features.appointments.dto.Appo
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentUpdate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.ShortAppointmentView;
+import com.internship.flow_appointment_scheduling.features.appointments.dto.enums.UpdateAppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.repository.AppointmentRepository;
@@ -12,6 +13,8 @@ import com.internship.flow_appointment_scheduling.features.service.entity.Servic
 import com.internship.flow_appointment_scheduling.features.service.service.service.ServiceServiceImpl;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.service.UserServiceImpl;
+import com.internship.flow_appointment_scheduling.infrastructure.events.appointments.AppointmentNotificationEvent;
+import com.internship.flow_appointment_scheduling.infrastructure.events.appointments.AppointmentNotificationEvent.NotificationType;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
@@ -20,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -33,6 +37,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
   private final UserServiceImpl userService;
   private final ServiceServiceImpl serviceService;
+
+  private final ApplicationEventPublisher eventPublisher;
 
   private final AppointmentValidator appointmentValidator;
 
@@ -118,6 +124,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     appointment.setStaff(staff);
     appointment.setService(service);
 
+    eventPublisher.publishEvent(
+        new AppointmentNotificationEvent(this, appointment, NotificationType.NOT_APPROVED)
+    );
+
     return appointmentMapper.toView(appointmentRepository.save(appointment));
   }
 
@@ -155,17 +165,26 @@ public class AppointmentServiceImpl implements AppointmentService {
       throw new BadRequestException(Exceptions.APPOINTMENT_CANNOT_BE_MODIFIED);
     }
 
+    if(AppointmentStatus.APPROVED == appointment.getStatus() && UpdateAppointmentStatus.APPROVED == dto.status()) {
+      return appointmentMapper.toView(appointment);
+    }
+
     appointmentMapper.updateEntity(appointment, dto);
 
-
     return switch (dto.status()) {
-      //TODO:: Send email to the client and staff in a feature milestone
-      case APPROVED -> appointmentMapper.toView(appointmentRepository.save(appointment));
-      case COMPLETED -> {
-        userService.handleCompletingTheAppointment(appointment);
+      case APPROVED -> {
+        eventPublisher.publishEvent(
+            new AppointmentNotificationEvent(this, appointment, NotificationType.APPROVED)
+        );
         yield appointmentMapper.toView(appointmentRepository.save(appointment));
       }
-      case CANCELED -> appointmentMapper.toView(appointmentRepository.save(appointment));
+      case COMPLETED -> appointmentMapper.toView(appointmentRepository.save(appointment));
+      case CANCELED -> {
+        eventPublisher.publishEvent(
+            new AppointmentNotificationEvent(this, appointment, NotificationType.CANCELED)
+        );
+        yield appointmentMapper.toView(appointmentRepository.save(appointment));
+      }
     };
   }
 
