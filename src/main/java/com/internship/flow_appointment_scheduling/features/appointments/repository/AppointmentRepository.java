@@ -18,7 +18,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
   List<Appointment> findAllByStatusIn(List<AppointmentStatus> statuses);
 
   @Query("SELECT a FROM Appointment a " +
-      "WHERE a.status <> :status " +
+      "WHERE a.status = :status " +
       "AND a.endDate < :currentDateTime")
   List<Appointment> findAllByStatusAndEndDateBefore(@Param("status") AppointmentStatus status,
       @Param("currentDateTime") LocalDateTime currentDateTime);

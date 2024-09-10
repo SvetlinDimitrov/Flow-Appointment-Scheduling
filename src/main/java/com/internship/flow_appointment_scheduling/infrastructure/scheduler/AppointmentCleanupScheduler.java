@@ -36,7 +36,7 @@ public class AppointmentCleanupScheduler {
    * the past will also be considered expired. If an appointment is expired, it will be
    * deleted.</p>
    */
-  @Scheduled(fixedRate = 900000)
+  @Scheduled(fixedRate = 15 * 60 * 1000)
   public void cleanUpAppointments() {
     logger.info("Starting cleanup of appointments");
 
@@ -58,7 +58,6 @@ public class AppointmentCleanupScheduler {
 
     List<Appointment> expiredApprovedAppointments = appointmentRepository.findAllByStatusAndEndDateBefore(
         AppointmentStatus.APPROVED, LocalDateTime.now().plusDays(3));
-
 
     logger.info("Deleted {} expired appointments", expiredNotApprovedAppointments.size() + expiredApprovedAppointments.size());
 
