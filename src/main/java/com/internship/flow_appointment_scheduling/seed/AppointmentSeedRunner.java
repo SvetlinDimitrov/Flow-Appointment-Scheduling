@@ -19,6 +19,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Profile("development")
@@ -31,6 +32,7 @@ public class AppointmentSeedRunner implements ApplicationRunner {
   private final ServiceRepository serviceRepository;
 
   @Override
+  @Transactional
   public void run(ApplicationArguments args) {
     if (appointmentRepository.count() < 50) {
       seedAppointments();
@@ -40,7 +42,6 @@ public class AppointmentSeedRunner implements ApplicationRunner {
   private void seedAppointments() {
     List<User> staffs = userRepository.findAllByRole(UserRoles.EMPLOYEE);
     List<User> clients = userRepository.findAllByRole(UserRoles.CLIENT);
-    List<Service> services = serviceRepository.findAll();
     Random random = new Random();
 
     LocalDateTime currentDateTime = LocalDateTime.now();
@@ -49,7 +50,11 @@ public class AppointmentSeedRunner implements ApplicationRunner {
     while (appointmentsCount < 50) {
       User client = clients.get(random.nextInt(clients.size()));
       User staff = staffs.get(random.nextInt(staffs.size()));
-      Service service = services.get(random.nextInt(services.size()));
+
+      if (staff.getServices().isEmpty()) {
+        continue;
+      }
+      Service service = staff.getServices().get(random.nextInt(staff.getServices().size()));
 
       StaffDetails staffDetails = staff.getStaffDetails();
       LocalTime startWorkingHour = staffDetails.getBeginWorkingHour();
