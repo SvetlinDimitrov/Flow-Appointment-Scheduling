@@ -157,10 +157,11 @@ public class AppointmentServiceImpl implements AppointmentService {
    *   <li>Once the appointment is canceled or completed, it cannot be modified. It will be garbage collected after a certain period of time.</li>
    * </ul>
    * Status Handling:
-   * <ul>
+   * * <ul>
    *   <li>If the status is NOT_APPROVED, then any status is accepted.</li>
    *   <li>If the status was APPROVED, then in the next request, either CANCELED or COMPLETED is expected. If another APPROVED status is sent, then nothing will happen.</li>
-   *   <li>If the status was CANCELED or COMPLETED and another request is sent again to modify the status, a BadRequestException will be thrown.</li>
+   *   <li>If the status was CANCELED and another request is sent again to modify the status, a BadRequestException will be thrown.</li>
+   *   <li>If the status was COMPLETED, it can still only be changed to CANCELED.</li>
    * </ul>
    *
    * @param id the ID of the appointment to update
@@ -172,9 +173,12 @@ public class AppointmentServiceImpl implements AppointmentService {
   public AppointmentView update(Long id, AppointmentUpdate dto) {
     Appointment appointment = getAppointmentById(id);
 
-    if (AppointmentStatus.CANCELED == appointment.getStatus() ||
-        AppointmentStatus.COMPLETED == appointment.getStatus()) {
-      throw new BadRequestException(Exceptions.APPOINTMENT_CANNOT_BE_MODIFIED);
+    if (AppointmentStatus.CANCELED == appointment.getStatus()) {
+      throw new BadRequestException(Exceptions.APPOINTMENT_MODIFICATION_ERROR);
+    }
+
+    if(AppointmentStatus.COMPLETED == appointment.getStatus() && UpdateAppointmentStatus.CANCELED != dto.status()) {
+      throw new BadRequestException(Exceptions.APPOINTMENT_MODIFICATION_ERROR);
     }
 
     if(AppointmentStatus.APPROVED == appointment.getStatus() && UpdateAppointmentStatus.APPROVED == dto.status()) {

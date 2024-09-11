@@ -82,9 +82,9 @@ public enum Exceptions {
       "WorkSpace with id: %s is not available at the given time",
       "WorkSpace not available"
   ),
-  APPOINTMENT_CANNOT_BE_MODIFIED(
-      "Completed or canceled appointment cannot be modified.",
-      "Appointment cannot be modified"
+  APPOINTMENT_MODIFICATION_ERROR(
+      "Appointment cannot be modified due to status",
+      "Appointment modification error"
   ),
   APPOINTMENT_NOT_APPROVED(
       "Appointment cannot be set to not approved.",
