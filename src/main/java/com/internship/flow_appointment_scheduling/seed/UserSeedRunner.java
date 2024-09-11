@@ -340,12 +340,24 @@ public class UserSeedRunner implements ApplicationRunner {
   private List<User> initClients() {
     List<User> clients = new ArrayList<>();
 
+    List<String> firstNames = Arrays.asList(
+        "Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Hank", "Ivy", "Jack",
+        "Kathy", "Leo", "Mona", "Nina", "Oscar", "Paul", "Quincy", "Rita", "Steve", "Tina"
+    );
+
+    List<String> lastNames = Arrays.asList(
+        "Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Garcia", "Rodriguez",
+        "Wilson",
+        "Martinez", "Anderson", "Taylor", "Thomas", "Hernandez", "Moore", "Martin", "Jackson",
+        "Thompson", "White"
+    );
+
     for (int i = 1; i <= 20; i++) {
       User client = User.builder()
           .email("client" + i + "@abv.bg")
           .password(PASSWORD)
-          .firstName("FirstName" + i)
-          .lastName("LastName" + i)
+          .firstName(firstNames.get(i - 1))
+          .lastName(lastNames.get(i - 1))
           .role(UserRoles.CLIENT)
           .build();
       clients.add(client);
