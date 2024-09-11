@@ -122,10 +122,37 @@ public class ServiceServiceImpl implements ServiceService {
     return serviceMapper.toView(serviceRepository.save(service));
   }
 
+  /**
+   * Updates a service based on the provided ID and update data transfer object (DTO).
+   * <p>
+   * Functionality:
+   * <ul>
+   *   <li>Updates the service with the provided data.</li>
+   *   <li>If the service is set to unavailable, then all appointments related to this service should be canceled.</li>
+   *   <li>Sends notifications to users that the appointments are canceled.</li>
+   * </ul>
+   *
+   * @param id     the ID of the service to update
+   * @param putDto the data transfer object containing the update information
+   * @return the updated service view
+   */
   @Override
+  @Transactional
   public ServiceView update(Long id, ServiceDTO putDto) {
     Service entity = findById(id);
     WorkSpace workSpace = workSpaceService.findByName(putDto.workSpaceName());
+
+    if (entity.getAvailability().equals(true) && putDto.availability().equals(false)) {
+      entity.getAppointments().stream()
+          .filter(a -> a.getStatus() == AppointmentStatus.NOT_APPROVED ||
+              a.getStatus() == AppointmentStatus.APPROVED)
+          .forEach(a -> {
+                eventPublisher.publishEvent(
+                    new AppointmentNotificationEvent(this, a, NotificationType.CANCELED));
+                appointmentRepository.delete(a);
+              }
+          );
+    }
 
     serviceMapper.updateEntity(entity, putDto);
     entity.setWorkSpace(workSpace);
