@@ -1,17 +1,15 @@
 package com.internship.flow_appointment_scheduling.features.service.service.service;
 
 import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
-import com.internship.flow_appointment_scheduling.features.appointments.repository.AppointmentRepository;
-import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
-import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
+import com.internship.flow_appointment_scheduling.features.appointments.service.AppointmentService;
+import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceDTO;
+import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceView;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import com.internship.flow_appointment_scheduling.features.service.entity.WorkSpace;
 import com.internship.flow_appointment_scheduling.features.service.repository.ServiceRepository;
 import com.internship.flow_appointment_scheduling.features.service.service.work_space.WorkSpaceService;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
-import com.internship.flow_appointment_scheduling.infrastructure.events.appointments.AppointmentNotificationEvent;
-import com.internship.flow_appointment_scheduling.infrastructure.events.appointments.AppointmentNotificationEvent.NotificationType;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
@@ -19,7 +17,8 @@ import com.internship.flow_appointment_scheduling.infrastructure.mappers.service
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,14 +28,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class ServiceServiceImpl implements ServiceService {
 
   private final ServiceRepository serviceRepository;
-  private final AppointmentRepository appointmentRepository;
 
   private final UserService userService;
   private final WorkSpaceService workSpaceService;
+  private AppointmentService appointmentService;
 
   private final ServiceMapper serviceMapper;
 
-  private final ApplicationEventPublisher eventPublisher;
+  @Autowired
+  public void setAppointmentService(@Lazy AppointmentService appointmentService) {
+    this.appointmentService = appointmentService;
+  }
 
   @Override
   public Page<ServiceView> getAll(Pageable pageable, String staffEmail) {
@@ -73,7 +75,7 @@ public class ServiceServiceImpl implements ServiceService {
    * <p>
    * Functionality:
    * <ul>
-   *   <li>If the staff member is being unassigned, every appointment related to this service and the staff member should be removed.</li>
+   *   <li>If the staff member is being unassigned, every appointment related to this service and the staff member should be set to canceled status.</li>
    *   <li>Sends notifications to users that the appointments are canceled.</li>
    * </ul>
    *
@@ -95,11 +97,7 @@ public class ServiceServiceImpl implements ServiceService {
           .filter(a -> a.getService().getId().equals(serviceId))
           .filter(a -> a.getStatus() == AppointmentStatus.NOT_APPROVED ||
               a.getStatus() == AppointmentStatus.APPROVED)
-          .forEach(a -> {
-            eventPublisher.publishEvent(
-                new AppointmentNotificationEvent(this, a, NotificationType.CANCELED));
-            appointmentRepository.delete(a);
-          });
+          .forEach(a -> appointmentService.cancelAppointment(a.getId()));
 
       users.remove(user);
     } else {
@@ -146,12 +144,7 @@ public class ServiceServiceImpl implements ServiceService {
       entity.getAppointments().stream()
           .filter(a -> a.getStatus() == AppointmentStatus.NOT_APPROVED ||
               a.getStatus() == AppointmentStatus.APPROVED)
-          .forEach(a -> {
-                eventPublisher.publishEvent(
-                    new AppointmentNotificationEvent(this, a, NotificationType.CANCELED));
-                appointmentRepository.delete(a);
-              }
-          );
+          .forEach(a -> appointmentService.cancelAppointment(a.getId()));
     }
 
     serviceMapper.updateEntity(entity, putDto);
@@ -173,6 +166,8 @@ public class ServiceServiceImpl implements ServiceService {
    * @throws NotFoundException if the service is not found
    */
   @Override
+  @Transactional
+  // TODO: If we delete a service then all the appointments should be deleted ?
   public void delete(Long id) {
     Service serviceToDelete = findById(id);
 
@@ -180,9 +175,7 @@ public class ServiceServiceImpl implements ServiceService {
         .stream()
         .filter(a -> a.getStatus() == AppointmentStatus.NOT_APPROVED ||
             a.getStatus() == AppointmentStatus.APPROVED)
-        .forEach(a -> eventPublisher.publishEvent(
-            new AppointmentNotificationEvent(this, a, NotificationType.CANCELED))
-        );
+        .forEach(a -> appointmentService.cancelAppointment(a.getId()));
 
     serviceRepository.delete(serviceToDelete);
   }

@@ -10,9 +10,9 @@ import com.internship.flow_appointment_scheduling.features.appointments.entity.e
 import com.internship.flow_appointment_scheduling.features.appointments.repository.AppointmentRepository;
 import com.internship.flow_appointment_scheduling.features.appointments.utils.AppointmentValidator;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
-import com.internship.flow_appointment_scheduling.features.service.service.service.ServiceServiceImpl;
+import com.internship.flow_appointment_scheduling.features.service.service.service.ServiceService;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
-import com.internship.flow_appointment_scheduling.features.user.service.UserServiceImpl;
+import com.internship.flow_appointment_scheduling.features.user.service.UserService;
 import com.internship.flow_appointment_scheduling.infrastructure.events.appointments.AppointmentNotificationEvent;
 import com.internship.flow_appointment_scheduling.infrastructure.events.appointments.AppointmentNotificationEvent.NotificationType;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
@@ -23,7 +23,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -33,14 +35,24 @@ import org.springframework.stereotype.Component;
 public class AppointmentServiceImpl implements AppointmentService {
 
   private final AppointmentRepository appointmentRepository;
-  private final AppointmentMapper appointmentMapper;
 
-  private final UserServiceImpl userService;
-  private final ServiceServiceImpl serviceService;
+  private UserService userService;
+  private ServiceService serviceService;
+
+  private final AppointmentMapper appointmentMapper;
+  private final AppointmentValidator appointmentValidator;
 
   private final ApplicationEventPublisher eventPublisher;
 
-  private final AppointmentValidator appointmentValidator;
+  @Autowired
+  public void setServiceService(@Lazy ServiceService serviceService) {
+    this.serviceService = serviceService;
+  }
+
+  @Autowired
+  public void setUserService(@Lazy UserService userService) {
+    this.userService = userService;
+  }
 
   @Override
   public Page<AppointmentView> getAll(Pageable pageable) {
@@ -188,9 +200,43 @@ public class AppointmentServiceImpl implements AppointmentService {
     };
   }
 
+
+  /**
+   * Deletes an appointment based on the provided ID.
+   * <p>
+   * Functionality:
+   * <ul>
+   *   <li>Deletes the appointment and sends a notification that the appointment is canceled.</li>
+   * </ul>
+   * <p>
+   * If an appointment is being deleted, a notification will be sent first, and then the appointment will be deleted.
+   *
+   * @param id the ID of the appointment to delete
+   * @throws NotFoundException if the appointment is not found
+   */
   @Override
   public void delete(Long id) {
-    appointmentRepository.delete(getAppointmentById(id));
+    Appointment appointmentToRemove = getAppointmentById(id);
+
+    if (AppointmentStatus.CANCELED != appointmentToRemove.getStatus()) {
+      eventPublisher.publishEvent(
+          new AppointmentNotificationEvent(this, appointmentToRemove, NotificationType.CANCELED)
+      );
+    }
+    appointmentRepository.delete(appointmentToRemove);
+  }
+
+  @Override
+  public void cancelAppointment(Long id) {
+    Appointment appointment = getAppointmentById(id);
+
+    appointment.setStatus(AppointmentStatus.CANCELED);
+
+    eventPublisher.publishEvent(
+        new AppointmentNotificationEvent(this, appointment, NotificationType.CANCELED)
+    );
+
+    appointmentRepository.save(appointment);
   }
 
   private Appointment getAppointmentById(Long id) {

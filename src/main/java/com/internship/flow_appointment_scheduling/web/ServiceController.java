@@ -1,8 +1,8 @@
 package com.internship.flow_appointment_scheduling.web;
 
 import com.internship.flow_appointment_scheduling.features.service.annotations.staff_or_admin.StaffOrAdmin;
-import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
-import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
+import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceDTO;
+import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceView;
 import com.internship.flow_appointment_scheduling.features.service.service.service.ServiceService;
 import com.internship.flow_appointment_scheduling.features.service.service.work_space.WorkSpaceService;
 import com.internship.flow_appointment_scheduling.infrastructure.openapi.ServiceControllerDocumentation;

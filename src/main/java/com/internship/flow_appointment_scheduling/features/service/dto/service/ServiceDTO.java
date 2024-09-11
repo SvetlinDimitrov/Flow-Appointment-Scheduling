@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.service.dto;
+package com.internship.flow_appointment_scheduling.features.service.dto.service;
 
 import com.internship.flow_appointment_scheduling.features.service.annotations.non_negative_duration.NonNegativeDuration;
 import com.internship.flow_appointment_scheduling.features.service.annotations.valid_work_space_name.ValidWorkSpaceName;

@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.service.dto;
+package com.internship.flow_appointment_scheduling.features.service.dto.work_space;
 
 import com.internship.flow_appointment_scheduling.features.service.annotations.unique_work_space_name.UniqueWorkSpaceName;
 import jakarta.validation.constraints.Min;

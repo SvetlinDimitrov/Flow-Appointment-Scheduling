@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.service.service.service;
 
-import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
-import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
+import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceDTO;
+import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceView;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
