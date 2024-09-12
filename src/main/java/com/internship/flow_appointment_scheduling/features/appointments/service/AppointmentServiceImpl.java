@@ -230,7 +230,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     appointmentRepository.delete(appointmentToRemove);
   }
 
-  @Override
   public void cancelAppointment(Long id) {
     Appointment appointment = getAppointmentById(id);
 
@@ -239,6 +238,15 @@ public class AppointmentServiceImpl implements AppointmentService {
     eventPublisher.publishEvent(
         new AppointmentNotificationEvent(this, appointment, NotificationType.CANCELED)
     );
+
+    appointmentRepository.save(appointment);
+  }
+
+  @Override
+  public void completeAppointment(Long id) {
+    Appointment appointment = getAppointmentById(id);
+
+    appointment.setStatus(AppointmentStatus.COMPLETED);
 
     appointmentRepository.save(appointment);
   }

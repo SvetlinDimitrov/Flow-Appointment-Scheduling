@@ -31,4 +31,6 @@ public interface AppointmentService {
 
   void cancelAppointment(Long id);
 
+  void completeAppointment(Long id);
+
 }
