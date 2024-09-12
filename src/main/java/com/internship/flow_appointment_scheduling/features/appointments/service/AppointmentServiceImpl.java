@@ -10,7 +10,7 @@ import com.internship.flow_appointment_scheduling.features.appointments.entity.e
 import com.internship.flow_appointment_scheduling.features.appointments.repository.AppointmentRepository;
 import com.internship.flow_appointment_scheduling.features.appointments.utils.AppointmentValidator;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
-import com.internship.flow_appointment_scheduling.features.service.service.service.ServiceService;
+import com.internship.flow_appointment_scheduling.features.service.service.ServiceService;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
 import com.internship.flow_appointment_scheduling.infrastructure.events.appointments.AppointmentNotificationEvent;

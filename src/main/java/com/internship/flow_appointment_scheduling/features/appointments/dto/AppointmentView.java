@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.appointments.dto;
 
 import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
-import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceView;
+import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserView;
 import java.time.LocalDateTime;
 

@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.service.annotations.valid_work_space_name;
+package com.internship.flow_appointment_scheduling.features.work_space.annotations.valid_work_space_name;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

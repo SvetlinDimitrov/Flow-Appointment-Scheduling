@@ -1,8 +1,8 @@
 package com.internship.flow_appointment_scheduling.infrastructure.openapi;
 
 import com.internship.flow_appointment_scheduling.features.service.annotations.staff_or_admin.StaffOrAdmin;
-import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceDTO;
-import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceView;
+import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
+import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;

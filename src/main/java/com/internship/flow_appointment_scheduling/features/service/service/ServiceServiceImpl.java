@@ -1,13 +1,13 @@
-package com.internship.flow_appointment_scheduling.features.service.service.service;
+package com.internship.flow_appointment_scheduling.features.service.service;
 
 import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.appointments.service.AppointmentService;
-import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceDTO;
-import com.internship.flow_appointment_scheduling.features.service.dto.service.ServiceView;
+import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
+import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
-import com.internship.flow_appointment_scheduling.features.service.entity.WorkSpace;
+import com.internship.flow_appointment_scheduling.features.work_space.entity.WorkSpace;
 import com.internship.flow_appointment_scheduling.features.service.repository.ServiceRepository;
-import com.internship.flow_appointment_scheduling.features.service.service.work_space.WorkSpaceService;
+import com.internship.flow_appointment_scheduling.features.work_space.service.WorkSpaceService;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
@@ -167,7 +167,6 @@ public class ServiceServiceImpl implements ServiceService {
    */
   @Override
   @Transactional
-  // TODO: If we delete a service then all the appointments should be deleted ?
   public void delete(Long id) {
     Service serviceToDelete = findById(id);
 

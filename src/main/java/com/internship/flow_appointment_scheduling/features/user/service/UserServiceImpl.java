@@ -91,7 +91,6 @@ public class UserServiceImpl implements UserService {
    */
   @Override
   @Transactional
-  //TODO :: If the user is deleted do i need to save the appointments
   public void delete(Long id) {
     User user = findById(id);
 

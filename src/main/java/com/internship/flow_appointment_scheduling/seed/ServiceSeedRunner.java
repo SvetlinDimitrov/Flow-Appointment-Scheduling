@@ -1,9 +1,9 @@
 package com.internship.flow_appointment_scheduling.seed;
 
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
-import com.internship.flow_appointment_scheduling.features.service.entity.WorkSpace;
+import com.internship.flow_appointment_scheduling.features.work_space.entity.WorkSpace;
 import com.internship.flow_appointment_scheduling.features.service.repository.ServiceRepository;
-import com.internship.flow_appointment_scheduling.features.service.repository.WorkSpaceRepository;
+import com.internship.flow_appointment_scheduling.features.work_space.repository.WorkSpaceRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Arrays;
