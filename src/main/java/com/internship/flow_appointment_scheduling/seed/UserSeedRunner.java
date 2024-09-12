@@ -353,17 +353,20 @@ public class UserSeedRunner implements ApplicationRunner {
     );
 
     for (int i = 1; i <= 20; i++) {
-      User client = User.builder()
-          .email("client" + i + "@abv.bg")
-          .password(PASSWORD)
-          .firstName(firstNames.get(i - 1))
-          .lastName(lastNames.get(i - 1))
-          .role(UserRoles.CLIENT)
-          .build();
-      clients.add(client);
+      clients.add(createClient(i, firstNames.get(i - 1), lastNames.get(i - 1)));
     }
 
     return clients;
+  }
+
+  private User createClient(int order, String firstName, String lastName) {
+    return User.builder()
+        .email("client" + order + "@abv.bg")
+        .password(PASSWORD)
+        .firstName(firstName)
+        .lastName(lastName)
+        .role(UserRoles.CLIENT)
+        .build();
   }
 
   private List<Service> selectRandomServices(List<Service> allServices, Random random) {
