@@ -70,7 +70,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void getAll_mustReturnPageAppointments_whenValidPageableIsProvided() {
+  void getAll_returnPageAppointments_whenValidPageableIsProvided() {
     Pageable pageable = PageRequest.of(0, 10);
 
     when(appointmentRepository.findAll(pageable)).thenReturn(Page.empty());
@@ -81,7 +81,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void getAllByUserId_mustReturnPageAppointments_whenValidPageableIsProvided() {
+  void getAllByUserId_returnPageAppointments_whenValidPageableIsProvided() {
     Pageable pageable = PageRequest.of(0, 10);
     long VALID_USER_ID = 1;
 
@@ -94,7 +94,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void getAllByUserIdAndDate_mustReturnListAppointments_whenValidUserIdAndDate() {
+  void getAllByUserIdAndDate_returnListAppointments_whenValidUserIdAndDate() {
     long VALID_USER_ID = 1;
     LocalDate VALID_DATE = LocalDate.now();
 
@@ -108,7 +108,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void getAllByServiceIdAndDate_mustReturnListAppointments_whenValidServiceIdAndDate() {
+  void getAllByServiceIdAndDate_returnListAppointments_whenValidServiceIdAndDate() {
     long VALID_SERVICE_ID = 1;
     LocalDate VALID_DATE = LocalDate.now();
 
@@ -122,7 +122,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void getAllByServiceIdAndDate_mustReturnPageAppointments_whenValidServiceIdAndPage() {
+  void getAllByServiceIdAndDate_returnPageAppointments_whenValidServiceIdAndPage() {
     long VALID_SERVICE_ID = 1;
     Pageable pageable = PageRequest.of(0, 10);
 
@@ -136,7 +136,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void getById_mustReturnAppointment_whenValidIdIsProvided() {
+  void getById_returnAppointment_whenValidIdIsProvided() {
     long VALID_ID = 1;
     Appointment mockAppointment = mock(Appointment.class);
     AppointmentView mockAppointmentView = mock(AppointmentView.class);
@@ -151,7 +151,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void getById_mustThrowException_whenInvalidIdIsProvided() {
+  void getById_throwException_whenInvalidIdIsProvided() {
     long INVALID_ID = 1;
     when(appointmentRepository.findById(INVALID_ID)).thenReturn(java.util.Optional.empty());
 
@@ -161,7 +161,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void create_mustThrowException_whenInvalidClientEmail() {
+  void create_throwException_whenInvalidClientEmail() {
     Long validServiceId = 1L;
     String invalidClientEmail = "client@abv.bg";
     String validStaffEmail = "staff@abv.bg";
@@ -178,7 +178,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void create_mustThrowException_whenInvalidStaffEmail() {
+  void create_throwException_whenInvalidStaffEmail() {
     Long validServiceId = 1L;
     String validClientEmail = "client@abv.bg";
     String invalidStaffEmail = "staff@abv.bg";
@@ -197,7 +197,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void create_mustThrowException_whenInvalidServiceId() {
+  void create_throwException_whenInvalidServiceId() {
     Long invalidServiceId = 1L;
     String validClientEmail = "client@abv.bg";
     String validStaffEmail = "staff@abv.bg";
@@ -218,7 +218,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void create_mustThrowException_whenInvalidAppointmentValidation() {
+  void create_throwException_whenInvalidAppointmentValidation() {
     Long invalidServiceId = 1L;
     String validClientEmail = "client@abv.bg";
     String validStaffEmail = "staff@abv.bg";
@@ -247,7 +247,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void create_mustCreateAppointment_whenValidDataIsProvided() {
+  void create_createAppointment_whenValidDataIsProvided() {
     Long invalidServiceId = 1L;
     String validClientEmail = "client@abv.bg";
     String validStaffEmail = "staff@abv.bg";
@@ -276,7 +276,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void update_mustThrowException_whenInvalidIdIsProvided() {
+  void update_throwException_whenInvalidIdIsProvided() {
     long invalidId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
 
@@ -288,7 +288,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void update_mustThrowException_whenCancelingTheAppointmentAgain() {
+  void update_throwException_whenCancelingTheAppointmentAgain() {
     long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
@@ -302,7 +302,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void update_mustThrowException_whenProvidingStatusDifferentThanCancelToCompletedAppointment() {
+  void update_throwException_whenProvidingStatusDifferentThanCancelToCompletedAppointment() {
     long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
@@ -324,7 +324,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void update_mustReturnAppointment_whenApprovingAgain() {
+  void update_returnAppointment_whenApprovingAgain() {
     long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
@@ -341,7 +341,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void update_mustReturnAppointment_whenCancelingTheAppointment() {
+  void update_returnAppointment_whenCancelingTheAppointment() {
     long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
@@ -359,7 +359,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void update_mustReturnAppointment_whenCompletingTheAppointment() {
+  void update_returnAppointment_whenCompletingTheAppointment() {
     long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
@@ -377,7 +377,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void update_mustReturnAppointment_whenApprovingTheAppointment() {
+  void update_returnAppointment_whenApprovingTheAppointment() {
     long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
@@ -395,7 +395,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void delete_mustThrowException_whenInvalidIdIsProvided() {
+  void delete_throwException_whenInvalidIdIsProvided() {
     long invalidId = 1;
 
     when(appointmentRepository.findById(invalidId)).thenReturn(Optional.empty());
@@ -405,7 +405,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void delete_mustDeleteAppointment_whenValidIdIsProvided() {
+  void delete_deleteAppointment_whenValidIdIsProvided() {
     long validId = 1;
     Appointment mockAppointment = mock(Appointment.class);
 
@@ -416,7 +416,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void cancelAppointment_mustThrowException_whenInvalidIdIsProvided() {
+  void cancelAppointment_throwException_whenInvalidIdIsProvided() {
     long invalidId = 1;
     when(appointmentRepository.findById(invalidId)).thenReturn(Optional.empty());
 
@@ -426,7 +426,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void cancelAppointment_mustSaveAppointment_whenValidIdIsProvided() {
+  void cancelAppointment_saveAppointment_whenValidIdIsProvided() {
     long validId = 1;
     Appointment mockAppointment = mock(Appointment.class);
 
@@ -437,7 +437,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void completeAppointment_mustThrowException_whenInvalidIdIsProvided() {
+  void completeAppointment_throwException_whenInvalidIdIsProvided() {
     long invalidId = 1;
 
     when(appointmentRepository.findById(invalidId)).thenReturn(Optional.empty());
@@ -448,7 +448,7 @@ class AppointmentServiceImplTest {
   }
 
   @Test
-  void completeAppointment_mustSaveAppointment_whenValidIdIsProvided() {
+  void completeAppointment_saveAppointment_whenValidIdIsProvided() {
     long validId = 1;
     Appointment mockAppointment = mock(Appointment.class);
 

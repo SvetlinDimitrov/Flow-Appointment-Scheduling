@@ -15,7 +15,6 @@ import com.internship.flow_appointment_scheduling.seed.UserSeedRunner;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -43,7 +42,7 @@ class AppointmentRepositoryTest {
   private UserRepository userRepository;
 
   @Test
-  void findAllByServiceId_ShouldReturnEmptyPage_WhenServiceDoesNotExits() {
+  void findAllByServiceId_returnEmptyPage_whenServiceDoesNotExits() {
     Service existingService = extractServiceWithExistingAppointments();
     serviceRepository.delete(existingService);
     Pageable pageable = PageRequest.of(0, 5);
@@ -55,7 +54,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByServiceId_ShouldReturnNotEmptyPage_WhenServiceExitsWithData() {
+  void findAllByServiceId_returnNotEmptyPage_whenServiceExitsWithData() {
     Service existingService = extractServiceWithExistingAppointments();
     Pageable pageable = PageRequest.of(0, 5);
 
@@ -66,7 +65,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByUserId_ShouldReturnEmptyPage_WhenUserDoesNotExits() {
+  void findAllByUserId_returnEmptyPage_whenUserDoesNotExits() {
     User existingUser = extractUserWithAppointmentsPreparedForDelete();
     userRepository.delete(existingUser);
     Pageable pageable = PageRequest.of(0, 5);
@@ -78,7 +77,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByUserId_ShouldReturnNotEmptyPage_WhenUserExitsWithData() {
+  void findAllByUserId_returnNotEmptyPage_whenUserExitsWithData() {
     User existingUser = extractUserWithAppointments();
     Pageable pageable = PageRequest.of(0, 5);
     int expectedCount =
@@ -91,7 +90,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByUserIdAndDate_ShouldReturnEmptyList_WhenUserDoesNotExits() {
+  void findAllByUserIdAndDate_returnEmptyList_whenUserDoesNotExits() {
     User existingUser = extractUserWithAppointmentsPreparedForDelete();
     userRepository.delete(existingUser);
     LocalDate date = LocalDate.of(2024, 9, 1);
@@ -103,7 +102,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByUserIdAndDate_ShouldReturnNotEmptyList_WhenUserExitsWithData() {
+  void findAllByUserIdAndDate_returnNotEmptyList_whenUserExitsWithData() {
     User existingUser = extractUserWithAppointments();
     LocalDate existingDate = null;
     if (!existingUser.getStaffAppointments().isEmpty()) {
@@ -119,7 +118,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByUserIdAndDate_ShouldReturnEmptyList_WhenUserExitsButNoDataForDate() {
+  void findAllByUserIdAndDate_returnEmptyList_whenUserExitsButNoDataForDate() {
     User existingUser = extractUserWithAppointments();
     LocalDate date = LocalDate.of(1234, 9, 1);
 
@@ -130,7 +129,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByUserIdAndDate_ShouldReturnNotEmptyList_WhenSpecificLocalDateIsProvided() {
+  void findAllByUserIdAndDate_returnNotEmptyList_whenSpecificLocalDateIsProvided() {
     User existingUser = extractUserWithAppointments();
     LocalDate existingDate = null;
     int expectedCount = 0;
@@ -151,7 +150,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByServiceIdAndDate_ShouldReturnEmptyList_WhenServiceDoesNotExits() {
+  void findAllByServiceIdAndDate_returnEmptyList_whenServiceDoesNotExits() {
     Service existingService = extractServiceWithExistingAppointments();
     serviceRepository.delete(existingService);
     LocalDate date = LocalDate.of(2024, 9, 1);
@@ -163,7 +162,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByServiceIdAndDate_ShouldReturnNotEmptyList_WhenServiceExitsWithData() {
+  void findAllByServiceIdAndDate_returnNotEmptyList_whenServiceExitsWithData() {
     Service existingService = extractServiceWithExistingAppointments();
     LocalDate existingDate = null;
     if (!existingService.getAppointments().isEmpty()) {
@@ -177,7 +176,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByServiceIdAndDate_ShouldReturnEmptyList_WhenServiceExitsButNoDataForDate() {
+  void findAllByServiceIdAndDate_returnEmptyList_whenServiceExitsButNoDataForDate() {
     Service existingService = extractServiceWithExistingAppointments();
     LocalDate invalidLocalDate = LocalDate.of(1234, 9, 1);
 
@@ -188,7 +187,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void findAllByServiceIdAndDate_ShouldReturnNotEmptyList_WhenSpecificLocalDateIsProvided() {
+  void findAllByServiceIdAndDate_returnNotEmptyList_whenSpecificLocalDateIsProvided() {
     Service existingService = extractServiceWithExistingAppointments();
     LocalDate existingDate = extractLocalDateFromAppointments(existingService.getAppointments());
     int expectedCount = extractTotalAppointmentsCountForSpecificLocalDate(
@@ -201,7 +200,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void existsOverlappingAppointment_ShouldReturnFalse_WhenNoOverlappingAppointmentExists() {
+  void existsOverlappingAppointment_returnFalse_whenNoOverlappingAppointmentExists() {
     User existingUser = extractUserWithAppointments();
     LocalDateTime startDate = LocalDateTime.of(1024, 9, 1, 10, 0);
     LocalDateTime endDate = startDate.plusMinutes(60);
@@ -213,7 +212,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void existsOverlappingAppointment_ShouldReturnTrue_WhenOverlappingAppointmentExists() {
+  void existsOverlappingAppointment_returnTrue_whenOverlappingAppointmentExists() {
     User existingUser = extractUserWithAppointments();
     Appointment existingAppointment = null;
     if (!existingUser.getStaffAppointments().isEmpty()) {
@@ -231,7 +230,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void countAppointmentsInWorkspace_ShouldReturnZero_WhenNoAppointmentsExist() {
+  void countAppointmentsInWorkspace_returnZero_whenNoAppointmentsExist() {
     Service existingService = extractServiceWithExistingAppointments();
     LocalDateTime invalidLocalDateTime = LocalDateTime.of(1024, 9, 1, 10, 0);
     LocalDateTime endDate = invalidLocalDateTime.plusMinutes(60);
@@ -243,7 +242,7 @@ class AppointmentRepositoryTest {
   }
 
   @Test
-  void countAppointmentsInWorkspace_ShouldReturnNonZero_WhenAppointmentsExist() {
+  void countAppointmentsInWorkspace_returnNonZero_whenAppointmentsExist() {
     Service existingService = extractServiceWithExistingAppointments();
     LocalDateTime existingStartDate = existingService.getAppointments().getFirst().getStartDate();
     LocalDateTime endDate = existingStartDate.plusMinutes(60);
