@@ -18,6 +18,8 @@ import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotF
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.StaffDetailsMapper;
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.UserMapper;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,7 +167,9 @@ public class UserServiceImpl implements UserService {
               a.getStatus() == AppointmentStatus.APPROVED)
           .forEach(a -> appointmentService.cancelAppointment(a.getId()));
 
-      staff.getStaffAppointments().clear();
+      List<Appointment> mutableAppointments = new ArrayList<>(staff.getStaffAppointments());
+      mutableAppointments.clear();
+      staff.setStaffAppointments(mutableAppointments);
     }
 
     staffDetailsMapper.updateEntity(staffDetails, dto);

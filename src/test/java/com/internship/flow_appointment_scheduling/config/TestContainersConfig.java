@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.appointments.config;
+package com.internship.flow_appointment_scheduling.config;
 
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;

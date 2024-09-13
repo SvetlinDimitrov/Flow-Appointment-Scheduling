@@ -8,7 +8,7 @@ public class WorkingHoursValidator implements
 
   @Override
   public boolean isValid(WorkingHours dto, ConstraintValidatorContext context) {
-    if (dto == null) {
+    if (dto == null || dto.getBeginWorkingHour() == null || dto.getEndWorkingHour() == null) {
       return true;
     }
     return dto.getBeginWorkingHour().isBefore(dto.getEndWorkingHour());
