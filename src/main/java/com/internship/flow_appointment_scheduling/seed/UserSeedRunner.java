@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Profile("development")
+@Profile({"development", "test"})
 @RequiredArgsConstructor
 @Order(2)
 public class UserSeedRunner implements ApplicationRunner {

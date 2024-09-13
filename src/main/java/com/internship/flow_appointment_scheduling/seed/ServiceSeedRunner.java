@@ -17,7 +17,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("development")
+@Profile({"development", "test"})
 @RequiredArgsConstructor
 @Order(1)
 public class ServiceSeedRunner implements ApplicationRunner {
