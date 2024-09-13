@@ -1,4 +1,4 @@
-package com.internship.flow_appointment_scheduling.features.service.service.service;
+package com.internship.flow_appointment_scheduling.features.service.service;
 
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;

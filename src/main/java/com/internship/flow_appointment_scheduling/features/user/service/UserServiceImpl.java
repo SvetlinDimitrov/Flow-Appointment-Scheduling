@@ -1,6 +1,8 @@
 package com.internship.flow_appointment_scheduling.features.user.service;
 
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
+import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
+import com.internship.flow_appointment_scheduling.features.appointments.service.AppointmentService;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPasswordUpdate;
@@ -18,9 +20,12 @@ import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.St
 import com.internship.flow_appointment_scheduling.infrastructure.mappers.user.UserMapper;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +33,15 @@ public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
 
+  private AppointmentService appointmentService;
+
   private final UserMapper userMapper;
   private final StaffDetailsMapper staffDetailsMapper;
+
+  @Autowired
+  public void setAppointmentService(@Lazy AppointmentService appointmentService) {
+    this.appointmentService = appointmentService;
+  }
 
   @Override
   public Page<UserView> getAll(Pageable pageable, UserRoles userRole) {
@@ -66,9 +78,27 @@ public class UserServiceImpl implements UserService {
     return userMapper.toView(userRepository.save(entity));
   }
 
+  /**
+   * Deletes a user based on the provided ID.
+   * <p>
+   * Functionality:
+   * <ul>
+   *   <li>If the user is a staff member (has `staffDetails` and `staffAppointments` is not empty), send notifications to cancel the not approved and approved appointments.</li>
+   * </ul>
+   *
+   * @param id the ID of the user to delete
+   * @throws NotFoundException if the user is not found
+   */
   @Override
+  @Transactional
   public void delete(Long id) {
     User user = findById(id);
+
+    user.getStaffAppointments()
+        .stream()
+        .filter(a -> a.getStatus() == AppointmentStatus.NOT_APPROVED ||
+            a.getStatus() == AppointmentStatus.APPROVED)
+        .forEach(a -> appointmentService.cancelAppointment(a.getId()));
 
     userRepository.delete(user);
   }
@@ -104,13 +134,38 @@ public class UserServiceImpl implements UserService {
     return userMapper.toView(userRepository.save(staffToSave));
   }
 
+  /**
+   * Modifies the details of a staff member based on the provided ID and modification DTO.
+   * <p>
+   * Functionality:
+   * <ul>
+   *   <li>If the staff member's availability is changed from true to false, they must lose all of their appointments.</li>
+   *   <li>This is because there is no date specifying how long they will be unavailable, making it impossible to check if they can handle their appointments.</li>
+   *   <li>In this situation, either deny the change of availability if the staff has future appointments coming or change the status of all of them to canceled.</li>
+   * </ul>
+   *
+   * @param id  the ID of the staff member to modify
+   * @param dto the modification DTO containing the new details
+   * @throws BadRequestException if the user is not a staff member
+   */
   @Override
+  @Transactional
   public UserView modifyStaff(Long id, StaffModifyDto dto) {
     User staff = findById(id);
     StaffDetails staffDetails = staff.getStaffDetails();
 
     if (UserRoles.CLIENT == staff.getRole()) {
       throw new BadRequestException(Exceptions.USER_IS_NOT_AN_STAFF);
+    }
+
+    if (staff.getStaffDetails().getIsAvailable().equals(true) && dto.isAvailable().equals(false)) {
+      staff.getStaffAppointments()
+          .stream()
+          .filter(a -> a.getStatus() == AppointmentStatus.NOT_APPROVED ||
+              a.getStatus() == AppointmentStatus.APPROVED)
+          .forEach(a -> appointmentService.cancelAppointment(a.getId()));
+
+      staff.getStaffAppointments().clear();
     }
 
     staffDetailsMapper.updateEntity(staffDetails, dto);

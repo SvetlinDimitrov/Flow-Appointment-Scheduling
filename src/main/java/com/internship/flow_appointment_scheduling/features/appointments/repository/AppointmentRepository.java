@@ -18,7 +18,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
   List<Appointment> findAllByStatusIn(List<AppointmentStatus> statuses);
 
   @Query("SELECT a FROM Appointment a " +
-      "WHERE a.status <> :status " +
+      "WHERE a.status = :status " +
       "AND a.endDate < :currentDateTime")
   List<Appointment> findAllByStatusAndEndDateBefore(@Param("status") AppointmentStatus status,
       @Param("currentDateTime") LocalDateTime currentDateTime);
@@ -43,8 +43,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
   @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
       "FROM Appointment a " +
       "WHERE (a.client.email = :email OR a.staff.email = :email) " +
-      "AND a.startDate <= :endDate " +
-      "AND a.endDate >= :startDate " +
+      "AND a.startDate < :endDate " +
+      "AND a.endDate > :startDate " +
       "AND (a.status = 'APPROVED' OR a.status = 'NOT_APPROVED')")
   boolean existsOverlappingAppointment(@Param("email") String email,
       @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
@@ -53,8 +53,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
       "FROM Appointment a " +
       "JOIN a.service s " +
       "WHERE s.workSpace.id = :workSpaceId " +
-      "AND a.startDate <= :endDate " +
-      "AND a.endDate >= :startDate " +
+      "AND a.startDate < :endDate " +
+      "AND a.endDate > :startDate " +
       "AND (a.status = 'APPROVED' OR a.status = 'NOT_APPROVED')")
   int countAppointmentsInWorkspace(@Param("workSpaceId") Long workSpaceId,
       @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);

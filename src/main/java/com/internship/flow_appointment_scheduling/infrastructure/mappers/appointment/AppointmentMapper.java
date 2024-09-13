@@ -23,6 +23,7 @@ public interface AppointmentMapper {
 
   AppointmentView toView(Appointment entity);
 
+  @Mapping(target = "serviceName", source = "service.name")
   ShortAppointmentView toViewShort(Appointment entity);
 
   @Mapping(target = "startDate", source = "date")

@@ -1,6 +1,6 @@
-package com.internship.flow_appointment_scheduling.features.service.annotations.valid_work_space_name;
+package com.internship.flow_appointment_scheduling.features.work_space.annotations.valid_work_space_name;
 
-import com.internship.flow_appointment_scheduling.features.service.repository.WorkSpaceRepository;
+import com.internship.flow_appointment_scheduling.features.work_space.repository.WorkSpaceRepository;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Autowired;

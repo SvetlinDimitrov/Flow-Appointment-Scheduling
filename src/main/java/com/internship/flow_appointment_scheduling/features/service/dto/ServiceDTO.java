@@ -1,7 +1,7 @@
 package com.internship.flow_appointment_scheduling.features.service.dto;
 
 import com.internship.flow_appointment_scheduling.features.service.annotations.non_negative_duration.NonNegativeDuration;
-import com.internship.flow_appointment_scheduling.features.service.annotations.valid_work_space_name.ValidWorkSpaceName;
+import com.internship.flow_appointment_scheduling.features.work_space.annotations.valid_work_space_name.ValidWorkSpaceName;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

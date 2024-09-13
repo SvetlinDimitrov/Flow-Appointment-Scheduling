@@ -1,5 +1,6 @@
-package com.internship.flow_appointment_scheduling.features.service.entity;
+package com.internship.flow_appointment_scheduling.features.work_space.entity;
 
+import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

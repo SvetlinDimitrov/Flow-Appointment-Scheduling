@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -44,8 +45,14 @@ public class MailServiceImpl implements MailService {
     try {
       sendEmail(clientEmail, subject, clientNotification);
       sendEmail(staffEmail, subject, staffNotification);
+    } catch (MailAuthenticationException e) {
+      logger.error(
+          "Failed to send approved appointment notification due to authentication error for appointment: {}. Error: {}",
+          appointment, e.getCause().getMessage());
     } catch (MessagingException e) {
-      logger.error("Failed to send approved appointment notification", e);
+      logger.error(
+          "Failed to send approved appointment notification for appointment: {}. Error: {}",
+          appointment, e.getCause().getMessage());
       throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
@@ -67,8 +74,14 @@ public class MailServiceImpl implements MailService {
     try {
       sendEmail(clientEmail, subject, clientNotification);
       sendEmail(staffEmail, subject, staffNotification);
+    } catch (MailAuthenticationException e) {
+      logger.error(
+          "Failed to send not approved appointment notification due to authentication error for appointment: {}. Error: {}",
+          appointment, e.getCause().getMessage());
     } catch (MessagingException e) {
-      logger.error("Failed to send not approved appointment notification", e);
+      logger.error(
+          "Failed to send not approved appointment notification for appointment: {}. Error: {}",
+          appointment, e.getCause().getMessage());
       throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
@@ -85,8 +98,14 @@ public class MailServiceImpl implements MailService {
 
     try {
       sendEmail(clientEmail, subject, clientNotification);
+    } catch (MailAuthenticationException e) {
+      logger.error(
+          "Failed to send canceled appointment notification due to authentication error for appointment: {}. Error: {}",
+          appointment, e.getCause().getMessage());
     } catch (MessagingException e) {
-      logger.error("Failed to send canceled appointment notification to client", e);
+      logger.error(
+          "Failed to send canceled appointment notification for appointment: {}. Error: {}",
+          appointment, e.getCause().getMessage());
       throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
@@ -105,8 +124,11 @@ public class MailServiceImpl implements MailService {
 
     try {
       sendEmail(userEmail, subject, htmlContent);
+    } catch (MailAuthenticationException e) {
+      logger.error("Failed to send reset password email due to authentication error. Error: {}",
+          e.getCause().getMessage());
     } catch (MessagingException e) {
-      logger.error("Failed to send reset password email", e);
+      logger.error("Failed to send reset password email. Error: {}", e.getCause().getMessage());
       throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }

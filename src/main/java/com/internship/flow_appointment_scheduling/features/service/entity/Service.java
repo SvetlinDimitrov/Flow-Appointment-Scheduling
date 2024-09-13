@@ -2,6 +2,7 @@ package com.internship.flow_appointment_scheduling.features.service.entity;
 
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
+import com.internship.flow_appointment_scheduling.features.work_space.entity.WorkSpace;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
