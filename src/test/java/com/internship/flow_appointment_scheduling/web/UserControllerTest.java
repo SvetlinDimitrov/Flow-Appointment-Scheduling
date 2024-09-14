@@ -542,7 +542,9 @@ class UserControllerTest {
         "Doe"
     );
     StaffDetailsDto staffDetailsDto =
-        new StaffDetailsDto(25.0, LocalTime.now(), LocalTime.now().plusMinutes(30));
+        new StaffDetailsDto(25.0,
+            LocalTime.of(9, 0),
+            LocalTime.of(17, 0));
     return new StaffHireDto(userPostRequest, staffDetailsDto);
   }
 }
