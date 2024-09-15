@@ -68,7 +68,7 @@ class ServiceControllerIT {
   @MockBean
   private MailService mailService;
 
-  private static long VALID_SERVICE_ID;
+  private static Service VALID_SERVICE;
   private static WorkSpace VALID_WORK_SPACE;
   private static final long INVALID_SERVICE_ID = -1;
   private static ServiceDTO VALID_SERVICE_DTO;
@@ -78,10 +78,9 @@ class ServiceControllerIT {
 
   @BeforeEach
   void setUp() {
-    VALID_SERVICE_ID = serviceRepository.findAll().stream()
+    VALID_SERVICE = serviceRepository.findAll().stream()
         .findFirst()
-        .orElseThrow(() -> new IllegalStateException("No service data in the database"))
-        .getId();
+        .orElseThrow(() -> new IllegalStateException("No service data in the database"));
 
     VALID_WORK_SPACE = workSpaceRepository.findAll().stream()
         .findFirst()
@@ -166,27 +165,27 @@ class ServiceControllerIT {
 
   @Test
   void getById_returnsOk_whenNoAuth() throws Exception {
-    mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE_ID))
+    mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE.getId()))
         .andExpect(status().isOk());
   }
 
   @Test
   void getById_returnsOk_whenAuthAsAdmin() throws Exception {
-    mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getById_returnsOk_whenAuthAsStaff() throws Exception {
-    mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getById_returnsOk_whenAuthAsClient() throws Exception {
-    mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
         .andExpect(status().isOk());
   }
@@ -199,7 +198,7 @@ class ServiceControllerIT {
 
   @Test
   void getById_returnsServiceData_whenAuthAsAdmin() throws Exception {
-    String jsonResponse = mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE_ID)
+    String jsonResponse = mockMvc.perform(get("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
         .andExpect(status().isOk())
         .andReturn()
@@ -207,7 +206,7 @@ class ServiceControllerIT {
         .getContentAsString();
 
     ServiceView serviceView = objectMapper.readValue(jsonResponse, ServiceView.class);
-    Service service = serviceRepository.findById(VALID_SERVICE_ID).orElseThrow();
+    Service service = serviceRepository.findById(VALID_SERVICE.getId()).orElseThrow();
 
     assertEquals(service.getId(), serviceView.id());
     assertEquals(service.getName(), serviceView.name());
@@ -485,23 +484,23 @@ class ServiceControllerIT {
 
   @Test
   void assignStaff_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE_ID + "/assign")
+    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE.getId() + "/assign")
             .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void assignStaff_returnsOk_whenAuthAsAdminAndStaffNotExistingInTheService() throws Exception {
-    Service service = serviceRepository.findById(VALID_SERVICE_ID).orElseThrow();
+    Service service = serviceRepository.findById(VALID_SERVICE.getId()).orElseThrow();
     service.getUsers().clear();
     serviceRepository.save(service);
 
-    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE_ID + "/assign")
+    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE.getId() + "/assign")
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
             .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isOk());
 
-    service = serviceRepository.findById(VALID_SERVICE_ID).orElseThrow();
+    service = serviceRepository.findById(VALID_SERVICE.getId()).orElseThrow();
     assertTrue(service.getUsers().stream()
         .anyMatch(user -> user.getEmail().equals(VALID_STAFF_EMAIL)));
   }
@@ -509,14 +508,14 @@ class ServiceControllerIT {
   @Test
   void assignStaff_returnsBadRequest_whenAuthAsAdminAndStaffAlreadyExistsInTheService()
       throws Exception {
-    Service service = serviceRepository.findById(VALID_SERVICE_ID).orElseThrow();
+    Service service = serviceRepository.findById(VALID_SERVICE.getId()).orElseThrow();
     User userToAdd = userRepository.findByEmail(VALID_STAFF_EMAIL).orElseThrow();
     if (!service.getUsers().contains(userToAdd)) {
       service.getUsers().add(userToAdd);
     }
     serviceRepository.save(service);
 
-    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE_ID + "/assign")
+    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE.getId() + "/assign")
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
             .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isBadRequest());
@@ -524,7 +523,7 @@ class ServiceControllerIT {
 
   @Test
   void assignStaff_returnsForbidden_whenAuthAsStaff() throws Exception {
-    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE_ID + "/assign")
+    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE.getId() + "/assign")
             .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
             .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isForbidden());
@@ -532,7 +531,7 @@ class ServiceControllerIT {
 
   @Test
   void assignStaff_returnsForbidden_whenAuthAsClient() throws Exception {
-    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE_ID + "/assign")
+    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE.getId() + "/assign")
             .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
             .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isForbidden());
@@ -548,7 +547,7 @@ class ServiceControllerIT {
 
   @Test
   void assignStaff_returnsBadRequest_whenProvidedClientEmailInsteadOfStaff() throws Exception {
-    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE_ID + "/assign")
+    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE.getId() + "/assign")
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
             .param("staffEmail", VALID_CLIENT_EMAIL))
         .andExpect(status().isBadRequest());
@@ -556,7 +555,7 @@ class ServiceControllerIT {
 
   @Test
   void assignStaff_returnsBadRequest_whenProvidedNotExistingEmail() throws Exception {
-    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE_ID + "/assign")
+    mockMvc.perform(post("/api/v1/services/" + VALID_SERVICE.getId() + "/assign")
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
             .param("staffEmail", VALID_CLIENT_EMAIL))
         .andExpect(status().isBadRequest());
@@ -564,14 +563,14 @@ class ServiceControllerIT {
 
   @Test
   void unassignStaff_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID + "/unassign")
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId() + "/unassign")
             .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void unassignStaff_returnsOk_whenAuthAsAdminAndUserHasTheService() throws Exception {
-    Service service = serviceRepository.findById(VALID_SERVICE_ID).orElseThrow();
+    Service service = serviceRepository.findById(VALID_SERVICE.getId()).orElseThrow();
     User user = userRepository.findByEmail(VALID_STAFF_EMAIL).orElseThrow();
     if (!service.getUsers().contains(user)) {
       service.getUsers().add(user);
@@ -579,16 +578,16 @@ class ServiceControllerIT {
     }
     boolean isMailServiceBeingCalled = user.getStaffAppointments()
         .stream()
-        .filter(a -> a.getService().getId().equals(VALID_SERVICE_ID))
+        .filter(a -> a.getService().getId().equals(VALID_SERVICE.getId()))
         .anyMatch(a -> a.getStatus() == AppointmentStatus.APPROVED ||
             a.getStatus() == AppointmentStatus.NOT_APPROVED);
 
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID + "/unassign")
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId() + "/unassign")
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
             .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isOk());
 
-    service = serviceRepository.findById(VALID_SERVICE_ID).orElseThrow();
+    service = serviceRepository.findById(VALID_SERVICE.getId()).orElseThrow();
     assertFalse(service.getUsers().contains(user));
     if (isMailServiceBeingCalled) {
       verify(mailService,
@@ -598,7 +597,7 @@ class ServiceControllerIT {
 
   @Test
   void unassignStaff_returnsForbidden_whenAuthAsStaff() throws Exception {
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID + "/unassign")
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId() + "/unassign")
             .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
             .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isForbidden());
@@ -606,7 +605,7 @@ class ServiceControllerIT {
 
   @Test
   void unassignStaff_returnsForbidden_whenAuthAsClient() throws Exception {
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID + "/unassign")
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId() + "/unassign")
             .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
             .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isForbidden());
@@ -622,7 +621,7 @@ class ServiceControllerIT {
 
   @Test
   void unassignStaff_returnsNotFound_whenNotExistingStaffEmail() throws Exception {
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID + "/unassign")
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId() + "/unassign")
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
             .param("staffEmail", INVALID_STAFF_EMAIL))
         .andExpect(status().isNotFound());
@@ -630,7 +629,7 @@ class ServiceControllerIT {
 
   @Test
   void unassignStaff_returnsBadRequest_whenValidEmailButNotStaffIsProvided() throws Exception {
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID + "/unassign")
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId() + "/unassign")
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
             .param("staffEmail", VALID_CLIENT_EMAIL))
         .andExpect(status().isBadRequest());
@@ -638,7 +637,7 @@ class ServiceControllerIT {
 
   @Test
   void update_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId())
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(VALID_SERVICE_DTO)))
         .andExpect(status().isForbidden());
@@ -646,13 +645,13 @@ class ServiceControllerIT {
 
   @Test
   void update_returnsOk_whenAuthAsAdmin() throws Exception {
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(VALID_SERVICE_DTO)))
         .andExpect(status().isOk());
 
-    Service service = serviceRepository.findById(VALID_SERVICE_ID).orElseThrow();
+    Service service = serviceRepository.findById(VALID_SERVICE.getId()).orElseThrow();
     assertEquals(VALID_SERVICE_DTO.name(), service.getName());
     assertEquals(VALID_SERVICE_DTO.description(), service.getDescription());
     assertEquals(VALID_SERVICE_DTO.availability(), service.getAvailability());
@@ -663,7 +662,7 @@ class ServiceControllerIT {
 
   @Test
   void update_returnsForbidden_whenAuthAsStaff() throws Exception {
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(VALID_SERVICE_DTO)))
@@ -672,7 +671,7 @@ class ServiceControllerIT {
 
   @Test
   void update_returnsForbidden_whenAuthAsClient() throws Exception {
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(VALID_SERVICE_DTO)))
@@ -690,7 +689,7 @@ class ServiceControllerIT {
 
   @Test
   void update_returnsOk_andCancelsAppointments_whenAvailabilityChangesToFalse() throws Exception {
-    Service service = serviceRepository.findById(VALID_SERVICE_ID).orElseThrow();
+    Service service = serviceRepository.findById(VALID_SERVICE.getId()).orElseThrow();
     service.setAvailability(true);
     serviceRepository.save(service);
     boolean isMailServiceBeingCalled = service.getAppointments()
@@ -707,7 +706,7 @@ class ServiceControllerIT {
         VALID_SERVICE_DTO.workSpaceName()
     );
 
-    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(put("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
@@ -721,20 +720,20 @@ class ServiceControllerIT {
 
   @Test
   void delete_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(delete("/api/v1/services/" + VALID_SERVICE_ID))
+    mockMvc.perform(delete("/api/v1/services/" + VALID_SERVICE.getId()))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void delete_returnsForbidden_whenAuthAsStaff() throws Exception {
-    mockMvc.perform(delete("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(delete("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void delete_returnsForbidden_whenAuthAsClient() throws Exception {
-    mockMvc.perform(delete("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(delete("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
         .andExpect(status().isForbidden());
   }
@@ -748,18 +747,18 @@ class ServiceControllerIT {
 
   @Test
   void delete_returnsNoContent_whenAuthAsAdmin() throws Exception {
-    boolean isMailServiceBeingCalled = serviceRepository.findById(VALID_SERVICE_ID)
+    boolean isMailServiceBeingCalled = serviceRepository.findById(VALID_SERVICE.getId())
         .map(Service::getAppointments)
         .stream()
         .flatMap(List::stream)
         .anyMatch(a -> a.getStatus() == AppointmentStatus.APPROVED ||
             a.getStatus() == AppointmentStatus.NOT_APPROVED);
 
-    mockMvc.perform(delete("/api/v1/services/" + VALID_SERVICE_ID)
+    mockMvc.perform(delete("/api/v1/services/" + VALID_SERVICE.getId())
             .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
         .andExpect(status().isNoContent());
 
-    assertFalse(serviceRepository.findById(VALID_SERVICE_ID).isPresent());
+    assertFalse(serviceRepository.findById(VALID_SERVICE.getId()).isPresent());
     if (isMailServiceBeingCalled) {
       verify(mailService, atLeastOnce()).sendCanceledAppointmentNotificationToClient(
           any(Appointment.class));

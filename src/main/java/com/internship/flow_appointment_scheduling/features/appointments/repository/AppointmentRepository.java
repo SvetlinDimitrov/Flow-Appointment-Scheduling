@@ -14,10 +14,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
   Page<Appointment> findAllByServiceId(Long serviceId, Pageable pageable);
 
+  long countByServiceId(Long serviceId);
+
   @Query("SELECT a FROM Appointment a " +
       "WHERE a.client.id = :userId " +
       "OR a.staff.id = :userId")
   Page<Appointment> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
+
+  @Query("SELECT COUNT(a) FROM Appointment a " +
+      "WHERE a.client.id = :userId " +
+      "OR a.staff.id = :userId")
+  long countByUserId(@Param("userId") Long userId);
 
   @Query("SELECT a FROM Appointment a " +
       "WHERE (a.client.id = :userId OR a.staff.id = :userId) " +
@@ -25,11 +32,21 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
   List<Appointment> findAllByUserIdAndDate(@Param("userId") Long userId,
       @Param("date") LocalDate date);
 
+  @Query("SELECT COUNT(a) FROM Appointment a " +
+      "WHERE (a.client.id = :userId OR a.staff.id = :userId) " +
+      "AND CAST(a.startDate AS date) = :date")
+  long countByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
+
   @Query("SELECT a FROM Appointment a " +
       "WHERE a.service.id = :serviceId " +
       "AND CAST(a.startDate AS date) = :date")
   List<Appointment> findAllByServiceIdAndDate(@Param("serviceId") Long serviceId,
       @Param("date") LocalDate date);
+
+  @Query("SELECT COUNT(a) FROM Appointment a " +
+      "WHERE a.service.id = :serviceId " +
+      "AND CAST(a.startDate AS date) = :date")
+  long countByServiceIdAndDate(@Param("serviceId") Long serviceId, @Param("date") LocalDate date);
 
   @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
       "FROM Appointment a " +
