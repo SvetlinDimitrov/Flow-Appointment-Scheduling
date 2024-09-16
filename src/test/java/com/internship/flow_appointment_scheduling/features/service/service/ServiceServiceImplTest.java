@@ -1,5 +1,6 @@
 package com.internship.flow_appointment_scheduling.features.service.service;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -49,6 +50,9 @@ class ServiceServiceImplTest {
 
   private ServiceServiceImpl serviceService;
 
+  private static final Long VALID_SERVICE_ID = 1L;
+  private static final String VALID_STAFF_EMAIL = "staff@example.com";
+
   @BeforeEach
   void setUp() {
     serviceService = new ServiceServiceImpl(
@@ -67,7 +71,6 @@ class ServiceServiceImplTest {
     Service service = mock(Service.class);
     ServiceView serviceView = mock(ServiceView.class);
     Page<Service> servicePage = new PageImpl<>(Collections.singletonList(service));
-
     String staffEmail = "staff@example.com";
 
     when(serviceRepository.findAllByUsersEmail(staffEmail, pageable)).thenReturn(servicePage);
@@ -88,151 +91,132 @@ class ServiceServiceImplTest {
 
     Page<ServiceView> result = serviceService.getAll(pageable, null);
 
-    assertEquals(0, result.getTotalElements());
+    assertThat(result.getTotalElements()).isZero();
   }
 
   @Test
   void getById_returnsServiceView_whenServiceExists() {
-    Long serviceId = 1L;
     Service service = mock(Service.class);
     ServiceView serviceView = mock(ServiceView.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
     when(serviceMapper.toView(service)).thenReturn(serviceView);
 
-    ServiceView result = serviceService.getById(serviceId);
+    ServiceView result = serviceService.getById(VALID_SERVICE_ID);
 
     assertEquals(serviceView, result);
   }
 
   @Test
   void getById_throwsNotFoundException_whenServiceDoesNotExist() {
-    Long serviceId = 1L;
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.empty());
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.empty());
-
-    assertThrows(NotFoundException.class, () -> serviceService.getById(serviceId));
+    assertThrows(NotFoundException.class, () -> serviceService.getById(VALID_SERVICE_ID));
   }
 
   @Test
   void assignStaff_addsUserToService_whenUserIsNotAlreadyAssigned() {
-    Long serviceId = 1L;
-    String staffEmail = "staff@example.com";
     Service service = mock(Service.class);
     User user = mock(User.class);
     ServiceView serviceView = mock(ServiceView.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
-    when(userService.findByEmail(staffEmail)).thenReturn(user);
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
+    when(userService.findByEmail(VALID_STAFF_EMAIL)).thenReturn(user);
     when(service.getUsers()).thenReturn(new ArrayList<>());
     when(serviceRepository.save(service)).thenReturn(service);
     when(serviceMapper.toView(service)).thenReturn(serviceView);
 
-    ServiceView result = serviceService.assignStaff(serviceId, staffEmail);
+    ServiceView result = serviceService.assignStaff(VALID_SERVICE_ID, VALID_STAFF_EMAIL);
 
     assertEquals(serviceView, result);
   }
 
   @Test
   void assignStaff_throwsBadRequestException_whenUserIsAlreadyAssigned() {
-    Long serviceId = 1L;
-    String staffEmail = "staff@example.com";
     Service service = mock(Service.class);
     User user = mock(User.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
-    when(userService.findByEmail(staffEmail)).thenReturn(user);
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
+    when(userService.findByEmail(VALID_STAFF_EMAIL)).thenReturn(user);
     when(service.getUsers()).thenReturn(Collections.singletonList(user));
-    when(user.getEmail()).thenReturn(staffEmail);
+    when(user.getEmail()).thenReturn(VALID_STAFF_EMAIL);
 
     assertThrows(BadRequestException.class, () -> {
-      serviceService.assignStaff(serviceId, staffEmail);
+      serviceService.assignStaff(VALID_SERVICE_ID, VALID_STAFF_EMAIL);
     });
   }
 
   @Test
   void assignStaff_throwsNotFoundException_whenServiceDoesNotExist() {
-    Long serviceId = 1L;
-    String staffEmail = "staff@example.com";
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.empty());
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.empty());
-
-    assertThrows(NotFoundException.class, () -> serviceService.assignStaff(serviceId, staffEmail));
+    assertThrows(NotFoundException.class, () -> serviceService.assignStaff(VALID_SERVICE_ID,
+        VALID_STAFF_EMAIL));
   }
 
   @Test
   void assignStaff_throwsNotFoundException_whenUserDoesNotExist() {
-    Long serviceId = 1L;
-    String staffEmail = "staff@example.com";
     Service service = mock(Service.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
-    when(userService.findByEmail(staffEmail)).thenThrow(
-        new NotFoundException(Exceptions.USER_NOT_FOUND, staffEmail));
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
+    when(userService.findByEmail(VALID_STAFF_EMAIL)).thenThrow(
+        new NotFoundException(Exceptions.USER_NOT_FOUND, VALID_STAFF_EMAIL));
 
-    assertThrows(NotFoundException.class, () -> serviceService.assignStaff(serviceId, staffEmail));
+    assertThrows(NotFoundException.class, () -> serviceService.assignStaff(VALID_SERVICE_ID,
+        VALID_STAFF_EMAIL));
   }
 
   @Test
   void unassignStaff_removesUserFromService_whenUserIsAssigned() {
-    Long serviceId = 1L;
-    String staffEmail = "staff@example.com";
     Service service = mock(Service.class);
     User user = mock(User.class);
     ServiceView serviceView = mock(ServiceView.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
-    when(userService.findByEmail(staffEmail)).thenReturn(user);
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
+    when(userService.findByEmail(VALID_STAFF_EMAIL)).thenReturn(user);
     when(service.getUsers()).thenReturn(new ArrayList<>(Collections.singletonList(user)));
     when(serviceRepository.save(service)).thenReturn(service);
     when(serviceMapper.toView(service)).thenReturn(serviceView);
 
-    ServiceView result = serviceService.unassignStaff(serviceId, staffEmail);
+    ServiceView result = serviceService.unassignStaff(VALID_SERVICE_ID, VALID_STAFF_EMAIL);
 
     assertEquals(serviceView, result);
-    assertEquals(0, service.getUsers().size());
+    assertThat(service.getUsers()).isEmpty();
   }
 
   @Test
   void unassignStaff_throwsBadRequestException_whenUserIsNotAssigned() {
-    Long serviceId = 1L;
-    String staffEmail = "staff@example.com";
     Service service = mock(Service.class);
     User user = mock(User.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
-    when(userService.findByEmail(staffEmail)).thenReturn(user);
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
+    when(userService.findByEmail(VALID_STAFF_EMAIL)).thenReturn(user);
     when(service.getUsers()).thenReturn(new ArrayList<>());
 
     assertThrows(BadRequestException.class, () ->
-        serviceService.unassignStaff(serviceId, staffEmail)
+        serviceService.unassignStaff(VALID_SERVICE_ID, VALID_STAFF_EMAIL)
     );
   }
 
   @Test
   void unassignStaff_throwsNotFoundException_whenServiceDoesNotExist() {
-    Long serviceId = 1L;
-    String staffEmail = "staff@example.com";
-
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.empty());
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.empty());
 
     assertThrows(NotFoundException.class,
-        () -> serviceService.unassignStaff(serviceId, staffEmail)
+        () -> serviceService.unassignStaff(VALID_SERVICE_ID, VALID_STAFF_EMAIL)
     );
   }
 
   @Test
   void unassignStaff_throwsNotFoundException_whenUserDoesNotExist() {
-    Long serviceId = 1L;
-    String staffEmail = "staff@example.com";
     Service service = mock(Service.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
-    when(userService.findByEmail(staffEmail)).thenThrow(
-        new NotFoundException(Exceptions.USER_NOT_FOUND, staffEmail));
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
+    when(userService.findByEmail(VALID_STAFF_EMAIL)).thenThrow(
+        new NotFoundException(Exceptions.USER_NOT_FOUND, VALID_STAFF_EMAIL));
 
     assertThrows(NotFoundException.class,
-        () -> serviceService.unassignStaff(serviceId, staffEmail)
+        () -> serviceService.unassignStaff(VALID_SERVICE_ID, VALID_STAFF_EMAIL)
     );
   }
 
@@ -269,18 +253,17 @@ class ServiceServiceImplTest {
 
   @Test
   void update_updatesService_whenServiceAndWorkSpaceExist() {
-    Long serviceId = 1L;
     ServiceDTO putDto = mock(ServiceDTO.class);
     Service service = mock(Service.class);
     WorkSpace workSpace = mock(WorkSpace.class);
     ServiceView serviceView = mock(ServiceView.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
     when(workSpaceService.findByName(putDto.workSpaceName())).thenReturn(workSpace);
     when(serviceRepository.save(service)).thenReturn(service);
     when(serviceMapper.toView(service)).thenReturn(serviceView);
 
-    ServiceView result = serviceService.update(serviceId, putDto);
+    ServiceView result = serviceService.update(VALID_SERVICE_ID, putDto);
 
     assertEquals(serviceView, result);
     verify(service).setWorkSpace(workSpace);
@@ -290,38 +273,35 @@ class ServiceServiceImplTest {
 
   @Test
   void update_throwsNotFoundException_whenServiceDoesNotExist() {
-    Long serviceId = 1L;
     ServiceDTO putDto = mock(ServiceDTO.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.empty());
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.empty());
 
-    assertThrows(NotFoundException.class, () -> serviceService.update(serviceId, putDto));
+    assertThrows(NotFoundException.class, () -> serviceService.update(VALID_SERVICE_ID, putDto));
   }
 
   @Test
   void update_throwsNotFoundException_whenWorkSpaceDoesNotExist() {
-    Long serviceId = 1L;
     ServiceDTO putDto = mock(ServiceDTO.class);
     Service service = mock(Service.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
     when(workSpaceService.findByName(putDto.workSpaceName())).thenThrow(
         new NotFoundException(Exceptions.WORK_SPACE_NOT_FOUND)
     );
 
-    assertThrows(NotFoundException.class, () -> serviceService.update(serviceId, putDto));
+    assertThrows(NotFoundException.class, () -> serviceService.update(VALID_SERVICE_ID, putDto));
   }
 
   @Test
   void update_cancelsAppointments_whenAvailabilityChangesToFalse() {
-    Long serviceId = 1L;
     ServiceDTO putDto = mock(ServiceDTO.class);
     Service service = mock(Service.class);
     WorkSpace workSpace = mock(WorkSpace.class);
     ServiceView serviceView = mock(ServiceView.class);
     Appointment appointment = mock(Appointment.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
     when(workSpaceService.findByName(putDto.workSpaceName())).thenReturn(workSpace);
     when(serviceRepository.save(service)).thenReturn(service);
     when(serviceMapper.toView(service)).thenReturn(serviceView);
@@ -330,7 +310,7 @@ class ServiceServiceImplTest {
     when(service.getAppointments()).thenReturn(Collections.singletonList(appointment));
     when(appointment.getStatus()).thenReturn(AppointmentStatus.NOT_APPROVED);
 
-    ServiceView result = serviceService.update(serviceId, putDto);
+    ServiceView result = serviceService.update(VALID_SERVICE_ID, putDto);
 
     assertEquals(serviceView, result);
     verify(appointmentService).cancelAppointment(appointment.getId());
@@ -341,15 +321,14 @@ class ServiceServiceImplTest {
 
   @Test
   void delete_deletesService_whenServiceExists() {
-    Long serviceId = 1L;
     Service service = mock(Service.class);
     Appointment appointment = mock(Appointment.class);
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.of(service));
     when(service.getAppointments()).thenReturn(Collections.singletonList(appointment));
     when(appointment.getStatus()).thenReturn(AppointmentStatus.NOT_APPROVED);
 
-    serviceService.delete(serviceId);
+    serviceService.delete(VALID_SERVICE_ID);
 
     verify(appointmentService).cancelAppointment(appointment.getId());
     verify(serviceRepository).delete(service);
@@ -357,10 +336,8 @@ class ServiceServiceImplTest {
 
   @Test
   void delete_throwsNotFoundException_whenServiceDoesNotExist() {
-    Long serviceId = 1L;
+    when(serviceRepository.findById(VALID_SERVICE_ID)).thenReturn(Optional.empty());
 
-    when(serviceRepository.findById(serviceId)).thenReturn(Optional.empty());
-
-    assertThrows(NotFoundException.class, () -> serviceService.delete(serviceId));
+    assertThrows(NotFoundException.class, () -> serviceService.delete(VALID_SERVICE_ID));
   }
 }
