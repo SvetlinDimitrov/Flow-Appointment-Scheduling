@@ -3,7 +3,7 @@ package com.internship.flow_appointment_scheduling.features.appointments.reposit
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.internship.flow_appointment_scheduling.FlowAppointmentSchedulingApplication;
-import com.internship.flow_appointment_scheduling.features.appointments.config.TestContainersConfig;
+import com.internship.flow_appointment_scheduling.config.TestContainersConfig;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import com.internship.flow_appointment_scheduling.features.service.repository.ServiceRepository;

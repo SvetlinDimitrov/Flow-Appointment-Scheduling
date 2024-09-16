@@ -56,12 +56,12 @@ class AppointmentServiceImplTest {
 
   private AppointmentServiceImpl appointmentServiceImplUnderTest;
 
-  private final static Long VALID_USER_ID = 1L;
-  private final static Long VALID_SERVICE_ID = 1L;
-  private final static LocalDate VALID_DATE = LocalDate.now();
-  private final static Pageable PAGEABLE = PageRequest.of(0, 10);
-  private final static Long VALID_APPOINTMENT_ID = 1L;
-  private final static Long INVALID_APPOINTMENT_ID = -1L;
+  private static final Long VALID_USER_ID = 1L;
+  private static final Long VALID_SERVICE_ID = 1L;
+  private static final LocalDate VALID_DATE = LocalDate.now();
+  private static final Pageable PAGEABLE = PageRequest.of(0, 10);
+  private static final Long VALID_APPOINTMENT_ID = 1L;
+  private static final Long INVALID_APPOINTMENT_ID = -1L;
 
   @BeforeEach
   void setUp() {

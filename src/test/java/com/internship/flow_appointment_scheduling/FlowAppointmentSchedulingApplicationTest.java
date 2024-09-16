@@ -1,6 +1,6 @@
 package com.internship.flow_appointment_scheduling;
 
-import com.internship.flow_appointment_scheduling.features.appointments.config.TestContainersConfig;
+import com.internship.flow_appointment_scheduling.config.TestContainersConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
