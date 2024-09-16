@@ -23,12 +23,14 @@ import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enum
 import com.internship.flow_appointment_scheduling.infrastructure.security.service.JwtService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -51,30 +53,36 @@ class AppointmentControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
-
-  @MockBean
-  private AppointmentService appointmentService;
-
-  @MockBean
-  private JwtService jwtService;
-
   @Autowired
   private ObjectMapper objectMapper;
 
+  @MockBean
+  private AppointmentService appointmentService;
+  @MockBean
+  private JwtService jwtService;
+
+  private static final Long VALID_USER_ID = 1L;
+  private static final Long INVALID_USER_ID = -1L;
+  private static final Long VALID_SERVICE_ID = 1L;
+  private static final Long VALID_APPOINTMENT_ID = 1L;
+  private static final Long INVALID_APPOINTMENT_ID = -1L;
+  private static final LocalDate VALID_DATE = LocalDate.of(2023, Month.SEPTEMBER, 1);
+  private static final Pageable VALID_PAGEABLE = PageRequest.of(0, 10);
+
   @BeforeEach
   void setUp() {
-    Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
-    SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+    Authentication authentication = Mockito.mock(Authentication.class);
+    SecurityContext securityContext = Mockito.mock(SecurityContext.class);
     when(securityContext.getAuthentication()).thenReturn(authentication);
     SecurityContextHolder.setContext(securityContext);
   }
 
   @Test
   void getAll_returnsOk_withValidParams() throws Exception {
-    Pageable pageable = PageRequest.of(0, 10);
-    Page<AppointmentView> appointmentPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+    Page<AppointmentView> appointmentPage = new PageImpl<>(Collections.emptyList(), VALID_PAGEABLE,
+        0);
 
-    when(appointmentService.getAll(pageable)).thenReturn(appointmentPage);
+    when(appointmentService.getAll(VALID_PAGEABLE)).thenReturn(appointmentPage);
 
     mockMvc.perform(get("/api/v1/appointments")
             .contentType(MediaType.APPLICATION_JSON))
@@ -83,22 +91,20 @@ class AppointmentControllerTest {
 
   @Test
   void getAllByServiceId_returnsOk_withValidParams() throws Exception {
-    Long serviceId = 1L;
-    Pageable pageable = PageRequest.of(0, 10);
-    Page<AppointmentView> appointmentPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+    Page<AppointmentView> appointmentPage = new PageImpl<>(Collections.emptyList(), VALID_PAGEABLE,
+        0);
 
-    when(appointmentService.getAllByServiceId(serviceId, pageable)).thenReturn(appointmentPage);
+    when(appointmentService.getAllByServiceId(VALID_SERVICE_ID, VALID_PAGEABLE)).thenReturn(
+        appointmentPage);
 
     mockMvc.perform(
-            get("/api/v1/appointments/service/{serviceId}", serviceId)
+            get("/api/v1/appointments/service/{serviceId}", VALID_SERVICE_ID)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
   }
 
   @Test
   void getAllByServiceIdAndDate_returnsOk_withValidParams() throws Exception {
-    Long serviceId = 1L;
-    LocalDate date = LocalDate.of(2023, 10, 1);
     List<ShortAppointmentView> shortAppointmentViews = Arrays.asList(
         new ShortAppointmentView(1L, "Service 1", null, null,
             AppointmentStatus.CANCELED),
@@ -106,12 +112,12 @@ class AppointmentControllerTest {
             AppointmentStatus.APPROVED)
     );
 
-    when(appointmentService.getAllByServiceIdAndDate(serviceId, date)).thenReturn(
+    when(appointmentService.getAllByServiceIdAndDate(VALID_SERVICE_ID, VALID_DATE)).thenReturn(
         shortAppointmentViews);
 
     mockMvc.perform(
-            get("/api/v1/appointments/service/{serviceId}/short", serviceId)
-                .param("date", date.toString())
+            get("/api/v1/appointments/service/{serviceId}/short", VALID_SERVICE_ID)
+                .param("date", VALID_DATE.toString())
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -123,35 +129,32 @@ class AppointmentControllerTest {
 
   @Test
   void getAllByServiceIdAndDate_returnsNotFound_whenServiceDoesNotExist() throws Exception {
-    Long nonExistentServiceId = 999L;
-    LocalDate date = LocalDate.of(2023, 10, 1);
+    Long invalidServiceId = -1L;
 
-    when(appointmentService.getAllByServiceIdAndDate(nonExistentServiceId, date))
+    when(appointmentService.getAllByServiceIdAndDate(invalidServiceId, VALID_DATE))
         .thenThrow(new NotFoundException(Exceptions.SERVICE_NOT_FOUND));
 
-    mockMvc.perform(get("/api/v1/appointments/service/{serviceId}/short", nonExistentServiceId)
-            .param("date", date.toString())
+    mockMvc.perform(get("/api/v1/appointments/service/{serviceId}/short", invalidServiceId)
+            .param("date", VALID_DATE.toString())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void getAllByUserId_returnsOk_withValidParams() throws Exception {
-    Long userId = 1L;
-    Pageable pageable = PageRequest.of(0, 10);
-    Page<AppointmentView> appointmentPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+    Page<AppointmentView> appointmentPage = new PageImpl<>(Collections.emptyList(), VALID_PAGEABLE,
+        0);
 
-    when(appointmentService.getAllByUserId(userId, pageable)).thenReturn(appointmentPage);
+    when(appointmentService.getAllByUserId(VALID_USER_ID, VALID_PAGEABLE)).thenReturn(
+        appointmentPage);
 
-    mockMvc.perform(get("/api/v1/appointments/user/{userId}", userId)
+    mockMvc.perform(get("/api/v1/appointments/user/{userId}", VALID_USER_ID)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
   }
 
   @Test
   void getAllByUserIdAndDate_returnsOk_withValidParams() throws Exception {
-    Long userId = 1L;
-    LocalDate date = LocalDate.of(2023, 10, 1);
     List<ShortAppointmentView> shortAppointmentViews = Arrays.asList(
         new ShortAppointmentView(1L, "Service 1", null, null,
             AppointmentStatus.APPROVED),
@@ -159,10 +162,11 @@ class AppointmentControllerTest {
             AppointmentStatus.CANCELED)
     );
 
-    when(appointmentService.getAllByUserIdAndDate(userId, date)).thenReturn(shortAppointmentViews);
+    when(appointmentService.getAllByUserIdAndDate(VALID_USER_ID, VALID_DATE)).thenReturn(
+        shortAppointmentViews);
 
-    mockMvc.perform(get("/api/v1/appointments/user/{userId}/short", userId)
-            .param("date", date.toString())
+    mockMvc.perform(get("/api/v1/appointments/user/{userId}/short", VALID_USER_ID)
+            .param("date", VALID_DATE.toString())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -176,43 +180,37 @@ class AppointmentControllerTest {
 
   @Test
   void getAllByUserIdAndDate_returnsNotFound_whenUserDoesNotExist() throws Exception {
-    Long nonExistentUserId = 999L;
-    LocalDate date = LocalDate.of(2023, 10, 1);
-
-    when(appointmentService.getAllByUserIdAndDate(nonExistentUserId, date))
+    when(appointmentService.getAllByUserIdAndDate(INVALID_USER_ID, VALID_DATE))
         .thenThrow(new NotFoundException(Exceptions.USER_NOT_FOUND));
 
-    mockMvc.perform(get("/api/v1/appointments/user/{userId}/short", nonExistentUserId)
-            .param("date", date.toString())
+    mockMvc.perform(get("/api/v1/appointments/user/{userId}/short", INVALID_USER_ID)
+            .param("date", VALID_DATE.toString())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void getById_returnsOk_withValidId() throws Exception {
-    Long id = 1L;
     AppointmentView appointmentView = new AppointmentView(
-        id, null, null, null, null, AppointmentStatus.APPROVED, null
+        VALID_APPOINTMENT_ID, null, null, null, null, AppointmentStatus.APPROVED, null
     );
 
-    when(appointmentService.getById(id)).thenReturn(appointmentView);
+    when(appointmentService.getById(VALID_APPOINTMENT_ID)).thenReturn(appointmentView);
 
-    mockMvc.perform(get("/api/v1/appointments/{id}", id)
+    mockMvc.perform(get("/api/v1/appointments/{id}", VALID_APPOINTMENT_ID)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.id").value(id))
+        .andExpect(jsonPath("$.id").value(VALID_APPOINTMENT_ID))
         .andExpect(jsonPath("$.status").value(AppointmentStatus.APPROVED.toString()));
   }
 
   @Test
   void getById_returnsNotFound_whenIdDoesNotExist() throws Exception {
-    Long nonExistentId = 999L;
-
-    when(appointmentService.getById(nonExistentId))
+    when(appointmentService.getById(INVALID_APPOINTMENT_ID))
         .thenThrow(new NotFoundException(Exceptions.APPOINTMENT_NOT_FOUND));
 
-    mockMvc.perform(get("/api/v1/appointments/{id}", nonExistentId)
+    mockMvc.perform(get("/api/v1/appointments/{id}", INVALID_APPOINTMENT_ID)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
@@ -220,14 +218,14 @@ class AppointmentControllerTest {
   @Test
   void create_returnsOk_withValidDto() throws Exception {
     AppointmentCreate dto = new AppointmentCreate(
-        1L,
+        VALID_SERVICE_ID,
         "client@example.com",
         "staff@example.com",
         LocalDateTime.now().plusDays(1)
     );
 
     AppointmentView appointmentView = new AppointmentView(
-        1L, null, null, null, null, null, null
+        VALID_APPOINTMENT_ID, null, null, null, null, null, null
     );
 
     when(appointmentService.create(dto)).thenReturn(appointmentView);
@@ -237,7 +235,7 @@ class AppointmentControllerTest {
             .content(objectMapper.writeValueAsString(dto)))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.id").value(1L));
+        .andExpect(jsonPath("$.id").value(VALID_APPOINTMENT_ID));
   }
 
   @Test
@@ -271,7 +269,7 @@ class AppointmentControllerTest {
   @Test
   void create_returnsBadRequest_withInvalidStaffEmail() throws Exception {
     AppointmentCreate invalidDtoBlankStaffEmail = new AppointmentCreate(
-        1L,
+        VALID_SERVICE_ID,
         "client@example.com",
         "",
         LocalDateTime.now().plusDays(1)
@@ -283,7 +281,7 @@ class AppointmentControllerTest {
         .andExpect(status().isBadRequest());
 
     AppointmentCreate invalidDtoInvalidStaffEmail = new AppointmentCreate(
-        1L,
+        VALID_SERVICE_ID,
         "client@example.com",
         "invalid-email",
         LocalDateTime.now().plusDays(1)
@@ -299,7 +297,7 @@ class AppointmentControllerTest {
   void create_returnsBadRequest_withInvalidDate() throws Exception {
 
     AppointmentCreate invalidDtoNullDate = new AppointmentCreate(
-        1L,
+        VALID_SERVICE_ID,
         "client@example.com",
         "staff@example.com",
         null
@@ -311,7 +309,7 @@ class AppointmentControllerTest {
         .andExpect(status().isBadRequest());
 
     AppointmentCreate invalidDtoPastDate = new AppointmentCreate(
-        1L,
+        VALID_SERVICE_ID,
         "client@example.com",
         "staff@example.com",
         LocalDateTime.now().minusDays(1)
@@ -326,7 +324,7 @@ class AppointmentControllerTest {
   @Test
   void create_returnsBadRequest_withInvalidClientEmail() throws Exception {
     AppointmentCreate invalidDtoBlankClientEmail = new AppointmentCreate(
-        1L,
+        VALID_SERVICE_ID,
         "",
         "staff@example.com",
         LocalDateTime.now().plusDays(1)
@@ -338,7 +336,7 @@ class AppointmentControllerTest {
         .andExpect(status().isBadRequest());
 
     AppointmentCreate invalidDtoInvalidClientEmail = new AppointmentCreate(
-        1L,
+        VALID_SERVICE_ID,
         "invalid-email",
         "staff@example.com",
         LocalDateTime.now().plusDays(1)
@@ -352,31 +350,30 @@ class AppointmentControllerTest {
 
   @Test
   void update_returnsOk_withValidDto() throws Exception {
-    Long id = 1L;
     AppointmentUpdate dto = new AppointmentUpdate(UpdateAppointmentStatus.APPROVED);
-    AppointmentView appointmentView = new AppointmentView(id, null, null, null, null,
+    AppointmentView appointmentView = new AppointmentView(VALID_APPOINTMENT_ID, null, null, null,
+        null,
         AppointmentStatus.APPROVED, null);
 
-    when(appointmentService.update(id, dto)).thenReturn(appointmentView);
+    when(appointmentService.update(VALID_APPOINTMENT_ID, dto)).thenReturn(appointmentView);
 
-    mockMvc.perform(put("/api/v1/appointments/{id}", id)
+    mockMvc.perform(put("/api/v1/appointments/{id}", VALID_APPOINTMENT_ID)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(dto)))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.id").value(id))
+        .andExpect(jsonPath("$.id").value(VALID_APPOINTMENT_ID))
         .andExpect(jsonPath("$.status").value(UpdateAppointmentStatus.APPROVED.toString()));
   }
 
   @Test
   void update_returnsNotFound_whenIdDoesNotExist() throws Exception {
-    Long nonExistentId = 999L;
     AppointmentUpdate dto = new AppointmentUpdate(UpdateAppointmentStatus.APPROVED);
 
-    when(appointmentService.update(nonExistentId, dto))
+    when(appointmentService.update(INVALID_APPOINTMENT_ID, dto))
         .thenThrow(new NotFoundException(Exceptions.APPOINTMENT_NOT_FOUND));
 
-    mockMvc.perform(put("/api/v1/appointments/{id}", nonExistentId)
+    mockMvc.perform(put("/api/v1/appointments/{id}", INVALID_APPOINTMENT_ID)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(dto)))
         .andExpect(status().isNotFound());
@@ -384,10 +381,9 @@ class AppointmentControllerTest {
 
   @Test
   void update_returnsBadRequest_withInvalidDto() throws Exception {
-    Long id = 1L;
     AppointmentUpdate invalidDtoNullStatus = new AppointmentUpdate(null);
 
-    mockMvc.perform(put("/api/v1/appointments/{id}", id)
+    mockMvc.perform(put("/api/v1/appointments/{id}", VALID_APPOINTMENT_ID)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidDtoNullStatus)))
         .andExpect(status().isBadRequest());
@@ -395,21 +391,17 @@ class AppointmentControllerTest {
 
   @Test
   void delete_returnsNoContent_withValidId() throws Exception {
-    Long id = 1L;
-
-    mockMvc.perform(delete("/api/v1/appointments/{id}", id)
+    mockMvc.perform(delete("/api/v1/appointments/{id}", VALID_APPOINTMENT_ID)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
   }
 
   @Test
   void delete_returnsNotFound_whenIdDoesNotExist() throws Exception {
-    Long nonExistentId = 999L;
-
     doThrow(new NotFoundException(Exceptions.APPOINTMENT_NOT_FOUND))
-        .when(appointmentService).delete(nonExistentId);
+        .when(appointmentService).delete(INVALID_APPOINTMENT_ID);
 
-    mockMvc.perform(delete("/api/v1/appointments/{id}", nonExistentId)
+    mockMvc.perform(delete("/api/v1/appointments/{id}", INVALID_APPOINTMENT_ID)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
