@@ -67,11 +67,11 @@ class ServiceControllerTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  private final static Pageable pageable = PageRequest.of(0, 10);
-  private final static Long VALID_SERVICE_ID = 1L;
-  private final static Long INVALID_SERVICE_ID = -1L;
-  private final static String VALID_STAFF_EMAIL = "staff1@flow.com";
-  private final static ServiceDTO VALID_SERVICE_DTO = new ServiceDTO(
+  private static final Pageable PAGEABLE = PageRequest.of(0, 10);
+  private static final Long VALID_SERVICE_ID = 1L;
+  private static final Long INVALID_SERVICE_ID = -1L;
+  private static final String VALID_STAFF_EMAIL = "staff1@flow.com";
+  private static final ServiceDTO VALID_SERVICE_DTO = new ServiceDTO(
       "Valid Name",
       "Valid Description",
       true,
@@ -92,7 +92,7 @@ class ServiceControllerTest {
   void getAll_returnsEmptyPage_whenNoServicesExist() throws Exception {
     Page<ServiceView> emptyPage = new PageImpl<>(Collections.emptyList());
 
-    when(serviceService.getAll(pageable, null)).thenReturn(emptyPage);
+    when(serviceService.getAll(PAGEABLE, null)).thenReturn(emptyPage);
 
     mockMvc.perform(get("/api/v1/services")
             .param("page", "0")
@@ -107,7 +107,7 @@ class ServiceControllerTest {
     ServiceView serviceView = mock(ServiceView.class);
     Page<ServiceView> servicePage = new PageImpl<>(Collections.singletonList(serviceView));
 
-    when(serviceService.getAll(pageable, null)).thenReturn(servicePage);
+    when(serviceService.getAll(PAGEABLE, null)).thenReturn(servicePage);
 
     mockMvc.perform(get("/api/v1/services")
             .param("page", "0")
@@ -122,7 +122,7 @@ class ServiceControllerTest {
     ServiceView serviceView = mock(ServiceView.class);
     Page<ServiceView> servicePage = new PageImpl<>(Collections.singletonList(serviceView));
 
-    when(serviceService.getAll(pageable, VALID_STAFF_EMAIL)).thenReturn(servicePage);
+    when(serviceService.getAll(PAGEABLE, VALID_STAFF_EMAIL)).thenReturn(servicePage);
 
     mockMvc.perform(get("/api/v1/services")
             .param("page", "0")
