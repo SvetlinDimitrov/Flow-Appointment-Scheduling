@@ -14,6 +14,7 @@ import com.internship.flow_appointment_scheduling.seed.ServiceSeedRunner;
 import com.internship.flow_appointment_scheduling.seed.UserSeedRunner;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ class AppointmentRepositoryTest {
     Page<Appointment> appointments = appointmentRepository.findAllByServiceId(
         existingService.getId(), pageable);
 
-    assertThat(appointments.getContent()).hasSize(0);
+    assertThat(appointments.getContent()).isEmpty();
   }
 
   @Test
@@ -73,7 +74,7 @@ class AppointmentRepositoryTest {
     Page<Appointment> appointments = appointmentRepository.findAllByUserId(
         existingUser.getId(), pageable);
 
-    assertThat(appointments.getContent()).hasSize(0);
+    assertThat(appointments.getContent()).isEmpty();
   }
 
   @Test
@@ -93,12 +94,12 @@ class AppointmentRepositoryTest {
   void findAllByUserIdAndDate_returnEmptyList_whenUserDoesNotExits() {
     User existingUser = extractUserWithAppointmentsPreparedForDelete();
     userRepository.delete(existingUser);
-    LocalDate date = LocalDate.of(2024, 9, 1);
+    LocalDate date = LocalDate.of(2024, Month.SEPTEMBER, 1);
 
     List<Appointment> appointments = appointmentRepository.findAllByUserIdAndDate(
         existingUser.getId(), date);
 
-    assertThat(appointments.size()).isEqualTo(0);
+    assertThat(appointments.size()).isZero();
   }
 
   @Test
@@ -114,18 +115,18 @@ class AppointmentRepositoryTest {
     List<Appointment> appointments = appointmentRepository.findAllByUserIdAndDate(
         existingUser.getId(), existingDate);
 
-    assertThat(appointments.size()).isNotEqualTo(0);
+    assertThat(appointments.size()).isNotZero();
   }
 
   @Test
   void findAllByUserIdAndDate_returnEmptyList_whenUserExitsButNoDataForDate() {
     User existingUser = extractUserWithAppointments();
-    LocalDate date = LocalDate.of(1234, 9, 1);
+    LocalDate date = LocalDate.of(1234, Month.SEPTEMBER, 1);
 
     List<Appointment> appointments = appointmentRepository.findAllByUserIdAndDate(
         existingUser.getId(), date);
 
-    assertThat(appointments.size()).isEqualTo(0);
+    assertThat(appointments.size()).isZero();
   }
 
   @Test
@@ -153,12 +154,12 @@ class AppointmentRepositoryTest {
   void findAllByServiceIdAndDate_returnEmptyList_whenServiceDoesNotExits() {
     Service existingService = extractServiceWithExistingAppointments();
     serviceRepository.delete(existingService);
-    LocalDate date = LocalDate.of(2024, 9, 1);
+    LocalDate date = LocalDate.of(2024, Month.SEPTEMBER, 1);
 
     List<Appointment> appointments = appointmentRepository.findAllByServiceIdAndDate(
         existingService.getId(), date);
 
-    assertThat(appointments.size()).isEqualTo(0);
+    assertThat(appointments.size()).isZero();
   }
 
   @Test
@@ -172,18 +173,18 @@ class AppointmentRepositoryTest {
     List<Appointment> appointments = appointmentRepository.findAllByServiceIdAndDate(
         existingService.getId(), existingDate);
 
-    assertThat(appointments.size()).isNotEqualTo(0);
+    assertThat(appointments.size()).isNotZero();
   }
 
   @Test
   void findAllByServiceIdAndDate_returnEmptyList_whenServiceExitsButNoDataForDate() {
     Service existingService = extractServiceWithExistingAppointments();
-    LocalDate invalidLocalDate = LocalDate.of(1234, 9, 1);
+    LocalDate invalidLocalDate = LocalDate.of(1234, Month.SEPTEMBER, 1);
 
     List<Appointment> appointments = appointmentRepository.findAllByServiceIdAndDate(
         existingService.getId(), invalidLocalDate);
 
-    assertThat(appointments.size()).isEqualTo(0);
+    assertThat(appointments.size()).isZero();
   }
 
   @Test
@@ -202,7 +203,7 @@ class AppointmentRepositoryTest {
   @Test
   void existsOverlappingAppointment_returnFalse_whenNoOverlappingAppointmentExists() {
     User existingUser = extractUserWithAppointments();
-    LocalDateTime startDate = LocalDateTime.of(1024, 9, 1, 10, 0);
+    LocalDateTime startDate = LocalDateTime.of(1024, Month.SEPTEMBER, 1, 10, 0);
     LocalDateTime endDate = startDate.plusMinutes(60);
 
     boolean isOverlapping = appointmentRepository.existsOverlappingAppointment(
@@ -232,13 +233,13 @@ class AppointmentRepositoryTest {
   @Test
   void countAppointmentsInWorkspace_returnZero_whenNoAppointmentsExist() {
     Service existingService = extractServiceWithExistingAppointments();
-    LocalDateTime invalidLocalDateTime = LocalDateTime.of(1024, 9, 1, 10, 0);
+    LocalDateTime invalidLocalDateTime = LocalDateTime.of(1024, Month.SEPTEMBER, 1, 10, 0);
     LocalDateTime endDate = invalidLocalDateTime.plusMinutes(60);
 
     int count = appointmentRepository.countAppointmentsInWorkspace(
         existingService.getWorkSpace().getId(), invalidLocalDateTime, endDate);
 
-    assertThat(count).isEqualTo(0);
+    assertThat(count).isZero();
   }
 
   @Test
@@ -250,7 +251,7 @@ class AppointmentRepositoryTest {
     int count = appointmentRepository.countAppointmentsInWorkspace(
         existingService.getWorkSpace().getId(), existingStartDate, endDate);
 
-    assertThat(count).isNotEqualTo(0);
+    assertThat(count).isNotZero();
   }
 
   private Service extractServiceWithExistingAppointments() {

@@ -56,6 +56,13 @@ class AppointmentServiceImplTest {
 
   private AppointmentServiceImpl appointmentServiceImplUnderTest;
 
+  private static final Long VALID_USER_ID = 1L;
+  private static final Long VALID_SERVICE_ID = 1L;
+  private static final LocalDate VALID_DATE = LocalDate.now();
+  private static final Pageable PAGEABLE = PageRequest.of(0, 10);
+  private static final Long VALID_APPOINTMENT_ID = 1L;
+  private static final Long INVALID_APPOINTMENT_ID = -1L;
+
   @BeforeEach
   void setUp() {
     appointmentServiceImplUnderTest = new AppointmentServiceImpl(
@@ -71,33 +78,25 @@ class AppointmentServiceImplTest {
 
   @Test
   void getAll_returnPageAppointments_whenValidPageableIsProvided() {
-    Pageable pageable = PageRequest.of(0, 10);
+    when(appointmentRepository.findAll(PAGEABLE)).thenReturn(Page.empty());
 
-    when(appointmentRepository.findAll(pageable)).thenReturn(Page.empty());
+    appointmentServiceImplUnderTest.getAll(PAGEABLE);
 
-    appointmentServiceImplUnderTest.getAll(pageable);
-
-    assertEquals(Page.empty(), appointmentRepository.findAll(pageable));
+    assertEquals(Page.empty(), appointmentRepository.findAll(PAGEABLE));
   }
 
   @Test
   void getAllByUserId_returnPageAppointments_whenValidPageableIsProvided() {
-    Pageable pageable = PageRequest.of(0, 10);
-    long VALID_USER_ID = 1;
-
-    when(appointmentRepository.findAllByUserId(VALID_USER_ID, pageable)).thenReturn(Page.empty());
+    when(appointmentRepository.findAllByUserId(VALID_USER_ID, PAGEABLE)).thenReturn(Page.empty());
 
     Page<AppointmentView> result = appointmentServiceImplUnderTest.getAllByUserId(
-        VALID_USER_ID, pageable);
+        VALID_USER_ID, PAGEABLE);
 
     assertEquals(Page.empty(), result);
   }
 
   @Test
   void getAllByUserIdAndDate_returnListAppointments_whenValidUserIdAndDate() {
-    long VALID_USER_ID = 1;
-    LocalDate VALID_DATE = LocalDate.now();
-
     when(appointmentRepository.findAllByUserIdAndDate(VALID_USER_ID, VALID_DATE)).thenReturn(
         List.of());
 
@@ -109,9 +108,6 @@ class AppointmentServiceImplTest {
 
   @Test
   void getAllByServiceIdAndDate_returnListAppointments_whenValidServiceIdAndDate() {
-    long VALID_SERVICE_ID = 1;
-    LocalDate VALID_DATE = LocalDate.now();
-
     when(appointmentRepository.findAllByServiceIdAndDate(VALID_SERVICE_ID, VALID_DATE)).thenReturn(
         List.of());
 
@@ -123,51 +119,45 @@ class AppointmentServiceImplTest {
 
   @Test
   void getAllByServiceIdAndDate_returnPageAppointments_whenValidServiceIdAndPage() {
-    long VALID_SERVICE_ID = 1;
-    Pageable pageable = PageRequest.of(0, 10);
-
-    when(appointmentRepository.findAllByServiceId(VALID_SERVICE_ID, pageable)).thenReturn(
+    when(appointmentRepository.findAllByServiceId(VALID_SERVICE_ID, PAGEABLE)).thenReturn(
         Page.empty());
 
     Page<AppointmentView> result = appointmentServiceImplUnderTest.getAllByServiceId(
-        VALID_SERVICE_ID, pageable);
+        VALID_SERVICE_ID, PAGEABLE);
 
     assertEquals(Page.empty(), result);
   }
 
   @Test
   void getById_returnAppointment_whenValidIdIsProvided() {
-    long VALID_ID = 1;
     Appointment mockAppointment = mock(Appointment.class);
     AppointmentView mockAppointmentView = mock(AppointmentView.class);
 
-    when(appointmentRepository.findById(VALID_ID)).thenReturn(
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(
         java.util.Optional.of(mockAppointment));
     when(appointmentMapper.toView(mockAppointment)).thenReturn(mockAppointmentView);
 
-    AppointmentView result = appointmentServiceImplUnderTest.getById(VALID_ID);
+    AppointmentView result = appointmentServiceImplUnderTest.getById(VALID_APPOINTMENT_ID);
 
     assertEquals(mockAppointmentView, result);
   }
 
   @Test
   void getById_throwException_whenInvalidIdIsProvided() {
-    long INVALID_ID = 1;
-    when(appointmentRepository.findById(INVALID_ID)).thenReturn(java.util.Optional.empty());
+    when(appointmentRepository.findById(INVALID_APPOINTMENT_ID)).thenReturn(java.util.Optional.empty());
 
     Assertions.assertThrows(NotFoundException.class, () -> {
-      appointmentServiceImplUnderTest.getById(INVALID_ID);
+      appointmentServiceImplUnderTest.getById(INVALID_APPOINTMENT_ID);
     });
   }
 
   @Test
   void create_throwException_whenInvalidClientEmail() {
-    Long validServiceId = 1L;
     String invalidClientEmail = "client@abv.bg";
     String validStaffEmail = "staff@abv.bg";
     LocalDateTime validStart = LocalDateTime.now();
     AppointmentCreate mockAppointmentCreate = new AppointmentCreate(
-        validServiceId, invalidClientEmail, validStaffEmail, validStart
+        VALID_SERVICE_ID, invalidClientEmail, validStaffEmail, validStart
     );
 
     when(userService.findByEmail(invalidClientEmail)).thenThrow(NotFoundException.class);
@@ -179,12 +169,11 @@ class AppointmentServiceImplTest {
 
   @Test
   void create_throwException_whenInvalidStaffEmail() {
-    Long validServiceId = 1L;
     String validClientEmail = "client@abv.bg";
     String invalidStaffEmail = "staff@abv.bg";
     LocalDateTime validStart = LocalDateTime.now();
     AppointmentCreate mockAppointmentCreate = new AppointmentCreate(
-        validServiceId, validClientEmail, invalidStaffEmail, validStart
+        VALID_SERVICE_ID, validClientEmail, invalidStaffEmail, validStart
     );
     User mockUser = mock(User.class);
 
@@ -277,184 +266,169 @@ class AppointmentServiceImplTest {
 
   @Test
   void update_throwException_whenInvalidIdIsProvided() {
-    long invalidId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
 
-    when(appointmentRepository.findById(invalidId)).thenReturn(java.util.Optional.empty());
+    when(appointmentRepository.findById(INVALID_APPOINTMENT_ID)).thenReturn(java.util.Optional.empty());
 
     Assertions.assertThrows(NotFoundException.class, () -> {
-      appointmentServiceImplUnderTest.update(invalidId, dto);
+      appointmentServiceImplUnderTest.update(INVALID_APPOINTMENT_ID, dto);
     });
   }
 
   @Test
   void update_throwException_whenCancelingTheAppointmentAgain() {
-    long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
 
-    when(appointmentRepository.findById(validId)).thenReturn(Optional.of(mockAppointment));
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(Optional.of(mockAppointment));
     when(mockAppointment.getStatus()).thenReturn(AppointmentStatus.CANCELED);
 
     Assertions.assertThrows(BadRequestException.class, () -> {
-      appointmentServiceImplUnderTest.update(validId, dto);
+      appointmentServiceImplUnderTest.update(VALID_APPOINTMENT_ID, dto);
     });
   }
 
   @Test
   void update_throwException_whenProvidingStatusDifferentThanCancelToCompletedAppointment() {
-    long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
 
-    when(appointmentRepository.findById(validId)).thenReturn(Optional.of(mockAppointment));
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(Optional.of(mockAppointment));
     when(mockAppointment.getStatus()).thenReturn(AppointmentStatus.COMPLETED);
     when(dto.status()).thenReturn(UpdateAppointmentStatus.APPROVED);
 
     Assertions.assertThrows(BadRequestException.class, () -> {
-      appointmentServiceImplUnderTest.update(validId, dto);
+      appointmentServiceImplUnderTest.update(VALID_APPOINTMENT_ID, dto);
     });
 
     when(dto.status()).thenReturn(UpdateAppointmentStatus.COMPLETED);
 
     Assertions.assertThrows(BadRequestException.class, () -> {
-      appointmentServiceImplUnderTest.update(validId, dto);
+      appointmentServiceImplUnderTest.update(VALID_APPOINTMENT_ID, dto);
     });
 
   }
 
   @Test
   void update_returnAppointment_whenApprovingAgain() {
-    long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
     AppointmentView mockAppointmentView = mock(AppointmentView.class);
 
-    when(appointmentRepository.findById(validId)).thenReturn(Optional.of(mockAppointment));
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(Optional.of(mockAppointment));
     when(mockAppointment.getStatus()).thenReturn(AppointmentStatus.APPROVED);
     when(dto.status()).thenReturn(UpdateAppointmentStatus.APPROVED);
     when(appointmentMapper.toView(mockAppointment)).thenReturn(mockAppointmentView);
 
-    AppointmentView result = appointmentServiceImplUnderTest.update(validId, dto);
+    AppointmentView result = appointmentServiceImplUnderTest.update(VALID_APPOINTMENT_ID, dto);
 
     assertEquals(mockAppointmentView, result);
   }
 
   @Test
   void update_returnAppointment_whenCancelingTheAppointment() {
-    long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
     AppointmentView mockAppointmentView = mock(AppointmentView.class);
 
-    when(appointmentRepository.findById(validId)).thenReturn(Optional.of(mockAppointment));
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(Optional.of(mockAppointment));
     when(mockAppointment.getStatus()).thenReturn(AppointmentStatus.APPROVED);
     when(dto.status()).thenReturn(UpdateAppointmentStatus.CANCELED);
     when(appointmentRepository.save(mockAppointment)).thenReturn(mockAppointment);
     when(appointmentMapper.toView(mockAppointment)).thenReturn(mockAppointmentView);
 
-    AppointmentView result = appointmentServiceImplUnderTest.update(validId, dto);
+    AppointmentView result = appointmentServiceImplUnderTest.update(VALID_APPOINTMENT_ID, dto);
 
     assertEquals(mockAppointmentView, result);
   }
 
   @Test
   void update_returnAppointment_whenCompletingTheAppointment() {
-    long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
     AppointmentView mockAppointmentView = mock(AppointmentView.class);
 
-    when(appointmentRepository.findById(validId)).thenReturn(Optional.of(mockAppointment));
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(Optional.of(mockAppointment));
     when(mockAppointment.getStatus()).thenReturn(AppointmentStatus.APPROVED);
     when(dto.status()).thenReturn(UpdateAppointmentStatus.COMPLETED);
     when(appointmentRepository.save(mockAppointment)).thenReturn(mockAppointment);
     when(appointmentMapper.toView(mockAppointment)).thenReturn(mockAppointmentView);
 
-    AppointmentView result = appointmentServiceImplUnderTest.update(validId, dto);
+    AppointmentView result = appointmentServiceImplUnderTest.update(VALID_APPOINTMENT_ID, dto);
 
     assertEquals(mockAppointmentView, result);
   }
 
   @Test
   void update_returnAppointment_whenApprovingTheAppointment() {
-    long validId = 1;
     AppointmentUpdate dto = mock(AppointmentUpdate.class);
     Appointment mockAppointment = mock(Appointment.class);
     AppointmentView mockAppointmentView = mock(AppointmentView.class);
 
-    when(appointmentRepository.findById(validId)).thenReturn(Optional.of(mockAppointment));
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(Optional.of(mockAppointment));
     when(mockAppointment.getStatus()).thenReturn(AppointmentStatus.NOT_APPROVED);
     when(dto.status()).thenReturn(UpdateAppointmentStatus.APPROVED);
     when(appointmentRepository.save(mockAppointment)).thenReturn(mockAppointment);
     when(appointmentMapper.toView(mockAppointment)).thenReturn(mockAppointmentView);
 
-    AppointmentView result = appointmentServiceImplUnderTest.update(validId, dto);
+    AppointmentView result = appointmentServiceImplUnderTest.update(VALID_APPOINTMENT_ID, dto);
 
     assertEquals(mockAppointmentView, result);
   }
 
   @Test
   void delete_throwException_whenInvalidIdIsProvided() {
-    long invalidId = 1;
-
-    when(appointmentRepository.findById(invalidId)).thenReturn(Optional.empty());
+    when(appointmentRepository.findById(INVALID_APPOINTMENT_ID)).thenReturn(Optional.empty());
     Assertions.assertThrows(NotFoundException.class, () -> {
-      appointmentServiceImplUnderTest.delete(invalidId);
+      appointmentServiceImplUnderTest.delete(INVALID_APPOINTMENT_ID);
     });
   }
 
   @Test
   void delete_deleteAppointment_whenValidIdIsProvided() {
-    long validId = 1;
     Appointment mockAppointment = mock(Appointment.class);
 
-    when(appointmentRepository.findById(validId)).thenReturn(Optional.of(mockAppointment));
-    appointmentServiceImplUnderTest.delete(validId);
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(Optional.of(mockAppointment));
+    appointmentServiceImplUnderTest.delete(VALID_APPOINTMENT_ID);
 
     verify(appointmentRepository).delete(mockAppointment);
   }
 
   @Test
   void cancelAppointment_throwException_whenInvalidIdIsProvided() {
-    long invalidId = 1;
-    when(appointmentRepository.findById(invalidId)).thenReturn(Optional.empty());
+    when(appointmentRepository.findById(INVALID_APPOINTMENT_ID)).thenReturn(Optional.empty());
 
     Assertions.assertThrows(NotFoundException.class, () -> {
-      appointmentServiceImplUnderTest.cancelAppointment(invalidId);
+      appointmentServiceImplUnderTest.cancelAppointment(INVALID_APPOINTMENT_ID);
     });
   }
 
   @Test
   void cancelAppointment_saveAppointment_whenValidIdIsProvided() {
-    long validId = 1;
     Appointment mockAppointment = mock(Appointment.class);
 
-    when(appointmentRepository.findById(validId)).thenReturn(Optional.of(mockAppointment));
-    appointmentServiceImplUnderTest.cancelAppointment(validId);
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(Optional.of(mockAppointment));
+    appointmentServiceImplUnderTest.cancelAppointment(VALID_APPOINTMENT_ID);
 
     verify(appointmentRepository).save(mockAppointment);
   }
 
   @Test
   void completeAppointment_throwException_whenInvalidIdIsProvided() {
-    long invalidId = 1;
-
-    when(appointmentRepository.findById(invalidId)).thenReturn(Optional.empty());
+    when(appointmentRepository.findById(INVALID_APPOINTMENT_ID)).thenReturn(Optional.empty());
 
     Assertions.assertThrows(NotFoundException.class, () -> {
-      appointmentServiceImplUnderTest.completeAppointment(invalidId);
+      appointmentServiceImplUnderTest.completeAppointment(INVALID_APPOINTMENT_ID);
     });
   }
 
   @Test
   void completeAppointment_saveAppointment_whenValidIdIsProvided() {
-    long validId = 1;
     Appointment mockAppointment = mock(Appointment.class);
 
-    when(appointmentRepository.findById(validId)).thenReturn(Optional.of(mockAppointment));
+    when(appointmentRepository.findById(VALID_APPOINTMENT_ID)).thenReturn(Optional.of(mockAppointment));
 
-    appointmentServiceImplUnderTest.completeAppointment(validId);
+    appointmentServiceImplUnderTest.completeAppointment(VALID_APPOINTMENT_ID);
 
     verify(appointmentRepository).save(mockAppointment);
   }

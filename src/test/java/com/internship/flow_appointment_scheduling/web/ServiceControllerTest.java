@@ -67,6 +67,19 @@ class ServiceControllerTest {
   @Autowired
   private ObjectMapper objectMapper;
 
+  private static final Pageable PAGEABLE = PageRequest.of(0, 10);
+  private static final Long VALID_SERVICE_ID = 1L;
+  private static final Long INVALID_SERVICE_ID = -1L;
+  private static final String VALID_STAFF_EMAIL = "staff1@flow.com";
+  private static final ServiceDTO VALID_SERVICE_DTO = new ServiceDTO(
+      "Valid Name",
+      "Valid Description",
+      true,
+      new BigDecimal("10.0"),
+      Duration.ofHours(1),
+      "ValidWorkSpace"
+  );
+
   @BeforeEach
   void setUp() {
     Authentication authentication = mock(Authentication.class);
@@ -77,10 +90,9 @@ class ServiceControllerTest {
 
   @Test
   void getAll_returnsEmptyPage_whenNoServicesExist() throws Exception {
-    Pageable pageable = PageRequest.of(0, 10);
     Page<ServiceView> emptyPage = new PageImpl<>(Collections.emptyList());
 
-    when(serviceService.getAll(pageable, null)).thenReturn(emptyPage);
+    when(serviceService.getAll(PAGEABLE, null)).thenReturn(emptyPage);
 
     mockMvc.perform(get("/api/v1/services")
             .param("page", "0")
@@ -92,11 +104,10 @@ class ServiceControllerTest {
 
   @Test
   void getAll_returnsPageWithServices_whenServicesExist() throws Exception {
-    Pageable pageable = PageRequest.of(0, 10);
     ServiceView serviceView = mock(ServiceView.class);
     Page<ServiceView> servicePage = new PageImpl<>(Collections.singletonList(serviceView));
 
-    when(serviceService.getAll(pageable, null)).thenReturn(servicePage);
+    when(serviceService.getAll(PAGEABLE, null)).thenReturn(servicePage);
 
     mockMvc.perform(get("/api/v1/services")
             .param("page", "0")
@@ -108,17 +119,15 @@ class ServiceControllerTest {
 
   @Test
   void getAll_returnsPageWithServices_whenFilteredByStaffEmail() throws Exception {
-    Pageable pageable = PageRequest.of(0, 10);
-    String staffEmail = "staff@example.com";
     ServiceView serviceView = mock(ServiceView.class);
     Page<ServiceView> servicePage = new PageImpl<>(Collections.singletonList(serviceView));
 
-    when(serviceService.getAll(pageable, staffEmail)).thenReturn(servicePage);
+    when(serviceService.getAll(PAGEABLE, VALID_STAFF_EMAIL)).thenReturn(servicePage);
 
     mockMvc.perform(get("/api/v1/services")
             .param("page", "0")
             .param("size", "10")
-            .param("staffEmail", staffEmail))
+            .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.content").isNotEmpty());
@@ -126,27 +135,24 @@ class ServiceControllerTest {
 
   @Test
   void getById_returnsOk_whenServiceExists() throws Exception {
-    Long id = 1L;
     ServiceView serviceView = mock(ServiceView.class);
 
-    when(serviceView.id()).thenReturn(id);
-    when(serviceService.getById(id)).thenReturn(serviceView);
+    when(serviceView.id()).thenReturn(VALID_SERVICE_ID);
+    when(serviceService.getById(VALID_SERVICE_ID)).thenReturn(serviceView);
 
-    mockMvc.perform(get("/api/v1/services/{id}", id))
+    mockMvc.perform(get("/api/v1/services/{id}", VALID_SERVICE_ID))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.id").value(id));
+        .andExpect(jsonPath("$.id").value(VALID_SERVICE_ID));
   }
 
   @Test
   void getById_returnsNotFound_whenServiceDoesNotExist() throws Exception {
-    Long nonExistentId = 999L;
-
-    when(serviceService.getById(nonExistentId)).thenThrow(
+    when(serviceService.getById(INVALID_SERVICE_ID)).thenThrow(
         new NotFoundException(Exceptions.SERVICE_NOT_FOUND)
     );
 
-    mockMvc.perform(get("/api/v1/services/{id}", nonExistentId))
+    mockMvc.perform(get("/api/v1/services/{id}", INVALID_SERVICE_ID))
         .andExpect(status().isNotFound());
   }
 
@@ -166,54 +172,44 @@ class ServiceControllerTest {
 
   @Test
   void create_returnsOk_whenAllFieldsAreValid() throws Exception {
-    ServiceDTO serviceDTO = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
-        true,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
-        "ValidWorkSpace"
-    );
-
     ServiceView serviceView = mock(ServiceView.class);
-    when(serviceService.create(serviceDTO)).thenReturn(serviceView);
-    when(workSpaceRepository.existsByName(serviceDTO.workSpaceName())).thenReturn(true);
+    when(serviceService.create(VALID_SERVICE_DTO)).thenReturn(serviceView);
+    when(workSpaceRepository.existsByName(VALID_SERVICE_DTO.workSpaceName())).thenReturn(true);
 
     mockMvc.perform(post("/api/v1/services")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(serviceDTO)))
+            .content(objectMapper.writeValueAsString(VALID_SERVICE_DTO)))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
 
   @Test
   void create_returnsBadRequest_whenNameIsInvalid() throws Exception {
-
     List<String> invalidNames = List.of("", "Na");
 
     for (String n : invalidNames) {
-      ServiceDTO serviceDTO = new ServiceDTO(
+      ServiceDTO invalidDto = new ServiceDTO(
           n,
-          "Valid Description",
-          true,
-          new BigDecimal("10.0"),
-          Duration.ofHours(1),
-          "ValidWorkSpace"
+          VALID_SERVICE_DTO.description(),
+          VALID_SERVICE_DTO.availability(),
+          VALID_SERVICE_DTO.price(),
+          VALID_SERVICE_DTO.duration(),
+          VALID_SERVICE_DTO.workSpaceName()
       );
 
       mockMvc.perform(post("/api/v1/services")
               .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(serviceDTO)))
+              .content(objectMapper.writeValueAsString(invalidDto)))
           .andExpect(status().isBadRequest());
     }
 
     ServiceDTO serviceDtoWithNull = new ServiceDTO(
         null,
-        "Valid Description",
-        true,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
-        "ValidWorkSpace"
+        VALID_SERVICE_DTO.description(),
+        VALID_SERVICE_DTO.availability(),
+        VALID_SERVICE_DTO.price(),
+        VALID_SERVICE_DTO.duration(),
+        VALID_SERVICE_DTO.workSpaceName()
     );
 
     mockMvc.perform(post("/api/v1/services")
@@ -224,28 +220,27 @@ class ServiceControllerTest {
 
   @Test
   void create_returnsBadRequest_whenDescriptionIsInvalid() throws Exception {
-    ServiceDTO serviceDTO = new ServiceDTO(
-        "Valid Name",
+    ServiceDTO serviceDtoEmptyDescription = new ServiceDTO(
+        VALID_SERVICE_DTO.name(),
         "",
-        true,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
-        "ValidWorkSpace"
+        VALID_SERVICE_DTO.availability(),
+        VALID_SERVICE_DTO.price(),
+        VALID_SERVICE_DTO.duration(),
+        VALID_SERVICE_DTO.workSpaceName()
+    );
+    ServiceDTO serviceDtoWitchNull = new ServiceDTO(
+        VALID_SERVICE_DTO.name(),
+        null,
+        VALID_SERVICE_DTO.availability(),
+        VALID_SERVICE_DTO.price(),
+        VALID_SERVICE_DTO.duration(),
+        VALID_SERVICE_DTO.workSpaceName()
     );
 
     mockMvc.perform(post("/api/v1/services")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(serviceDTO)))
+            .content(objectMapper.writeValueAsString(serviceDtoEmptyDescription)))
         .andExpect(status().isBadRequest());
-
-    ServiceDTO serviceDtoWitchNull = new ServiceDTO(
-        "Valid Name",
-        null,
-        true,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
-        "ValidWorkSpace"
-    );
 
     mockMvc.perform(post("/api/v1/services")
             .contentType(MediaType.APPLICATION_JSON)
@@ -255,45 +250,44 @@ class ServiceControllerTest {
 
   @Test
   void create_returnsBadRequest_whenAvailabilityIsNull() throws Exception {
-    ServiceDTO serviceDTO = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
+    ServiceDTO serviceDtoWithNullAvailability = new ServiceDTO(
+        VALID_SERVICE_DTO.name(),
+        VALID_SERVICE_DTO.description(),
         null,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
-        "ValidWorkSpace"
+        VALID_SERVICE_DTO.price(),
+        VALID_SERVICE_DTO.duration(),
+        VALID_SERVICE_DTO.workSpaceName()
     );
 
     mockMvc.perform(post("/api/v1/services")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(serviceDTO)))
+            .content(objectMapper.writeValueAsString(serviceDtoWithNullAvailability)))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void create_returnsBadRequest_whenPriceIsInvalid() throws Exception {
-    ServiceDTO serviceDTO = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
-        true,
+    ServiceDTO serviceDtoWithZeroPrice = new ServiceDTO(
+        VALID_SERVICE_DTO.name(),
+        VALID_SERVICE_DTO.description(),
+        VALID_SERVICE_DTO.availability(),
         new BigDecimal("0.0"),
-        Duration.ofHours(1),
-        "ValidWorkSpace"
+        VALID_SERVICE_DTO.duration(),
+        VALID_SERVICE_DTO.workSpaceName()
+    );
+    ServiceDTO serviceDtoWithNullPrice = new ServiceDTO(
+        VALID_SERVICE_DTO.name(),
+        VALID_SERVICE_DTO.description(),
+        VALID_SERVICE_DTO.availability(),
+        null,
+        VALID_SERVICE_DTO.duration(),
+        VALID_SERVICE_DTO.workSpaceName()
     );
 
     mockMvc.perform(post("/api/v1/services")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(serviceDTO)))
+            .content(objectMapper.writeValueAsString(serviceDtoWithZeroPrice)))
         .andExpect(status().isBadRequest());
-
-    ServiceDTO serviceDtoWithNullPrice = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
-        true,
-        null,
-        Duration.ofHours(1),
-        "ValidWorkSpace"
-    );
 
     mockMvc.perform(post("/api/v1/services")
             .contentType(MediaType.APPLICATION_JSON)
@@ -303,28 +297,27 @@ class ServiceControllerTest {
 
   @Test
   void create_returnsBadRequest_whenDurationIsInvalid() throws Exception {
-    ServiceDTO serviceDTO = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
-        true,
-        new BigDecimal("10.0"),
+    ServiceDTO serviceDTOWithNegativeDuration = new ServiceDTO(
+        VALID_SERVICE_DTO.name(),
+        VALID_SERVICE_DTO.description(),
+        VALID_SERVICE_DTO.availability(),
+        VALID_SERVICE_DTO.price(),
         Duration.ofHours(-1),
-        "ValidWorkSpace"
+        VALID_SERVICE_DTO.workSpaceName()
+    );
+    ServiceDTO serviceDtoWithNullDuration = new ServiceDTO(
+        VALID_SERVICE_DTO.name(),
+        VALID_SERVICE_DTO.description(),
+        VALID_SERVICE_DTO.availability(),
+        VALID_SERVICE_DTO.price(),
+        null,
+        VALID_SERVICE_DTO.workSpaceName()
     );
 
     mockMvc.perform(post("/api/v1/services")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(serviceDTO)))
+            .content(objectMapper.writeValueAsString(serviceDTOWithNegativeDuration)))
         .andExpect(status().isBadRequest());
-
-    ServiceDTO serviceDtoWithNullDuration = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
-        true,
-        new BigDecimal("10.0"),
-        null,
-        "ValidWorkSpace"
-    );
 
     mockMvc.perform(post("/api/v1/services")
             .contentType(MediaType.APPLICATION_JSON)
@@ -334,27 +327,21 @@ class ServiceControllerTest {
 
   @Test
   void create_returnsBadRequest_whenWorkSpaceNameIsInvalid() throws Exception {
-    ServiceDTO serviceDTO = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
-        true,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
+    String invalidWorkSpaceName = "Invalid WorkSpace Name";
+    ServiceDTO serviceDtoWithEmptyWorkSpace = new ServiceDTO(
+        VALID_SERVICE_DTO.name(),
+        VALID_SERVICE_DTO.description(),
+        VALID_SERVICE_DTO.availability(),
+        VALID_SERVICE_DTO.price(),
+        VALID_SERVICE_DTO.duration(),
         ""
     );
-
-    mockMvc.perform(post("/api/v1/services")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(serviceDTO)))
-        .andExpect(status().isBadRequest());
-
-    String invalidWorkSpaceName = "Invalid WorkSpace Name";
     ServiceDTO serviceDtoWithInvalidName = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
-        true,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
+        VALID_SERVICE_DTO.name(),
+        VALID_SERVICE_DTO.description(),
+        VALID_SERVICE_DTO.availability(),
+        VALID_SERVICE_DTO.price(),
+        VALID_SERVICE_DTO.duration(),
         invalidWorkSpaceName
     );
 
@@ -362,149 +349,132 @@ class ServiceControllerTest {
 
     mockMvc.perform(post("/api/v1/services")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(serviceDTO)))
+            .content(objectMapper.writeValueAsString(serviceDtoWithEmptyWorkSpace)))
+        .andExpect(status().isBadRequest());
+
+    mockMvc.perform(post("/api/v1/services")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(serviceDtoWithInvalidName)))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void assignStaff_returnsOk_whenAssignmentIsSuccessful() throws Exception {
-    Long id = 1L;
-    String staffEmail = "staff@example.com";
     ServiceView serviceView = mock(ServiceView.class);
     User user = mock(User.class);
 
-    when(userService.findByEmail(staffEmail)).thenReturn(user);
+    when(userService.findByEmail(VALID_STAFF_EMAIL)).thenReturn(user);
     when(user.getRole()).thenReturn(UserRoles.EMPLOYEE);
-    when(serviceService.assignStaff(id, staffEmail)).thenReturn(serviceView);
+    when(serviceService.assignStaff(VALID_SERVICE_ID, VALID_STAFF_EMAIL)).thenReturn(serviceView);
 
-    mockMvc.perform(post("/api/v1/services/{id}/assign", id)
-            .param("staffEmail", staffEmail))
+    mockMvc.perform(post("/api/v1/services/{id}/assign", VALID_SERVICE_ID)
+            .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
 
   @Test
   void assignStaff_returnsBadRequest_whenEmailIsNotStaffOrAdministrator() throws Exception {
-    Long id = 1L;
-    String staffEmail = "staff@example.com";
+    String clientEmail = "client@example.com";
     User user = mock(User.class);
 
-    when(userService.findByEmail(staffEmail)).thenReturn(user);
+    when(userService.findByEmail(clientEmail)).thenReturn(user);
     when(user.getRole()).thenReturn(UserRoles.CLIENT);
 
-    mockMvc.perform(post("/api/v1/services/{id}/assign", id)
-            .param("staffEmail", staffEmail))
+    mockMvc.perform(post("/api/v1/services/{id}/assign", VALID_SERVICE_ID)
+            .param("staffEmail", clientEmail))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void assignStaff_returnsNotFound_whenServiceNotFound() throws Exception {
-    Long id = 999L;
-    String staffEmail = "staff@example.com";
     User user = mock(User.class);
 
-    when(userService.findByEmail(staffEmail)).thenReturn(user);
+    when(userService.findByEmail(VALID_STAFF_EMAIL)).thenReturn(user);
     when(user.getRole()).thenReturn(UserRoles.EMPLOYEE);
-    when(serviceService.assignStaff(id, staffEmail)).thenThrow(
+    when(serviceService.assignStaff(INVALID_SERVICE_ID, VALID_STAFF_EMAIL)).thenThrow(
         new NotFoundException(Exceptions.SERVICE_NOT_FOUND));
 
-    mockMvc.perform(post("/api/v1/services/{id}/assign", id)
-            .param("staffEmail", staffEmail))
+    mockMvc.perform(post("/api/v1/services/{id}/assign", INVALID_SERVICE_ID)
+            .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void assignStaff_returnsNotFound_whenStaffEmailNotFound() throws Exception {
-    Long id = 1L;
-    String staffEmail = "nonexistent@example.com";
+    String notExistingEmail = "nonexistent@example.com";
     User user = mock(User.class);
 
-    when(userService.findByEmail(staffEmail)).thenReturn(user);
+    when(userService.findByEmail(notExistingEmail)).thenReturn(user);
     when(user.getRole()).thenReturn(UserRoles.EMPLOYEE);
-    when(serviceService.assignStaff(id, staffEmail)).thenThrow(
+    when(serviceService.assignStaff(VALID_SERVICE_ID, notExistingEmail)).thenThrow(
         new NotFoundException(Exceptions.USER_NOT_FOUND));
 
-    mockMvc.perform(post("/api/v1/services/{id}/assign", id)
-            .param("staffEmail", staffEmail))
+    mockMvc.perform(post("/api/v1/services/{id}/assign", VALID_SERVICE_ID)
+            .param("staffEmail", notExistingEmail))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void unassignStaff_returnsOk_whenUnassignmentIsSuccessful() throws Exception {
-    Long id = 1L;
-    String staffEmail = "staff@example.com";
     ServiceView serviceView = mock(ServiceView.class);
 
-    when(serviceService.unassignStaff(id, staffEmail)).thenReturn(serviceView);
+    when(serviceService.unassignStaff(VALID_SERVICE_ID, VALID_STAFF_EMAIL)).thenReturn(serviceView);
 
-    mockMvc.perform(put("/api/v1/services/{id}/unassign", id)
-            .param("staffEmail", staffEmail))
+    mockMvc.perform(put("/api/v1/services/{id}/unassign", VALID_SERVICE_ID)
+            .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
 
   @Test
   void unassignStaff_returnsNotFound_whenServiceNotFound() throws Exception {
-    Long id = 999L;
-    String staffEmail = "staff@example.com";
-
-    when(serviceService.unassignStaff(id, staffEmail))
+    when(serviceService.unassignStaff(INVALID_SERVICE_ID, VALID_STAFF_EMAIL))
         .thenThrow(new NotFoundException(Exceptions.SERVICE_NOT_FOUND));
 
-    mockMvc.perform(put("/api/v1/services/{id}/unassign", id)
-            .param("staffEmail", staffEmail))
+    mockMvc.perform(put("/api/v1/services/{id}/unassign", INVALID_SERVICE_ID)
+            .param("staffEmail", VALID_STAFF_EMAIL))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void unassignStaff_returnsNotFound_whenStaffEmailNotFound() throws Exception {
-    Long id = 1L;
-    String staffEmail = "nonexistent@example.com";
+    String notExistingEmail = "nonexistent@example.com";
 
-    when(serviceService.unassignStaff(id, staffEmail))
+    when(serviceService.unassignStaff(VALID_SERVICE_ID, notExistingEmail))
         .thenThrow(new NotFoundException(Exceptions.USER_NOT_FOUND));
 
-    mockMvc.perform(put("/api/v1/services/{id}/unassign", id)
-            .param("staffEmail", staffEmail))
+    mockMvc.perform(put("/api/v1/services/{id}/unassign", VALID_SERVICE_ID)
+            .param("staffEmail", notExistingEmail))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void update_returnsOk_whenUpdateIsSuccessful() throws Exception {
-    Long id = 1L;
-    ServiceDTO serviceDTO = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
-        true,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
-        "ValidWorkSpace"
-    );
     ServiceView serviceView = mock(ServiceView.class);
 
-    when(workSpaceRepository.existsByName(serviceDTO.workSpaceName())).thenReturn(true);
-    when(serviceService.update(id, serviceDTO)).thenReturn(serviceView);
+    when(workSpaceRepository.existsByName(VALID_SERVICE_DTO.workSpaceName())).thenReturn(true);
+    when(serviceService.update(VALID_SERVICE_ID, VALID_SERVICE_DTO)).thenReturn(serviceView);
 
-    mockMvc.perform(put("/api/v1/services/{id}", id)
+    mockMvc.perform(put("/api/v1/services/{id}", VALID_SERVICE_ID)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(serviceDTO)))
+            .content(objectMapper.writeValueAsString(VALID_SERVICE_DTO)))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
 
   @Test
   void update_returnsBadRequest_whenRequestIsInvalid() throws Exception {
-    Long id = 1L;
     ServiceDTO invalidServiceDTO = new ServiceDTO(
         "",
-        "Valid Description",
-        true,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
-        "ValidWorkSpace"
+        VALID_SERVICE_DTO.description(),
+        VALID_SERVICE_DTO.availability(),
+        VALID_SERVICE_DTO.price(),
+        VALID_SERVICE_DTO.duration(),
+        VALID_SERVICE_DTO.workSpaceName()
     );
 
-    mockMvc.perform(put("/api/v1/services/{id}", id)
+    mockMvc.perform(put("/api/v1/services/{id}", VALID_SERVICE_ID)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidServiceDTO)))
         .andExpect(status().isBadRequest());
@@ -512,42 +482,28 @@ class ServiceControllerTest {
 
   @Test
   void update_returnsNotFound_whenServiceNotFound() throws Exception {
-    Long id = 999L;
-    ServiceDTO serviceDTO = new ServiceDTO(
-        "Valid Name",
-        "Valid Description",
-        true,
-        new BigDecimal("10.0"),
-        Duration.ofHours(1),
-        "ValidWorkSpace"
-    );
-
-    when(workSpaceRepository.existsByName(serviceDTO.workSpaceName())).thenReturn(true);
-    when(serviceService.update(id, serviceDTO)).thenThrow(
+    when(workSpaceRepository.existsByName(VALID_SERVICE_DTO.workSpaceName())).thenReturn(true);
+    when(serviceService.update(INVALID_SERVICE_ID, VALID_SERVICE_DTO)).thenThrow(
         new NotFoundException(Exceptions.SERVICE_NOT_FOUND));
 
-    mockMvc.perform(put("/api/v1/services/{id}", id)
+    mockMvc.perform(put("/api/v1/services/{id}", INVALID_SERVICE_ID)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(serviceDTO)))
+            .content(objectMapper.writeValueAsString(VALID_SERVICE_DTO)))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void delete_returnsNoContent_whenDeletionIsSuccessful() throws Exception {
-    Long id = 1L;
-
-    mockMvc.perform(delete("/api/v1/services/{id}", id))
+    mockMvc.perform(delete("/api/v1/services/{id}", VALID_SERVICE_ID))
         .andExpect(status().isNoContent());
   }
 
   @Test
   void delete_returnsNotFound_whenServiceNotFound() throws Exception {
-    Long id = 999L;
-
     doThrow(new NotFoundException(Exceptions.SERVICE_NOT_FOUND))
-        .when(serviceService).delete(id);
+        .when(serviceService).delete(INVALID_SERVICE_ID);
 
-    mockMvc.perform(delete("/api/v1/services/{id}", id))
+    mockMvc.perform(delete("/api/v1/services/{id}", INVALID_SERVICE_ID))
         .andExpect(status().isNotFound());
   }
 }

@@ -25,6 +25,7 @@ import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enum
 import com.internship.flow_appointment_scheduling.infrastructure.security.service.JwtService;
 import java.time.LocalTime;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,10 +58,36 @@ class UserControllerTest {
   private UserRepository userRepository;
   @MockBean
   private JwtService jwtService;
+
   private Authentication authentication;
 
   @Autowired
   private ObjectMapper objectMapper;
+  private static final Pageable PAGEABLE = PageRequest.of(0, 10);
+  private static final Long VALID_USER_ID = 1L;
+  private static final UserPostRequest VALID_USER_POST_REQUEST = new UserPostRequest(
+      "ValidPass123!",
+      "valid.email@example.com",
+      "John",
+      "Doe"
+  );
+  private static final UserPutRequest VALID_USER_PUT_REQUEST = new UserPutRequest("John", "Doe");
+  private static final StaffDetailsDto VALID_STAFF_DETAILS_DTO = new StaffDetailsDto(
+      25.0,
+      LocalTime.now(),
+      LocalTime.now().plusMinutes(30)
+  );
+  private static final StaffHireDto VALID_STAFF_HIRE_DTO = new StaffHireDto(
+      VALID_USER_POST_REQUEST,
+      VALID_STAFF_DETAILS_DTO
+  );
+  private static final StaffModifyDto VALID_STAFF_MODIFY_DTO = new StaffModifyDto(
+      UserRoles.EMPLOYEE,
+      1000.0,
+      true,
+      LocalTime.of(9, 0),
+      LocalTime.of(17, 0)
+  );
 
   @BeforeEach
   void setUp() {
@@ -72,12 +99,11 @@ class UserControllerTest {
 
   @Test
   void getAll_returnsOk_whenUserRoleIsProvided() throws Exception {
-    Pageable pageable = PageRequest.of(0, 10);
     UserRoles userRole = UserRoles.EMPLOYEE;
     UserView userView = mock(UserView.class);
-    Page<UserView> userViews = new PageImpl<>(Collections.singletonList(userView), pageable, 1);
+    Page<UserView> userViews = new PageImpl<>(Collections.singletonList(userView), PAGEABLE, 1);
 
-    when(userService.getAll(pageable, userRole)).thenReturn(userViews);
+    when(userService.getAll(PAGEABLE, userRole)).thenReturn(userViews);
 
     mockMvc.perform(get("/api/v1/users")
             .param("page", "0")
@@ -89,11 +115,10 @@ class UserControllerTest {
 
   @Test
   void getAll_returnsOk_whenUserRoleIsNotProvided() throws Exception {
-    Pageable pageable = PageRequest.of(0, 10);
     UserView userView = mock(UserView.class);
-    Page<UserView> userViews = new PageImpl<>(Collections.singletonList(userView), pageable, 1);
+    Page<UserView> userViews = new PageImpl<>(Collections.singletonList(userView), PAGEABLE, 1);
 
-    when(userService.getAll(pageable, null)).thenReturn(userViews);
+    when(userService.getAll(PAGEABLE, null)).thenReturn(userViews);
 
     mockMvc.perform(get("/api/v1/users")
             .param("page", "0")
@@ -104,12 +129,11 @@ class UserControllerTest {
 
   @Test
   void getAllByServiceId_returnsOk_whenValidParams() throws Exception {
-    Pageable pageable = PageRequest.of(0, 10);
     Long serviceId = 1L;
     UserView userView = mock(UserView.class);
-    Page<UserView> userViews = new PageImpl<>(Collections.singletonList(userView), pageable, 1);
+    Page<UserView> userViews = new PageImpl<>(Collections.singletonList(userView), PAGEABLE, 1);
 
-    when(userService.getAllByServiceId(pageable, serviceId)).thenReturn(userViews);
+    when(userService.getAllByServiceId(PAGEABLE, serviceId)).thenReturn(userViews);
 
     mockMvc.perform(get("/api/v1/users/service/{serviceId}", serviceId)
             .param("page", "0")
@@ -120,116 +144,84 @@ class UserControllerTest {
 
   @Test
   void getById_returnsOk_whenUserExists() throws Exception {
-    Long userId = 1L;
     UserView userView = mock(UserView.class);
 
-    when(userService.getById(userId)).thenReturn(userView);
+    when(userService.getById(VALID_USER_ID)).thenReturn(userView);
 
-    mockMvc.perform(get("/api/v1/users/{id}", userId))
+    mockMvc.perform(get("/api/v1/users/{id}", VALID_USER_ID))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
 
   @Test
   void getById_returnsNotFound_whenUserDoesNotExist() throws Exception {
-    Long userId = 1L;
+    Long notExistingUser = 1L;
 
-    when(userService.getById(userId))
+    when(userService.getById(notExistingUser))
         .thenThrow(new NotFoundException(Exceptions.USER_NOT_FOUND));
 
-    mockMvc.perform(get("/api/v1/users/{id}", userId))
+    mockMvc.perform(get("/api/v1/users/{id}", notExistingUser))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void create_returnsCreated_whenRequestIsValid() throws Exception {
     UserView userView = mock(UserView.class);
-    UserPostRequest validUserPostRequest = new UserPostRequest(
-        "ValidPass123!",
-        "valid.email@example.com",
-        "John",
-        "Doe"
-    );
-    when(userService.create(validUserPostRequest)).thenReturn(userView);
-    when(userRepository.existsByEmail(validUserPostRequest.email())).thenReturn(false);
+
+    when(userService.create(VALID_USER_POST_REQUEST)).thenReturn(userView);
+    when(userRepository.existsByEmail(VALID_USER_POST_REQUEST.email())).thenReturn(false);
 
     mockMvc.perform(post("/api/v1/users")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(validUserPostRequest)))
+            .content(objectMapper.writeValueAsString(VALID_USER_POST_REQUEST)))
         .andExpect(status().isCreated());
   }
 
   @Test
   void create_returnsBadRequest_whenPasswordIsInvalid() throws Exception {
-    UserPostRequest blankPassword = new UserPostRequest(
-        "",
-        "valid.email@example.com",
-        "John",
-        "Doe"
-    );
+    List<String> invalidPasswords = List.of("", "short1!", "onlyloowercase");
 
-    UserPostRequest shortPassword = new UserPostRequest(
-        "Short1!",
-        "valid.email@example.com",
-        "John",
-        "Doe"
-    );
+    for (String password : invalidPasswords) {
+      UserPostRequest request = new UserPostRequest(
+          password,
+          VALID_USER_POST_REQUEST.email(),
+          VALID_USER_POST_REQUEST.firstName(),
+          VALID_USER_POST_REQUEST.lastName()
+      );
 
-    UserPostRequest invalidPassword = new UserPostRequest(
-        "invalidpassword",
-        "valid.email@example.com",
-        "John",
-        "Doe"
-    );
-
-    mockMvc.perform(post("/api/v1/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(blankPassword)))
-        .andExpect(status().isBadRequest());
-
-    mockMvc.perform(post("/api/v1/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(shortPassword)))
-        .andExpect(status().isBadRequest());
-
-    mockMvc.perform(post("/api/v1/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(invalidPassword)))
-        .andExpect(status().isBadRequest());
+      mockMvc.perform(post("/api/v1/users")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
   }
 
   @Test
   void create_returnsBadRequest_whenEmailIsInvalid() throws Exception {
-    UserPostRequest blankEmail = new UserPostRequest(
-        "ValidPass123!",
-        "",
-        "John",
-        "Doe"
-    );
-    UserPostRequest invalidEmail = new UserPostRequest(
-        "ValidPass123!",
-        "invalid-email",
-        "John",
-        "Doe"
-    );
+    List<String> invalidEmails = List.of("", "invalid-email", "invalid@.com", "invalid.com");
+
+    for (String email : invalidEmails) {
+      UserPostRequest request = new UserPostRequest(
+          VALID_USER_POST_REQUEST.password(),
+          email,
+          VALID_USER_POST_REQUEST.firstName(),
+          VALID_USER_POST_REQUEST.lastName()
+      );
+
+      mockMvc.perform(post("/api/v1/users")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
+
     UserPostRequest alreadyTaken = new UserPostRequest(
-        "ValidPass123!",
+        VALID_USER_POST_REQUEST.password(),
         "alreadyTaken@abv.bg",
-        "John",
-        "Doe"
+        VALID_USER_POST_REQUEST.firstName(),
+        VALID_USER_POST_REQUEST.lastName()
     );
 
     when(userRepository.existsByEmail(alreadyTaken.email())).thenReturn(true);
-
-    mockMvc.perform(post("/api/v1/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(blankEmail)))
-        .andExpect(status().isBadRequest());
-
-    mockMvc.perform(post("/api/v1/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(invalidEmail)))
-        .andExpect(status().isBadRequest());
 
     mockMvc.perform(post("/api/v1/users")
             .contentType(MediaType.APPLICATION_JSON)
@@ -240,10 +232,10 @@ class UserControllerTest {
   @Test
   void create_returnsBadRequest_whenFirstNameIsTooShort() throws Exception {
     UserPostRequest request = new UserPostRequest(
-        "ValidPass123!",
-        "valid.email@example.com",
+        VALID_USER_POST_REQUEST.password(),
+        VALID_USER_POST_REQUEST.email(),
         "Jo",
-        "Doe"
+        VALID_USER_POST_REQUEST.lastName()
     );
 
     mockMvc.perform(post("/api/v1/users")
@@ -255,9 +247,9 @@ class UserControllerTest {
   @Test
   void create_returnsBadRequest_whenLastNameIsTooShort() throws Exception {
     UserPostRequest request = new UserPostRequest(
-        "ValidPass123!",
-        "valid.email@example.com",
-        "John",
+        VALID_USER_POST_REQUEST.password(),
+        VALID_USER_POST_REQUEST.email(),
+        VALID_USER_POST_REQUEST.firstName(),
         "Do"
     );
 
@@ -269,113 +261,104 @@ class UserControllerTest {
 
   @Test
   void update_returnsOk_whenRequestIsValid() throws Exception {
-    Long userId = 1L;
-    UserPutRequest validUserPutRequest = new UserPutRequest("John", "Doe");
     UserView userView = mock(UserView.class);
 
-    when(userService.update(userId, validUserPutRequest)).thenReturn(userView);
+    when(userService.update(VALID_USER_ID, VALID_USER_PUT_REQUEST)).thenReturn(userView);
 
-    mockMvc.perform(put("/api/v1/users/{id}", userId)
+    mockMvc.perform(put("/api/v1/users/{id}", VALID_USER_ID)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(validUserPutRequest)))
+            .content(objectMapper.writeValueAsString(VALID_USER_PUT_REQUEST)))
         .andExpect(status().isOk());
   }
 
   @Test
   void update_returnsNotFound_whenUserDoesNotExist() throws Exception {
-    UserPutRequest validUserPutRequest = new UserPutRequest("John", "Doe");
-    Long userId = 1L;
-    when(userService.update(userId, validUserPutRequest))
-        .thenThrow(new NotFoundException(Exceptions.USER_NOT_FOUND, userId));
+    Long invalidUserId = 1L;
 
-    mockMvc.perform(put("/api/v1/users/{id}", userId)
+    when(userService.update(invalidUserId, VALID_USER_PUT_REQUEST))
+        .thenThrow(new NotFoundException(Exceptions.USER_NOT_FOUND, invalidUserId));
+
+    mockMvc.perform(put("/api/v1/users/{id}", invalidUserId)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(validUserPutRequest)))
+            .content(objectMapper.writeValueAsString(VALID_USER_PUT_REQUEST)))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void update_returnsBadRequest_whenFirstNameIsInvalid() throws Exception {
-    Long userId = 1L;
-    UserPutRequest blankFirstName = new UserPutRequest("", "Doe");
-    UserPutRequest nullFirstName = new UserPutRequest(null, "Doe");
-    UserPutRequest toShortFirstName = new UserPutRequest("Jo", "Doe");
+    List<String> invalidNames = List.of("", "Jo");
 
-    mockMvc.perform(put("/api/v1/users/{id}", userId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(blankFirstName)))
-        .andExpect(status().isBadRequest());
+    for (String name : invalidNames) {
+      UserPutRequest request = new UserPutRequest(name, VALID_USER_PUT_REQUEST.lastName());
 
-    mockMvc.perform(put("/api/v1/users/{id}", userId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(nullFirstName)))
-        .andExpect(status().isBadRequest());
+      mockMvc.perform(put("/api/v1/users/{id}", VALID_USER_ID)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
 
-    mockMvc.perform(put("/api/v1/users/{id}", userId)
+    UserPutRequest nullName = new UserPutRequest(null, VALID_USER_PUT_REQUEST.lastName());
+
+    mockMvc.perform(put("/api/v1/users/{id}", VALID_USER_ID)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(toShortFirstName)))
+            .content(objectMapper.writeValueAsString(nullName)))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void update_returnsBadRequest_whenLastNameIsInvalid() throws Exception {
-    Long userId = 1L;
-    UserPutRequest blankLastName = new UserPutRequest("John", "");
-    UserPutRequest nullLastName = new UserPutRequest("John", null);
-    UserPutRequest toShortLastName = new UserPutRequest("John", "Do");
+    List<String> invalidNames = List.of("", "Do");
 
-    mockMvc.perform(put("/api/v1/users/{id}", userId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(blankLastName)))
-        .andExpect(status().isBadRequest());
+    for (String name : invalidNames) {
+      UserPutRequest request = new UserPutRequest(VALID_USER_PUT_REQUEST.firstName(), name);
 
-    mockMvc.perform(put("/api/v1/users/{id}", userId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(nullLastName)))
-        .andExpect(status().isBadRequest());
+      mockMvc.perform(put("/api/v1/users/{id}", VALID_USER_ID)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
 
-    mockMvc.perform(put("/api/v1/users/{id}", userId)
+    UserPutRequest nullRequest = new UserPutRequest(VALID_USER_PUT_REQUEST.firstName(), null);
+
+    mockMvc.perform(put("/api/v1/users/{id}", VALID_USER_ID)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(toShortLastName)))
+            .content(objectMapper.writeValueAsString(nullRequest)))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void delete_returnsNoContent_whenUserExists() throws Exception {
-    Long userId = 1L;
-
-    mockMvc.perform(delete("/api/v1/users/{id}", userId))
+    mockMvc.perform(delete("/api/v1/users/{id}", VALID_USER_ID))
         .andExpect(status().isNoContent());
   }
 
   @Test
   void delete_returnsNotFound_whenUserDoesNotExist() throws Exception {
-    Long userId = 1L;
+    Long invalidUserId = 1L;
 
-    doThrow(new NotFoundException(Exceptions.USER_NOT_FOUND, userId))
-        .when(userService).delete(userId);
+    doThrow(new NotFoundException(Exceptions.USER_NOT_FOUND, invalidUserId))
+        .when(userService).delete(invalidUserId);
 
-    mockMvc.perform(delete("/api/v1/users/{id}", userId))
+    mockMvc.perform(delete("/api/v1/users/{id}", invalidUserId))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void hireStaff_returnsCreated_whenRequestIsValid() throws Exception {
-    StaffHireDto validStaffHireDto = getValidStaffHireDto();
     UserView userView = mock(UserView.class);
 
-    when(userService.hireStaff(validStaffHireDto)).thenReturn(userView);
-    when(userRepository.existsByEmail(validStaffHireDto.userInfo().email())).thenReturn(false);
+    when(userService.hireStaff(VALID_STAFF_HIRE_DTO)).thenReturn(userView);
+    when(userRepository.existsByEmail(VALID_STAFF_HIRE_DTO.userInfo().email())).thenReturn(false);
 
     mockMvc.perform(post("/api/v1/users/hire")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(validStaffHireDto)))
+            .content(objectMapper.writeValueAsString(VALID_STAFF_HIRE_DTO)))
         .andExpect(status().isCreated());
   }
 
   @Test
   void hireStaff_returnsBadRequest_whenUserInfoIsNull() throws Exception {
-    StaffHireDto request = new StaffHireDto(null, getValidStaffHireDto().staffDetailsDto());
+    StaffHireDto request = new StaffHireDto(null, VALID_STAFF_DETAILS_DTO);
 
     mockMvc.perform(post("/api/v1/users/hire")
             .contentType(MediaType.APPLICATION_JSON)
@@ -385,7 +368,7 @@ class UserControllerTest {
 
   @Test
   void hireStaff_returnsBadRequest_whenStaffDetailsDtoIsNull() throws Exception {
-    StaffHireDto request = new StaffHireDto(getValidStaffHireDto().userInfo(), null);
+    StaffHireDto request = new StaffHireDto(VALID_USER_POST_REQUEST, null);
 
     mockMvc.perform(post("/api/v1/users/hire")
             .contentType(MediaType.APPLICATION_JSON)
@@ -395,13 +378,18 @@ class UserControllerTest {
 
   @Test
   void hireStaff_returnsBadRequest_whenStaffDetailsInvalidSalary() throws Exception {
-    StaffHireDto validStaffHireDto = getValidStaffHireDto();
-    StaffDetailsDto invalidSalary = new StaffDetailsDto(-1.0, LocalTime.now(),
-        LocalTime.now().plusMinutes(30));
-    StaffDetailsDto nullSalary = new StaffDetailsDto(null, LocalTime.now(),
-        LocalTime.now().plusMinutes(30));
-    StaffHireDto request1 = new StaffHireDto(validStaffHireDto.userInfo(), invalidSalary);
-    StaffHireDto request2 = new StaffHireDto(validStaffHireDto.userInfo(), nullSalary);
+    StaffDetailsDto invalidSalary = new StaffDetailsDto(
+        -1.0,
+        VALID_STAFF_DETAILS_DTO.beginWorkingHour(),
+        VALID_STAFF_DETAILS_DTO.endWorkingHour()
+    );
+    StaffDetailsDto nullSalary = new StaffDetailsDto(
+        null,
+        VALID_STAFF_DETAILS_DTO.beginWorkingHour(),
+        VALID_STAFF_DETAILS_DTO.endWorkingHour()
+    );
+    StaffHireDto request1 = new StaffHireDto(VALID_USER_POST_REQUEST, invalidSalary);
+    StaffHireDto request2 = new StaffHireDto(VALID_USER_POST_REQUEST, nullSalary);
 
     mockMvc.perform(post("/api/v1/users/hire")
             .contentType(MediaType.APPLICATION_JSON)
@@ -416,14 +404,24 @@ class UserControllerTest {
 
   @Test
   void hireStaff_returnsBadRequest_whenStaffDetailsInvalidWorkingHours() throws Exception {
-    StaffHireDto validStaffHireDto = getValidStaffHireDto();
-    StaffDetailsDto invalidBegin = new StaffDetailsDto(25.0, null, LocalTime.now().plusMinutes(30));
-    StaffDetailsDto invalidEnd = new StaffDetailsDto(null, LocalTime.now(), null);
-    StaffDetailsDto invalidWorkingHours = new StaffDetailsDto(null, LocalTime.now(),
-        LocalTime.now());
-    StaffHireDto request1 = new StaffHireDto(validStaffHireDto.userInfo(), invalidBegin);
-    StaffHireDto request2 = new StaffHireDto(validStaffHireDto.userInfo(), invalidEnd);
-    StaffHireDto request3 = new StaffHireDto(validStaffHireDto.userInfo(), invalidWorkingHours);
+    StaffDetailsDto invalidBegin = new StaffDetailsDto(
+        VALID_STAFF_DETAILS_DTO.salary(),
+        null,
+        VALID_STAFF_DETAILS_DTO.endWorkingHour()
+    );
+    StaffDetailsDto invalidEnd = new StaffDetailsDto(
+        VALID_STAFF_DETAILS_DTO.salary(),
+        VALID_STAFF_DETAILS_DTO.beginWorkingHour(),
+        null
+    );
+    StaffDetailsDto invalidWorkingHours = new StaffDetailsDto(
+        VALID_STAFF_DETAILS_DTO.salary(),
+        LocalTime.now(),
+        LocalTime.now()
+    );
+    StaffHireDto request1 = new StaffHireDto(VALID_USER_POST_REQUEST, invalidBegin);
+    StaffHireDto request2 = new StaffHireDto(VALID_USER_POST_REQUEST, invalidEnd);
+    StaffHireDto request3 = new StaffHireDto(VALID_USER_POST_REQUEST, invalidWorkingHours);
 
     mockMvc.perform(post("/api/v1/users/hire")
             .contentType(MediaType.APPLICATION_JSON)
@@ -443,7 +441,6 @@ class UserControllerTest {
 
   @Test
   void modifyStaff_returnsOk_whenRequestIsValid() throws Exception {
-    Long userId = 1L;
     StaffModifyDto validStaffModifyDto = new StaffModifyDto(
         null,
         null,
@@ -454,9 +451,9 @@ class UserControllerTest {
     UserView userView = mock(UserView.class);
 
     when(authentication.isAuthenticated()).thenReturn(true);
-    when(userService.modifyStaff(userId, validStaffModifyDto)).thenReturn(userView);
+    when(userService.modifyStaff(VALID_USER_ID, validStaffModifyDto)).thenReturn(userView);
 
-    mockMvc.perform(put("/api/v1/users/{id}/staff", userId)
+    mockMvc.perform(put("/api/v1/users/{id}/staff", VALID_USER_ID)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(validStaffModifyDto)))
         .andExpect(status().isOk());
@@ -464,20 +461,20 @@ class UserControllerTest {
 
   @Test
   void modifyStaff_returnsNotFound_whenUserDoesNotExist() throws Exception {
-    Long userId = 1L;
+    Long invalidUserId = -1L;
     StaffModifyDto validStaffModifyDto = new StaffModifyDto(
         null,
         null,
-        true,
-        LocalTime.of(9, 0),
-        LocalTime.of(17, 0)
+        VALID_STAFF_MODIFY_DTO.isAvailable(),
+        VALID_STAFF_MODIFY_DTO.beginWorkingHour(),
+        VALID_STAFF_MODIFY_DTO.endWorkingHour()
     );
 
     when(authentication.isAuthenticated()).thenReturn(true);
-    when(userService.modifyStaff(userId, validStaffModifyDto))
-        .thenThrow(new NotFoundException(Exceptions.USER_NOT_FOUND, userId));
+    when(userService.modifyStaff(invalidUserId, validStaffModifyDto))
+        .thenThrow(new NotFoundException(Exceptions.USER_NOT_FOUND, invalidUserId));
 
-    mockMvc.perform(put("/api/v1/users/{id}/staff", userId)
+    mockMvc.perform(put("/api/v1/users/{id}/staff", invalidUserId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(validStaffModifyDto)))
         .andExpect(status().isNotFound());
@@ -485,16 +482,15 @@ class UserControllerTest {
 
   @Test
   void modifyStaff_returnsBadRequest_whenIsAvailableIsNull() throws Exception {
-    Long userId = 1L;
     StaffModifyDto request = new StaffModifyDto(
-        UserRoles.EMPLOYEE,
-        1000.0,
+        VALID_STAFF_MODIFY_DTO.userRole(),
+        VALID_STAFF_MODIFY_DTO.salary(),
         null,
-        LocalTime.of(9, 0),
-        LocalTime.of(17, 0)
+        VALID_STAFF_MODIFY_DTO.beginWorkingHour(),
+        VALID_STAFF_MODIFY_DTO.endWorkingHour()
     );
 
-    mockMvc.perform(put("/api/v1/users/{id}/staff", userId)
+    mockMvc.perform(put("/api/v1/users/{id}/staff", VALID_USER_ID)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
@@ -502,16 +498,15 @@ class UserControllerTest {
 
   @Test
   void modifyStaff_returnsBadRequest_whenBeginWorkingHourIsNull() throws Exception {
-    Long userId = 1L;
     StaffModifyDto request = new StaffModifyDto(
-        UserRoles.EMPLOYEE,
-        1000.0,
-        true,
+        VALID_STAFF_MODIFY_DTO.userRole(),
+        VALID_STAFF_MODIFY_DTO.salary(),
+        VALID_STAFF_MODIFY_DTO.isAvailable(),
         null,
-        LocalTime.of(17, 0)
+        VALID_STAFF_MODIFY_DTO.endWorkingHour()
     );
 
-    mockMvc.perform(put("/api/v1/users/{id}/staff", userId)
+    mockMvc.perform(put("/api/v1/users/{id}/staff", VALID_USER_ID)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
@@ -519,32 +514,17 @@ class UserControllerTest {
 
   @Test
   void modifyStaff_returnsBadRequest_whenEndWorkingHourIsNull() throws Exception {
-    Long userId = 1L;
     StaffModifyDto request = new StaffModifyDto(
-        UserRoles.EMPLOYEE,
-        1000.0,
-        true,
-        LocalTime.of(9, 0),
+        VALID_STAFF_MODIFY_DTO.userRole(),
+        VALID_STAFF_MODIFY_DTO.salary(),
+        VALID_STAFF_MODIFY_DTO.isAvailable(),
+        VALID_STAFF_MODIFY_DTO.beginWorkingHour(),
         null
     );
 
-    mockMvc.perform(put("/api/v1/users/{id}/staff", userId)
+    mockMvc.perform(put("/api/v1/users/{id}/staff", VALID_USER_ID)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
-  }
-
-  private StaffHireDto getValidStaffHireDto() {
-    UserPostRequest userPostRequest = new UserPostRequest(
-        "ValidPass123!",
-        "valid.email@example.com",
-        "John",
-        "Doe"
-    );
-    StaffDetailsDto staffDetailsDto =
-        new StaffDetailsDto(25.0,
-            LocalTime.of(9, 0),
-            LocalTime.of(17, 0));
-    return new StaffHireDto(userPostRequest, staffDetailsDto);
   }
 }

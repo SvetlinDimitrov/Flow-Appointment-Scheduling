@@ -52,6 +52,10 @@ class UserServiceImplTest {
 
   private UserServiceImpl userService;
 
+  private static final Pageable PAGEABLE = PageRequest.of(0, 10);
+  private static final Long USER_ID = 1L;
+  private static final Long STAFF_ID = 1L;
+
   @BeforeEach
   void setUp() {
     userService = new UserServiceImpl(
@@ -65,84 +69,78 @@ class UserServiceImplTest {
 
   @Test
   void getAll_returnsPageUsers_whenRoleIsProvided() {
-    Pageable pageable = PageRequest.of(0, 10);
     UserRoles userRole = UserRoles.ADMINISTRATOR;
     User user = mock(User.class);
     UserView userView = mock(UserView.class);
     Page<User> userPage = new PageImpl<>(List.of(user));
     Page<UserView> userViewPage = new PageImpl<>(List.of(userView));
 
-    when(userRepository.findAllByRole(userRole, pageable)).thenReturn(userPage);
+    when(userRepository.findAllByRole(userRole, PAGEABLE)).thenReturn(userPage);
     when(userMapper.toView(user)).thenReturn(userView);
 
-    Page<UserView> result = userService.getAll(pageable, userRole);
+    Page<UserView> result = userService.getAll(PAGEABLE, userRole);
 
     assertEquals(userViewPage, result);
-    verify(userRepository).findAllByRole(userRole, pageable);
+    verify(userRepository).findAllByRole(userRole, PAGEABLE);
     verify(userMapper).toView(user);
   }
 
   @Test
   void getAll_returnsAllUsers_whenRoleIsNotProvided() {
-    Pageable pageable = PageRequest.of(0, 10);
     User user = mock(User.class);
     UserView userView = mock(UserView.class);
     Page<User> userPage = new PageImpl<>(List.of(user));
     Page<UserView> userViewPage = new PageImpl<>(List.of(userView));
 
-    when(userRepository.findAll(pageable)).thenReturn(userPage);
+    when(userRepository.findAll(PAGEABLE)).thenReturn(userPage);
     when(userMapper.toView(user)).thenReturn(userView);
 
-    Page<UserView> result = userService.getAll(pageable, null);
+    Page<UserView> result = userService.getAll(PAGEABLE, null);
 
     assertEquals(userViewPage, result);
-    verify(userRepository).findAll(pageable);
+    verify(userRepository).findAll(PAGEABLE);
     verify(userMapper).toView(user);
   }
 
   @Test
   void getAllByServiceId_returnsPageUsers_whenServiceIdIsProvided() {
-    Pageable pageable = PageRequest.of(0, 10);
     Long serviceId = 1L;
     User user = mock(User.class);
     UserView userView = mock(UserView.class);
     Page<User> userPage = new PageImpl<>(List.of(user));
     Page<UserView> userViewPage = new PageImpl<>(List.of(userView));
 
-    when(userRepository.findAllByServiceId(serviceId, pageable)).thenReturn(userPage);
+    when(userRepository.findAllByServiceId(serviceId, PAGEABLE)).thenReturn(userPage);
     when(userMapper.toView(user)).thenReturn(userView);
 
-    Page<UserView> result = userService.getAllByServiceId(pageable, serviceId);
+    Page<UserView> result = userService.getAllByServiceId(PAGEABLE, serviceId);
 
     assertEquals(userViewPage, result);
-    verify(userRepository).findAllByServiceId(serviceId, pageable);
+    verify(userRepository).findAllByServiceId(serviceId, PAGEABLE);
     verify(userMapper).toView(user);
   }
 
   @Test
   void getById_returnsUserView_whenUserExists() {
-    Long userId = 1L;
     User user = mock(User.class);
     UserView userView = mock(UserView.class);
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
     when(userMapper.toView(user)).thenReturn(userView);
 
-    UserView result = userService.getById(userId);
+    UserView result = userService.getById(USER_ID);
 
     assertEquals(userView, result);
-    verify(userRepository).findById(userId);
+    verify(userRepository).findById(USER_ID);
     verify(userMapper).toView(user);
   }
 
   @Test
   void getById_throwsNotFoundException_whenUserDoesNotExist() {
-    Long userId = 1L;
+    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-    when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-    assertThrows(NotFoundException.class, () -> userService.getById(userId));
-    verify(userRepository).findById(userId);
+    assertThrows(NotFoundException.class, () -> userService.getById(USER_ID));
+    verify(userRepository).findById(USER_ID);
   }
 
   @Test
@@ -166,20 +164,19 @@ class UserServiceImplTest {
 
   @Test
   void update_returnsUpdatedUserView_whenUserExists() {
-    Long userId = 1L;
     UserPutRequest putDto = mock(UserPutRequest.class);
     User user = mock(User.class);
     User updatedUser = mock(User.class);
     UserView userView = mock(UserView.class);
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
     when(userRepository.save(user)).thenReturn(updatedUser);
     when(userMapper.toView(updatedUser)).thenReturn(userView);
 
-    UserView result = userService.update(userId, putDto);
+    UserView result = userService.update(USER_ID, putDto);
 
     assertEquals(userView, result);
-    verify(userRepository).findById(userId);
+    verify(userRepository).findById(USER_ID);
     verify(userMapper).updateEntity(user, putDto);
     verify(userRepository).save(user);
     verify(userMapper).toView(updatedUser);
@@ -187,30 +184,28 @@ class UserServiceImplTest {
 
   @Test
   void update_throwsNotFoundException_whenUserDoesNotExist() {
-    Long userId = 1L;
     UserPutRequest putDto = mock(UserPutRequest.class);
 
-    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-    assertThrows(NotFoundException.class, () -> userService.update(userId, putDto));
-    verify(userRepository).findById(userId);
+    assertThrows(NotFoundException.class, () -> userService.update(USER_ID, putDto));
+    verify(userRepository).findById(USER_ID);
   }
 
   @Test
   void delete_deletesUserAndCancelsAppointments_whenUserExists() {
-    Long userId = 1L;
     User user = mock(User.class);
     Appointment appointment1 = mock(Appointment.class);
     Appointment appointment2 = mock(Appointment.class);
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
     when(user.getStaffAppointments()).thenReturn(List.of(appointment1, appointment2));
     when(appointment1.getStatus()).thenReturn(AppointmentStatus.NOT_APPROVED);
     when(appointment2.getStatus()).thenReturn(AppointmentStatus.APPROVED);
     when(appointment1.getId()).thenReturn(1L);
     when(appointment2.getId()).thenReturn(2L);
 
-    userService.delete(userId);
+    userService.delete(USER_ID);
 
     verify(appointmentService).cancelAppointment(appointment1.getId());
     verify(appointmentService).cancelAppointment(appointment2.getId());
@@ -219,12 +214,10 @@ class UserServiceImplTest {
 
   @Test
   void delete_throwsNotFoundException_whenUserDoesNotExist() {
-    Long userId = 1L;
+    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-    when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-    assertThrows(NotFoundException.class, () -> userService.delete(userId));
-    verify(userRepository).findById(userId);
+    assertThrows(NotFoundException.class, () -> userService.delete(USER_ID));
+    verify(userRepository).findById(USER_ID);
   }
 
   @Test
@@ -308,23 +301,22 @@ class UserServiceImplTest {
 
   @Test
   void modifyStaff_updatesStaffDetails_whenStaffIsValid() {
-    Long staffId = 1L;
     StaffModifyDto dto = mock(StaffModifyDto.class);
     User staff = mock(User.class);
     StaffDetails staffDetails = mock(StaffDetails.class);
     UserView userView = mock(UserView.class);
 
-    when(userRepository.findById(staffId)).thenReturn(Optional.of(staff));
+    when(userRepository.findById(STAFF_ID)).thenReturn(Optional.of(staff));
     when(staff.getStaffDetails()).thenReturn(staffDetails);
     when(staffDetails.getIsAvailable()).thenReturn(false);
     when(staff.getRole()).thenReturn(UserRoles.EMPLOYEE);
     when(userRepository.save(staff)).thenReturn(staff);
     when(userMapper.toView(staff)).thenReturn(userView);
 
-    UserView result = userService.modifyStaff(staffId, dto);
+    UserView result = userService.modifyStaff(STAFF_ID, dto);
 
     assertEquals(userView, result);
-    verify(userRepository).findById(staffId);
+    verify(userRepository).findById(STAFF_ID);
     verify(staffDetailsMapper).updateEntity(staffDetails, dto);
     verify(userRepository).save(staff);
     verify(userMapper).toView(staff);
@@ -332,7 +324,6 @@ class UserServiceImplTest {
 
   @Test
   void modifyStaff_cancelsAppointments_whenStaffBecomesUnavailable() {
-    Long staffId = 1L;
     StaffModifyDto dto = mock(StaffModifyDto.class);
     User staff = mock(User.class);
     StaffDetails staffDetails = mock(StaffDetails.class);
@@ -340,7 +331,7 @@ class UserServiceImplTest {
     Appointment appointment2 = mock(Appointment.class);
     UserView userView = mock(UserView.class);
 
-    when(userRepository.findById(staffId)).thenReturn(Optional.of(staff));
+    when(userRepository.findById(STAFF_ID)).thenReturn(Optional.of(staff));
     when(staff.getStaffDetails()).thenReturn(staffDetails);
     when(staff.getRole()).thenReturn(UserRoles.EMPLOYEE);
     when(staff.getStaffAppointments()).thenReturn(List.of(appointment1, appointment2));
@@ -353,7 +344,7 @@ class UserServiceImplTest {
     when(userRepository.save(staff)).thenReturn(staff);
     when(userMapper.toView(staff)).thenReturn(userView);
 
-    UserView result = userService.modifyStaff(staffId, dto);
+    UserView result = userService.modifyStaff(STAFF_ID, dto);
 
     assertEquals(userView, result);
     verify(appointmentService).cancelAppointment(appointment1.getId());
@@ -364,15 +355,14 @@ class UserServiceImplTest {
 
   @Test
   void modifyStaff_throwsBadRequestException_whenUserIsNotStaff() {
-    Long staffId = 1L;
     StaffModifyDto dto = mock(StaffModifyDto.class);
     User staff = mock(User.class);
 
-    when(userRepository.findById(staffId)).thenReturn(Optional.of(staff));
+    when(userRepository.findById(STAFF_ID)).thenReturn(Optional.of(staff));
     when(staff.getRole()).thenReturn(UserRoles.CLIENT);
 
-    assertThrows(BadRequestException.class, () -> userService.modifyStaff(staffId, dto));
-    verify(userRepository).findById(staffId);
+    assertThrows(BadRequestException.class, () -> userService.modifyStaff(STAFF_ID, dto));
+    verify(userRepository).findById(STAFF_ID);
   }
 
   @Test
