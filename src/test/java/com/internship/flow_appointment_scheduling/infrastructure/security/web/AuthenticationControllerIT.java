@@ -113,12 +113,12 @@ class AuthenticationControllerIT {
 
   @Test
   void refreshToken_returnsOk_whenValidToken() throws Exception {
-    RefreshToken VALID_REFRESH_TOKEN = new RefreshToken();
-    VALID_REFRESH_TOKEN.setUser(VALID_STAFF);
-    VALID_REFRESH_TOKEN.setExpiryDate(LocalDateTime.now().plusDays(1));
+    RefreshToken validRefreshToken = new RefreshToken();
+    validRefreshToken.setUser(VALID_STAFF);
+    validRefreshToken.setExpiryDate(LocalDateTime.now().plusDays(1));
 
-    refreshTokenRepository.save(VALID_REFRESH_TOKEN);
-    RefreshTokenPostRequest request = new RefreshTokenPostRequest(VALID_REFRESH_TOKEN.getId());
+    refreshTokenRepository.save(validRefreshToken);
+    RefreshTokenPostRequest request = new RefreshTokenPostRequest(validRefreshToken.getId());
 
     String response = mockMvc.perform(post("/api/v1/auth/refresh")
             .contentType("application/json")
@@ -144,12 +144,12 @@ class AuthenticationControllerIT {
 
   @Test
   void refreshToken_returnsBadRequest_whenRefreshTokenExpired() throws Exception {
-    RefreshToken EXPIRED_REFRESH_TOKEN = new RefreshToken();
-    refreshTokenRepository.save(EXPIRED_REFRESH_TOKEN);
-    EXPIRED_REFRESH_TOKEN.setUser(VALID_STAFF);
-    EXPIRED_REFRESH_TOKEN.setExpiryDate(LocalDateTime.now().minusDays(1));
+    RefreshToken expiredRefreshToken = new RefreshToken();
+    refreshTokenRepository.save(expiredRefreshToken);
+    expiredRefreshToken.setUser(VALID_STAFF);
+    expiredRefreshToken.setExpiryDate(LocalDateTime.now().minusDays(1));
 
-    RefreshTokenPostRequest request = new RefreshTokenPostRequest(EXPIRED_REFRESH_TOKEN.getId());
+    RefreshTokenPostRequest request = new RefreshTokenPostRequest(expiredRefreshToken.getId());
 
     mockMvc.perform(post("/api/v1/auth/refresh")
             .contentType("application/json")
@@ -159,8 +159,8 @@ class AuthenticationControllerIT {
 
   @Test
   void refreshToken_returnsNotFound_whenTokenDoesNotExist() throws Exception {
-    String INVALID_REFRESH_TOKEN_ID = "invalidTokenId";
-    RefreshTokenPostRequest request = new RefreshTokenPostRequest(INVALID_REFRESH_TOKEN_ID);
+    String invalidTokenId = "invalidTokenId";
+    RefreshTokenPostRequest request = new RefreshTokenPostRequest(invalidTokenId);
 
     mockMvc.perform(post("/api/v1/auth/refresh")
             .contentType("application/json")
@@ -180,9 +180,9 @@ class AuthenticationControllerIT {
 
   @Test
   void resetPassword_returnsNotFound_whenEmailNotFound() throws Exception {
-    String INVALID_EMAIL = "invalidEmail";
+    String invalidEmail = "invalidEmail";
     mockMvc.perform(get("/api/v1/auth/reset-password")
-            .param("email", INVALID_EMAIL))
+            .param("email", invalidEmail))
         .andExpect(status().isNotFound());
   }
 
