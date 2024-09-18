@@ -2,9 +2,7 @@ package com.internship.flow_appointment_scheduling.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -14,9 +12,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.icegreen.greenmail.configuration.GreenMailConfiguration;
+import com.icegreen.greenmail.junit5.GreenMailExtension;
+import com.icegreen.greenmail.util.ServerSetupTest;
 import com.internship.flow_appointment_scheduling.FlowAppointmentSchedulingApplication;
 import com.internship.flow_appointment_scheduling.config.TestContainersConfig;
-import com.internship.flow_appointment_scheduling.enums.Users;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentCreate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentUpdate;
 import com.internship.flow_appointment_scheduling.features.appointments.dto.AppointmentView;
@@ -34,19 +34,22 @@ import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
 import com.internship.flow_appointment_scheduling.features.work_space.dto.WorkSpaceView;
-import com.internship.flow_appointment_scheduling.infrastructure.mail_service.MailService;
 import com.internship.flow_appointment_scheduling.infrastructure.security.service.JwtService;
+import com.internship.flow_appointment_scheduling.seed.enums.SeededAdminUsers;
+import com.internship.flow_appointment_scheduling.seed.enums.SeededClientUsers;
+import com.internship.flow_appointment_scheduling.seed.enums.SeededStaffUsers;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,45 +75,51 @@ class AppointmentControllerIT {
   private ServiceRepository serviceRepository;
   @Autowired
   private UserRepository userRepository;
-  @MockBean
-  private MailService mailService;
 
-  private static Service VALID_SERVICE;
-  private static Appointment VALID_APPOINTMENT;
+  @RegisterExtension
+  static GreenMailExtension greenMail = new GreenMailExtension(ServerSetupTest.SMTP)
+      .withConfiguration(GreenMailConfiguration.aConfig().withUser("springboot", "duke"))
+      .withPerMethodLifecycle(true);
+
+  private static Service validService;
+  private static Appointment validAppointment;
   private static final long INVALID_SERVICE_ID = -1;
   private static final long INVALID_USER_ID = -1;
   private static final long INVALID_APPOINTMENT_ID = -1;
-  private static User VALID_STAFF;
-  private static User VALID_CLIENT;
-  private static AppointmentCreate VALID_APPOINTMENT_CREATE_DTO;
+  private static User validStaff;
+  private static User validClient;
+  private static AppointmentCreate validAppointmentCreateDto;
+  private static final String NOT_APPROVED_SUBJECT = "Appointment Request Created Successfully";
+  private static final String APPROVED_SUBJECT = "Appointment Created Successfully";
+  private static final String CANCELED_SUBJECT = "Appointment Canceled";
 
   @BeforeEach
   void setUp() {
-    VALID_STAFF = userRepository.findByEmail(Users.STAFF.getEmail())
+    validStaff = userRepository.findByEmail(SeededStaffUsers.STAFF1.getEmail())
         .orElseThrow(() -> new IllegalStateException("No staff data in the database"));
 
-    VALID_CLIENT = userRepository.findByEmail(Users.CLIENT.getEmail())
+    validClient = userRepository.findByEmail(SeededClientUsers.CLIENT1.getEmail())
         .orElseThrow(() -> new IllegalStateException("No client data in the database"));
 
-    VALID_SERVICE = serviceRepository.findAll().stream()
+    validService = serviceRepository.findAll().stream()
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No service data in the database"));
 
-    VALID_APPOINTMENT = appointmentRepository.findAll().stream()
+    validAppointment = appointmentRepository.findAll().stream()
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No appointment data in the database"));
 
-    Service staffService = VALID_STAFF.getServices()
+    Service staffService = validStaff.getServices()
         .getFirst();
 
-    VALID_APPOINTMENT_CREATE_DTO = new AppointmentCreate(
+    validAppointmentCreateDto = new AppointmentCreate(
         staffService.getId(),
-        Users.CLIENT.getEmail(),
-        Users.STAFF.getEmail(),
+        SeededClientUsers.CLIENT1.getEmail(),
+        SeededStaffUsers.STAFF1.getEmail(),
         LocalDateTime.now()
             .plusYears(2)
-            .withHour(VALID_STAFF.getStaffDetails().getBeginWorkingHour().getHour())
-            .withMinute(VALID_STAFF.getStaffDetails().getBeginWorkingHour().getMinute())
+            .withHour(validStaff.getStaffDetails().getBeginWorkingHour().getHour())
+            .withMinute(validStaff.getStaffDetails().getBeginWorkingHour().getMinute())
     );
   }
 
@@ -125,7 +134,7 @@ class AppointmentControllerIT {
     long totalAppointments = appointmentRepository.count();
 
     mockMvc.perform(get("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(totalAppointments));
   }
@@ -133,29 +142,29 @@ class AppointmentControllerIT {
   @Test
   void getAll_returnsForbidden_whenAuthAsStaff() throws Exception {
     mockMvc.perform(get("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getAll_returnsForbidden_whenAuthAsClient() throws Exception {
     mockMvc.perform(get("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getAllByServiceId_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(get("/api/v1/appointments/service/" + VALID_SERVICE.getId()))
+    mockMvc.perform(get("/api/v1/appointments/service/" + validService.getId()))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getAllByServiceId_returnsOk_whenAuthAsAdmin() throws Exception {
-    long totalAppointments = appointmentRepository.countByServiceId(VALID_SERVICE.getId());
+    long totalAppointments = appointmentRepository.countByServiceId(validService.getId());
 
-    mockMvc.perform(get("/api/v1/appointments/service/" + VALID_SERVICE.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+    mockMvc.perform(get("/api/v1/appointments/service/" + validService.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(totalAppointments));
   }
@@ -163,28 +172,28 @@ class AppointmentControllerIT {
   @Test
   void getAllByServiceId_returnsOkWithZeroTotalElements_whenInvalidServiceId() throws Exception {
     mockMvc.perform(get("/api/v1/appointments/service/" + INVALID_SERVICE_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(0));
   }
 
   @Test
   void getAllByServiceId_returnsForbidden_whenAuthAsStaff() throws Exception {
-    mockMvc.perform(get("/api/v1/appointments/service/" + VALID_SERVICE.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+    mockMvc.perform(get("/api/v1/appointments/service/" + validService.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getAllByServiceId_returnsForbidden_whenAuthAsClient() throws Exception {
-    mockMvc.perform(get("/api/v1/appointments/service/" + VALID_SERVICE.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+    mockMvc.perform(get("/api/v1/appointments/service/" + validService.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getAllByServiceIdAndDate_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(get("/api/v1/appointments/service/" + VALID_SERVICE.getId() + "/short")
+    mockMvc.perform(get("/api/v1/appointments/service/" + validService.getId() + "/short")
             .param("date", LocalDate.now().toString()))
         .andExpect(status().isForbidden());
   }
@@ -192,47 +201,53 @@ class AppointmentControllerIT {
   @Test
   void getAllByServiceIdAndDate_returnsOk_whenAuthAsAdmin() throws Exception {
     LocalDate date = LocalDate.now();
-    long totalAppointments = appointmentRepository.countByUserIdAndDate(VALID_SERVICE.getId(),
-        date);
+    long result = validService.getAppointments()
+        .stream()
+        .filter(a -> a.getStartDate().toLocalDate().equals(date))
+        .count();
 
-    mockMvc.perform(get("/api/v1/appointments/service/" + VALID_SERVICE.getId() + "/short")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/service/" + validService.getId() + "/short")
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .param("date", date.toString()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(totalAppointments));
+        .andExpect(jsonPath("$.length()").value(result));
   }
 
   @Test
   void getAllByServiceIdAndDate_returnsOk_whenAuthAsClient() throws Exception {
     LocalDate date = LocalDate.now();
-    long totalAppointments = appointmentRepository.countByServiceIdAndDate(VALID_SERVICE.getId(),
-        date);
+    long result = validService.getAppointments()
+        .stream()
+        .filter(a -> a.getStartDate().toLocalDate().equals(date))
+        .count();
 
-    mockMvc.perform(get("/api/v1/appointments/service/" + VALID_SERVICE.getId() + "/short")
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/service/" + validService.getId() + "/short")
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .param("date", date.toString()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(totalAppointments));
+        .andExpect(jsonPath("$.length()").value(result));
   }
 
   @Test
   void getAllByServiceIdAndDate_returnsOk_whenAuthAsStaff() throws Exception {
     LocalDate date = LocalDate.now();
-    long totalAppointments = appointmentRepository.countByServiceIdAndDate(VALID_SERVICE.getId(),
-        date);
+    long result = validService.getAppointments()
+        .stream()
+        .filter(a -> a.getStartDate().toLocalDate().equals(date))
+        .count();
 
-    mockMvc.perform(get("/api/v1/appointments/service/" + VALID_SERVICE.getId() + "/short")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/service/" + validService.getId() + "/short")
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .param("date", date.toString()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(totalAppointments));
+        .andExpect(jsonPath("$.length()").value(result));
   }
 
   @Test
   void getAllByServiceIdAndDate_returnsOkWithZeroTotalElements_whenInvalidServiceId()
       throws Exception {
     mockMvc.perform(get("/api/v1/appointments/service/" + INVALID_SERVICE_ID + "/short")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .param("date", LocalDate.now().toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
@@ -241,7 +256,7 @@ class AppointmentControllerIT {
   @Test
   void getAllByServiceIdAndDate_returnsBadRequest_whenDateIsNull() throws Exception {
     mockMvc.perform(get("/api/v1/appointments/service/" + INVALID_SERVICE_ID + "/short")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .param("date", (String) null))
         .andExpect(status().isBadRequest());
   }
@@ -251,8 +266,9 @@ class AppointmentControllerIT {
     LocalDate date = LocalDate.now();
 
     String response = mockMvc.perform(
-            get("/api/v1/appointments/service/" + VALID_SERVICE.getId() + "/short")
-                .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            get("/api/v1/appointments/service/" + validService.getId() + "/short")
+                .header("Authorization",
+                    generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
                 .param("date", date.toString()))
         .andExpect(status().isOk())
         .andReturn()
@@ -264,7 +280,7 @@ class AppointmentControllerIT {
         });
 
     List<ShortAppointmentView> expectedAppointments =
-        appointmentRepository.findAllByServiceIdAndDate(VALID_SERVICE.getId(), date)
+        appointmentRepository.findAllByServiceIdAndDate(validService.getId(), date)
             .stream()
             .map(this::toShortAppointmentView)
             .toList();
@@ -274,7 +290,7 @@ class AppointmentControllerIT {
 
   @Test
   void getAllByUserId_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_CLIENT.getId())
+    mockMvc.perform(get("/api/v1/appointments/user/" + validClient.getId())
             .param("page", "0")
             .param("size", "10"))
         .andExpect(status().isForbidden());
@@ -282,10 +298,10 @@ class AppointmentControllerIT {
 
   @Test
   void getAllByUserId_returnsOk_whenAuthAsAdmin() throws Exception {
-    long totalAppointments = appointmentRepository.countByUserId(VALID_CLIENT.getId());
+    int totalAppointments = validClient.getClientAppointments().size();
 
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_CLIENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/user/" + validClient.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .param("page", "0")
             .param("size", "10"))
         .andExpect(status().isOk())
@@ -294,10 +310,10 @@ class AppointmentControllerIT {
 
   @Test
   void getAllByUserId_returnsOk_whenAuthAsClient_whenGetsForHimSelf() throws Exception {
-    long totalAppointments = appointmentRepository.countByUserId(VALID_CLIENT.getId());
+    int totalAppointments = validClient.getClientAppointments().size();
 
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_CLIENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/user/" + validClient.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .param("page", "0")
             .param("size", "10"))
         .andExpect(status().isOk())
@@ -307,8 +323,8 @@ class AppointmentControllerIT {
   @Test
   void getAllByUserId_returnsForbidden_whenAuthAsClient_whenGetsForOthers()
       throws Exception {
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_STAFF.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/user/" + validStaff.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .param("page", "0")
             .param("size", "10"))
         .andExpect(status().isForbidden());
@@ -316,10 +332,10 @@ class AppointmentControllerIT {
 
   @Test
   void getAllByUserId_returnsOk_whenAuthAsStaff_whenGetsForHimSelf() throws Exception {
-    long totalAppointments = appointmentRepository.countByUserId(VALID_STAFF.getId());
+    int totalAppointments = validStaff.getStaffAppointments().size();
 
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_STAFF.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/user/" + validStaff.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .param("page", "0")
             .param("size", "10"))
         .andExpect(status().isOk())
@@ -328,8 +344,8 @@ class AppointmentControllerIT {
 
   @Test
   void getAllByUserId_returnsBadRequest_whenAuthAsStaff_whenGetsForOthers() throws Exception {
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_CLIENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/user/" + validClient.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .param("page", "0")
             .param("size", "10"))
         .andExpect(status().isForbidden());
@@ -338,7 +354,7 @@ class AppointmentControllerIT {
   @Test
   void getAllByUserId_returnsOkWithZeroTotalElements_whenInvalidUserId() throws Exception {
     mockMvc.perform(get("/api/v1/appointments/user/" + INVALID_USER_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .param("page", "0")
             .param("size", "10"))
         .andExpect(status().isOk())
@@ -347,7 +363,7 @@ class AppointmentControllerIT {
 
   @Test
   void getAllByUserIdAndDate_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_CLIENT.getId() + "/short")
+    mockMvc.perform(get("/api/v1/appointments/user/" + validClient.getId() + "/short")
             .param("date", LocalDate.now().toString()))
         .andExpect(status().isForbidden());
   }
@@ -355,10 +371,13 @@ class AppointmentControllerIT {
   @Test
   void getAllByUserIdAndDate_returnsOk_whenAuthAsAdmin() throws Exception {
     LocalDate date = LocalDate.now();
-    long totalAppointments = appointmentRepository.countByUserIdAndDate(VALID_CLIENT.getId(), date);
+    long totalAppointments = validClient.getClientAppointments()
+        .stream()
+        .filter(a -> a.getStartDate().toLocalDate().equals(date))
+        .count();
 
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_CLIENT.getId() + "/short")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/user/" + validClient.getId() + "/short")
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .param("date", date.toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(totalAppointments));
@@ -367,10 +386,13 @@ class AppointmentControllerIT {
   @Test
   void getAllByUserIdAndDate_returnsOk_whenAuthAsClient() throws Exception {
     LocalDate date = LocalDate.now();
-    long totalAppointments = appointmentRepository.countByUserIdAndDate(VALID_CLIENT.getId(), date);
+    long totalAppointments = validClient.getClientAppointments()
+        .stream()
+        .filter(a -> a.getStartDate().toLocalDate().equals(date))
+        .count();
 
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_CLIENT.getId() + "/short")
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/user/" + validClient.getId() + "/short")
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .param("date", date.toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(totalAppointments));
@@ -379,10 +401,13 @@ class AppointmentControllerIT {
   @Test
   void getAllByUserIdAndDate_returnsOk_whenAuthAsStaff() throws Exception {
     LocalDate date = LocalDate.now();
-    long totalAppointments = appointmentRepository.countByUserIdAndDate(VALID_CLIENT.getId(), date);
+    long totalAppointments = validClient.getClientAppointments()
+        .stream()
+        .filter(a -> a.getStartDate().toLocalDate().equals(date))
+        .count();
 
-    mockMvc.perform(get("/api/v1/appointments/user/" + VALID_CLIENT.getId() + "/short")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+    mockMvc.perform(get("/api/v1/appointments/user/" + validClient.getId() + "/short")
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .param("date", date.toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(totalAppointments));
@@ -391,7 +416,7 @@ class AppointmentControllerIT {
   @Test
   void getAllByUserIdAndDate_returnsOkWithZeroTotalElements_whenInvalidUserId() throws Exception {
     mockMvc.perform(get("/api/v1/appointments/user/" + INVALID_USER_ID + "/short")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .param("date", LocalDate.now().toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
@@ -401,8 +426,9 @@ class AppointmentControllerIT {
   void getAllByUserIdAndDate_returnsCorrectlyMappedData_whenAuthAsAdmin() throws Exception {
     LocalDate date = LocalDate.now();
     String response = mockMvc.perform(
-            get("/api/v1/appointments/user/" + VALID_CLIENT.getId() + "/short")
-                .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            get("/api/v1/appointments/user/" + validClient.getId() + "/short")
+                .header("Authorization",
+                    generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
                 .param("date", date.toString()))
         .andExpect(status().isOk())
         .andReturn()
@@ -414,7 +440,7 @@ class AppointmentControllerIT {
         });
 
     List<ShortAppointmentView> expectedAppointments =
-        appointmentRepository.findAllByUserIdAndDate(VALID_CLIENT.getId(), date)
+        appointmentRepository.findAllByUserIdAndDate(validClient.getId(), date)
             .stream()
             .map(this::toShortAppointmentView)
             .toList();
@@ -425,14 +451,14 @@ class AppointmentControllerIT {
   @Test
   void getById_returnsNotFound_whenInvalidId() throws Exception {
     mockMvc.perform(get("/api/v1/appointments/" + INVALID_APPOINTMENT_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void getById_returnsOkWithCorrectlyMappedData_whenValidId_whenAdminAuth() throws Exception {
-    String response = mockMvc.perform(get("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+    String response = mockMvc.perform(get("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk())
         .andReturn()
         .getResponse()
@@ -440,7 +466,7 @@ class AppointmentControllerIT {
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
     AppointmentView expectedAppointment = toAppointmentView(
-        appointmentRepository.findById(VALID_APPOINTMENT.getId())
+        appointmentRepository.findById(validAppointment.getId())
             .orElseThrow(() -> new IllegalStateException("No appointment data in the database"))
     );
 
@@ -449,7 +475,7 @@ class AppointmentControllerIT {
 
   @Test
   void getById_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(get("/api/v1/appointments/" + VALID_APPOINTMENT.getId()))
+    mockMvc.perform(get("/api/v1/appointments/" + validAppointment.getId()))
         .andExpect(status().isForbidden());
   }
 
@@ -460,7 +486,7 @@ class AppointmentControllerIT {
         .orElseThrow(() -> new IllegalStateException("No appointment data in the database"));
 
     String response = mockMvc.perform(get("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk())
         .andReturn()
         .getResponse()
@@ -474,12 +500,12 @@ class AppointmentControllerIT {
 
   @Test
   void getById_returnsOk_whenAuthAsStaff_whenGetHisAppointments() throws Exception {
-    Optional<Appointment> appointment = VALID_STAFF.getStaffAppointments()
+    Optional<Appointment> appointment = validStaff.getStaffAppointments()
         .stream().findFirst();
 
     if (appointment.isPresent()) {
       String response = mockMvc.perform(get("/api/v1/appointments/" + appointment.get().getId())
-              .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+              .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
           .andExpect(status().isOk())
           .andReturn()
           .getResponse()
@@ -495,23 +521,23 @@ class AppointmentControllerIT {
   @Test
   void getById_returnsForbidden_whenAuthAsStaff_whenStaffGetOthersAppointments() throws Exception {
     Appointment appointment = appointmentRepository.findAll().stream()
-        .filter(a -> !a.getStaff().getId().equals(VALID_STAFF.getId()))
+        .filter(a -> !a.getStaff().getId().equals(validStaff.getId()))
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No appointment data in the database"));
 
     mockMvc.perform(get("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getById_returnsOk_whenAuthAsClient_whenGetHisAppointments() throws Exception {
-    Optional<Appointment> appointment = VALID_CLIENT.getClientAppointments()
+    Optional<Appointment> appointment = validClient.getClientAppointments()
         .stream().findFirst();
 
     if (appointment.isPresent()) {
       String response = mockMvc.perform(get("/api/v1/appointments/" + appointment.get().getId())
-              .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+              .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
           .andExpect(status().isOk())
           .andReturn()
           .getResponse()
@@ -527,12 +553,12 @@ class AppointmentControllerIT {
   @Test
   void getById_returnsForbidden_whenAuthAsClient_whenGetOtherAppointments() throws Exception {
     Appointment appointment = appointmentRepository.findAll().stream()
-        .filter(a -> !a.getClient().getId().equals(VALID_CLIENT.getId()))
+        .filter(a -> !a.getClient().getId().equals(validClient.getId()))
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No appointment data in the database"));
 
     mockMvc.perform(get("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
@@ -540,29 +566,31 @@ class AppointmentControllerIT {
   void create_returnsForbidden_whenNoAuth() throws Exception {
     mockMvc.perform(post("/api/v1/appointments")
             .contentType("application/json")
-            .content(objectMapper.writeValueAsString(VALID_APPOINTMENT_CREATE_DTO)))
+            .content(objectMapper.writeValueAsString(validAppointmentCreateDto)))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void create_returnsOk_whenAuthAsAdmin() throws Exception {
     String response = mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
-            .content(objectMapper.writeValueAsString(VALID_APPOINTMENT_CREATE_DTO)))
+            .content(objectMapper.writeValueAsString(validAppointmentCreateDto)))
         .andExpect(status().isOk())
         .andReturn()
         .getResponse()
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.serviceId(), result.service().id());
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.clientEmail(), result.client().email());
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.staffEmail(), result.staff().email());
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.date(), result.startDate());
-
-    verify(mailService, times(1)).sendNotApprovedAppointmentNotification(any(Appointment.class));
+    assertEquals(validAppointmentCreateDto.serviceId(), result.service().id());
+    assertEquals(validAppointmentCreateDto.clientEmail(), result.client().email());
+    assertEquals(validAppointmentCreateDto.staffEmail(), result.staff().email());
+    assertEquals(validAppointmentCreateDto.date(), result.startDate());
+    assertEquals(2, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(NOT_APPROVED_SUBJECT));
+    assertTrue(receivedMessages[1].getSubject().contains(NOT_APPROVED_SUBJECT));
   }
 
   @Test
@@ -573,14 +601,14 @@ class AppointmentControllerIT {
         .ifPresent(userRepository::delete);
 
     AppointmentCreate appointmentCreate = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
         notExistingStaffEmail,
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(appointmentCreate)))
         .andExpect(status().isNotFound());
@@ -594,14 +622,14 @@ class AppointmentControllerIT {
         .ifPresent(userRepository::delete);
 
     AppointmentCreate appointmentCreate = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
+        validAppointmentCreateDto.serviceId(),
         notExistingClientEmail,
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(appointmentCreate)))
         .andExpect(status().isNotFound());
@@ -616,13 +644,13 @@ class AppointmentControllerIT {
 
     AppointmentCreate appointmentCreate = new AppointmentCreate(
         notExistingServiceId,
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(appointmentCreate)))
         .andExpect(status().isNotFound());
@@ -631,21 +659,24 @@ class AppointmentControllerIT {
   @Test
   void create_returnsOk_whenAuthAsClient_whenHeIsInTheBody() throws Exception {
     String response = mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType("application/json")
-            .content(objectMapper.writeValueAsString(VALID_APPOINTMENT_CREATE_DTO)))
+            .content(objectMapper.writeValueAsString(validAppointmentCreateDto)))
         .andExpect(status().isOk())
         .andReturn()
         .getResponse()
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.serviceId(), result.service().id());
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.clientEmail(), result.client().email());
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.staffEmail(), result.staff().email());
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.date(), result.startDate());
+    assertEquals(validAppointmentCreateDto.serviceId(), result.service().id());
+    assertEquals(validAppointmentCreateDto.clientEmail(), result.client().email());
+    assertEquals(validAppointmentCreateDto.staffEmail(), result.staff().email());
+    assertEquals(validAppointmentCreateDto.date(), result.startDate());
 
-    verify(mailService, times(1)).sendNotApprovedAppointmentNotification(any(Appointment.class));
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+    assertEquals(2, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(NOT_APPROVED_SUBJECT));
+    assertTrue(receivedMessages[1].getSubject().contains(NOT_APPROVED_SUBJECT));
   }
 
   @Test
@@ -653,19 +684,19 @@ class AppointmentControllerIT {
     User anotherExistingClient = userRepository.findAll()
         .stream()
         .filter(u -> u.getRole() == UserRoles.CLIENT)
-        .filter(u -> !u.getEmail().equals(Users.CLIENT.getEmail()))
+        .filter(u -> !u.getEmail().equals(SeededClientUsers.CLIENT1.getEmail()))
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No other client data in the database"));
 
     AppointmentCreate appointmentCreate = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
+        validAppointmentCreateDto.serviceId(),
         anotherExistingClient.getEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(appointmentCreate)))
         .andExpect(status().isForbidden());
@@ -674,21 +705,24 @@ class AppointmentControllerIT {
   @Test
   void create_returnsOk_whenAuthAsStaff_whenHeIsInTheBody() throws Exception {
     String response = mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType("application/json")
-            .content(objectMapper.writeValueAsString(VALID_APPOINTMENT_CREATE_DTO)))
+            .content(objectMapper.writeValueAsString(validAppointmentCreateDto)))
         .andExpect(status().isOk())
         .andReturn()
         .getResponse()
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.serviceId(), result.service().id());
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.clientEmail(), result.client().email());
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.staffEmail(), result.staff().email());
-    assertEquals(VALID_APPOINTMENT_CREATE_DTO.date(), result.startDate());
+    assertEquals(validAppointmentCreateDto.serviceId(), result.service().id());
+    assertEquals(validAppointmentCreateDto.clientEmail(), result.client().email());
+    assertEquals(validAppointmentCreateDto.staffEmail(), result.staff().email());
+    assertEquals(validAppointmentCreateDto.date(), result.startDate());
 
-    verify(mailService, times(1)).sendNotApprovedAppointmentNotification(any(Appointment.class));
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+    assertEquals(2, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(NOT_APPROVED_SUBJECT));
+    assertTrue(receivedMessages[1].getSubject().contains(NOT_APPROVED_SUBJECT));
   }
 
   @Test
@@ -696,19 +730,19 @@ class AppointmentControllerIT {
     User anotherExistingStaff = userRepository.findAll()
         .stream()
         .filter(u -> u.getRole() == UserRoles.EMPLOYEE)
-        .filter(u -> !u.getEmail().equals(Users.STAFF.getEmail()))
+        .filter(u -> !u.getEmail().equals(SeededStaffUsers.STAFF1.getEmail()))
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No other client data in the database"));
 
     AppointmentCreate appointmentCreate = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
         anotherExistingStaff.getEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(appointmentCreate)))
         .andExpect(status().isForbidden());
@@ -719,13 +753,13 @@ class AppointmentControllerIT {
 
     AppointmentCreate invalidDto = new AppointmentCreate(
         INVALID_SERVICE_ID,
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -737,28 +771,28 @@ class AppointmentControllerIT {
 
     for (String invalidEmail : invalidEmails) {
       AppointmentCreate invalidDto = new AppointmentCreate(
-          VALID_APPOINTMENT_CREATE_DTO.serviceId(),
+          validAppointmentCreateDto.serviceId(),
           invalidEmail,
-          VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-          VALID_APPOINTMENT_CREATE_DTO.date()
+          validAppointmentCreateDto.staffEmail(),
+          validAppointmentCreateDto.date()
       );
 
       mockMvc.perform(post("/api/v1/appointments")
-              .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+              .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
               .contentType("application/json")
               .content(objectMapper.writeValueAsString(invalidDto)))
           .andExpect(status().isBadRequest());
     }
 
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
+        validAppointmentCreateDto.serviceId(),
         null,
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -770,28 +804,28 @@ class AppointmentControllerIT {
 
     for (String invalidEmail : invalidEmails) {
       AppointmentCreate invalidDto = new AppointmentCreate(
-          VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-          VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
+          validAppointmentCreateDto.serviceId(),
+          validAppointmentCreateDto.clientEmail(),
           invalidEmail,
-          VALID_APPOINTMENT_CREATE_DTO.date()
+          validAppointmentCreateDto.date()
       );
 
       mockMvc.perform(post("/api/v1/appointments")
-              .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+              .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
               .contentType("application/json")
               .content(objectMapper.writeValueAsString(invalidDto)))
           .andExpect(status().isBadRequest());
     }
 
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
         null,
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -800,14 +834,14 @@ class AppointmentControllerIT {
   @Test
   void create_returnsBadRequest_whenDateIsInvalid() throws Exception {
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.staffEmail(),
         LocalDateTime.now().minusDays(1)
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -816,14 +850,14 @@ class AppointmentControllerIT {
   @Test
   void create_returnsBadRequest_whenStaffEmailProvidedInsteadOfClient() throws Exception {
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -832,14 +866,14 @@ class AppointmentControllerIT {
   @Test
   void create_returnsBadRequest_whenClientEmailProvidedInsteadOfStaff() throws Exception {
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -848,17 +882,17 @@ class AppointmentControllerIT {
   @Test
   void create_returnsBadRequest_whenStaffWorkingTimeDoesNotMatch() throws Exception {
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.staffEmail(),
         LocalDateTime.now()
             .plusYears(2)
-            .withHour(VALID_STAFF.getStaffDetails().getEndWorkingHour().getHour())
-            .withMinute(VALID_STAFF.getStaffDetails().getEndWorkingHour().getMinute())
+            .withHour(validStaff.getStaffDetails().getEndWorkingHour().getHour())
+            .withMinute(validStaff.getStaffDetails().getEndWorkingHour().getMinute())
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -866,18 +900,18 @@ class AppointmentControllerIT {
 
   @Test
   void create_returnsBadRequest_whenStaffAvailabilityIsFalse() throws Exception {
-    VALID_STAFF.getStaffDetails().setIsAvailable(false);
-    userRepository.save(VALID_STAFF);
+    validStaff.getStaffDetails().setIsAvailable(false);
+    userRepository.save(validStaff);
 
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -885,20 +919,20 @@ class AppointmentControllerIT {
 
   @Test
   void create_returnsBadRequest_whenServiceAvailabilityIsFalse() throws Exception {
-    Service service = serviceRepository.findById(VALID_APPOINTMENT_CREATE_DTO.serviceId())
+    Service service = serviceRepository.findById(validAppointmentCreateDto.serviceId())
         .orElseThrow();
     service.setAvailability(false);
     serviceRepository.save(service);
 
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -906,18 +940,18 @@ class AppointmentControllerIT {
 
   @Test
   void create_returnsBadRequest_whenStaffDoesNotContainService() throws Exception {
-    VALID_STAFF.getServices().clear();
-    userRepository.save(VALID_STAFF);
+    validStaff.getServices().clear();
+    userRepository.save(validStaff);
 
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -925,20 +959,20 @@ class AppointmentControllerIT {
 
   @Test
   void create_returnsBadRequest_whenWorkSpaceCapacityIsReached() throws Exception {
-    Service service = serviceRepository.findById(VALID_APPOINTMENT_CREATE_DTO.serviceId())
+    Service service = serviceRepository.findById(validAppointmentCreateDto.serviceId())
         .orElseThrow();
     service.getWorkSpace().setAvailableSlots(0);
     serviceRepository.save(service);
 
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -947,24 +981,24 @@ class AppointmentControllerIT {
   @Test
   void create_returnsBadRequest_whenOverLappingAppointments() throws Exception {
     Appointment appointment = new Appointment();
-    appointment.setClient(VALID_CLIENT);
-    appointment.setStaff(VALID_STAFF);
-    appointment.setService(VALID_SERVICE);
-    appointment.setStartDate(VALID_APPOINTMENT_CREATE_DTO.date());
+    appointment.setClient(validClient);
+    appointment.setStaff(validStaff);
+    appointment.setService(validService);
+    appointment.setStartDate(validAppointmentCreateDto.date());
     appointment.setEndDate(
-        VALID_APPOINTMENT_CREATE_DTO.date().plusMinutes(VALID_SERVICE.getDuration().toMinutes()));
+        validAppointmentCreateDto.date().plusMinutes(validService.getDuration().toMinutes()));
     appointment.setStatus(AppointmentStatus.APPROVED);
     appointmentRepository.save(appointment);
 
     AppointmentCreate invalidDto = new AppointmentCreate(
-        VALID_APPOINTMENT_CREATE_DTO.serviceId(),
-        VALID_APPOINTMENT_CREATE_DTO.clientEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.staffEmail(),
-        VALID_APPOINTMENT_CREATE_DTO.date()
+        validAppointmentCreateDto.serviceId(),
+        validAppointmentCreateDto.clientEmail(),
+        validAppointmentCreateDto.staffEmail(),
+        validAppointmentCreateDto.date()
     );
 
     mockMvc.perform(post("/api/v1/appointments")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(invalidDto)))
         .andExpect(status().isBadRequest());
@@ -974,7 +1008,7 @@ class AppointmentControllerIT {
   void update_returnsForbidden_whenNoAuth() throws Exception {
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.APPROVED);
 
-    mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
+    mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isForbidden());
@@ -982,12 +1016,12 @@ class AppointmentControllerIT {
 
   @Test
   void update_returnsOk_whenValidAuth_whenUpdatingFromNotApprovedToApproved() throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.NOT_APPROVED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.NOT_APPROVED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.APPROVED);
 
-    String response = mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    String response = mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -996,19 +1030,22 @@ class AppointmentControllerIT {
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(updateDto.status().name(), result.status().name());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(1)).sendApprovedAppointmentNotification(any(Appointment.class));
+    assertEquals(updateDto.status().name(), result.status().name());
+    assertEquals(2, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(APPROVED_SUBJECT));
+    assertTrue(receivedMessages[1].getSubject().contains(APPROVED_SUBJECT));
   }
 
   @Test
   void update_returnsOk_whenValidAuth_whenUpdatingFromNotApprovedToCompleted() throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.NOT_APPROVED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.NOT_APPROVED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.COMPLETED);
 
-    String response = mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    String response = mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1022,12 +1059,12 @@ class AppointmentControllerIT {
 
   @Test
   void update_returnsOk_whenValidAuth_whenUpdatingFromNotApprovedToCanceled() throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.NOT_APPROVED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.NOT_APPROVED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.CANCELED);
 
-    String response = mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    String response = mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1036,20 +1073,21 @@ class AppointmentControllerIT {
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(updateDto.status().name(), result.status().name());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(1)).sendCanceledAppointmentNotificationToClient(
-        any(Appointment.class));
+    assertEquals(updateDto.status().name(), result.status().name());
+    assertEquals(1, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(CANCELED_SUBJECT));
   }
 
   @Test
   void update_returnsOk_whenValidAuth_whenUpdatingFromApprovedToCanceled() throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.APPROVED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.APPROVED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.CANCELED);
 
-    String response = mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    String response = mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1058,20 +1096,21 @@ class AppointmentControllerIT {
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(updateDto.status().name(), result.status().name());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(1)).sendCanceledAppointmentNotificationToClient(
-        any(Appointment.class));
+    assertEquals(updateDto.status().name(), result.status().name());
+    assertEquals(1, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(CANCELED_SUBJECT));
   }
 
   @Test
   void update_returnsOk_whenValidAuth_whenUpdatingFromApprovedToCompleted() throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.APPROVED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.APPROVED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.COMPLETED);
 
-    String response = mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    String response = mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1085,12 +1124,12 @@ class AppointmentControllerIT {
 
   @Test
   void update_returnsOk_whenValidAuth_whenUpdatingFromApprovedToApproved() throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.APPROVED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.APPROVED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.APPROVED);
 
-    String response = mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    String response = mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1099,19 +1138,20 @@ class AppointmentControllerIT {
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(updateDto.status().name(), result.status().name());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(0)).sendApprovedAppointmentNotification(any(Appointment.class));
+    assertEquals(updateDto.status().name(), result.status().name());
+    assertEquals(0, receivedMessages.length);
   }
 
   @Test
   void update_returnsOk_whenValidAuth_whenUpdatingFromCompletedToCanceled() throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.COMPLETED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.COMPLETED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.CANCELED);
 
-    String response = mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    String response = mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1120,21 +1160,22 @@ class AppointmentControllerIT {
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(updateDto.status().name(), result.status().name());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(1)).sendCanceledAppointmentNotificationToClient(
-        any(Appointment.class));
+    assertEquals(updateDto.status().name(), result.status().name());
+    assertEquals(1, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(CANCELED_SUBJECT));
   }
 
   @Test
   void update_returnsBadRequest_whenValidAuth_whenUpdatingFromCompletedToApproved()
       throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.COMPLETED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.COMPLETED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.APPROVED);
 
-    mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isBadRequest());
@@ -1143,12 +1184,12 @@ class AppointmentControllerIT {
   @Test
   void update_returnsBadRequest_whenValidAuth_whenUpdatingFromCanceledToApproved()
       throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.CANCELED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.CANCELED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.APPROVED);
 
-    mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isBadRequest());
@@ -1157,12 +1198,12 @@ class AppointmentControllerIT {
   @Test
   void update_returnsBadRequest_whenValidAuth_whenUpdatingFromCanceledToCanceled()
       throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.CANCELED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.CANCELED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.CANCELED);
 
-    mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isBadRequest());
@@ -1171,12 +1212,12 @@ class AppointmentControllerIT {
   @Test
   void update_returnsBadRequest_whenValidAuth_whenUpdatingFromCanceledToCompleted()
       throws Exception {
-    VALID_APPOINTMENT.setStatus(AppointmentStatus.CANCELED);
-    appointmentRepository.save(VALID_APPOINTMENT);
+    validAppointment.setStatus(AppointmentStatus.CANCELED);
+    appointmentRepository.save(validAppointment);
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.COMPLETED);
 
-    mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isBadRequest());
@@ -1186,19 +1227,19 @@ class AppointmentControllerIT {
   void update_returnsOk_whenAuthAsClient_whenUpdatingOwnAppointment_whenStatusCanceled()
       throws Exception {
     Appointment appointment = new Appointment();
-    appointment.setClient(VALID_CLIENT);
-    appointment.setStaff(VALID_STAFF);
-    appointment.setService(VALID_SERVICE);
+    appointment.setClient(validClient);
+    appointment.setStaff(validStaff);
+    appointment.setService(validService);
     appointment.setStartDate(LocalDateTime.now().plusYears(10));
     appointment.setEndDate(
-        LocalDateTime.now().plusYears(10).plusMinutes(VALID_SERVICE.getDuration().toMinutes()));
+        LocalDateTime.now().plusYears(10).plusMinutes(validService.getDuration().toMinutes()));
     appointment.setStatus(AppointmentStatus.NOT_APPROVED);
     appointmentRepository.save(appointment);
 
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.CANCELED);
 
     String response = mockMvc.perform(put("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1207,10 +1248,11 @@ class AppointmentControllerIT {
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(updateDto.status().name(), result.status().name());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(1)).sendCanceledAppointmentNotificationToClient(
-        any(Appointment.class));
+    assertEquals(updateDto.status().name(), result.status().name());
+    assertEquals(1, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(CANCELED_SUBJECT));
   }
 
   @Test
@@ -1218,8 +1260,8 @@ class AppointmentControllerIT {
       throws Exception {
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.APPROVED);
 
-    mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+    mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isBadRequest());
@@ -1230,8 +1272,8 @@ class AppointmentControllerIT {
       throws Exception {
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.COMPLETED);
 
-    mockMvc.perform(put("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+    mockMvc.perform(put("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isBadRequest());
@@ -1242,7 +1284,7 @@ class AppointmentControllerIT {
       throws Exception {
     Appointment appointment = appointmentRepository.findAll()
         .stream()
-        .filter(a -> !a.getClient().getId().equals(VALID_CLIENT.getId()))
+        .filter(a -> !a.getClient().getId().equals(validClient.getId()))
         .findFirst()
         .orElseThrow(
             () -> new IllegalStateException("No other client appointments in the database")
@@ -1251,7 +1293,7 @@ class AppointmentControllerIT {
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.CANCELED);
 
     mockMvc.perform(put("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isForbidden());
@@ -1261,19 +1303,19 @@ class AppointmentControllerIT {
   void update_returnsOk_whenAuthAsStaff_whenUpdatingOwnAppointment_whenStatusApproved()
       throws Exception {
     Appointment appointment = new Appointment();
-    appointment.setClient(VALID_CLIENT);
-    appointment.setStaff(VALID_STAFF);
-    appointment.setService(VALID_SERVICE);
+    appointment.setClient(validClient);
+    appointment.setStaff(validStaff);
+    appointment.setService(validService);
     appointment.setStartDate(LocalDateTime.now().plusYears(10));
     appointment.setEndDate(
-        LocalDateTime.now().plusYears(10).plusMinutes(VALID_SERVICE.getDuration().toMinutes()));
+        LocalDateTime.now().plusYears(10).plusMinutes(validService.getDuration().toMinutes()));
     appointment.setStatus(AppointmentStatus.NOT_APPROVED);
     appointmentRepository.save(appointment);
 
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.APPROVED);
 
     String response = mockMvc.perform(put("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1282,28 +1324,31 @@ class AppointmentControllerIT {
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(updateDto.status().name(), result.status().name());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(1)).sendApprovedAppointmentNotification(any(Appointment.class));
+    assertEquals(updateDto.status().name(), result.status().name());
+    assertEquals(2, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(APPROVED_SUBJECT));
+    assertTrue(receivedMessages[1].getSubject().contains(APPROVED_SUBJECT));
   }
 
   @Test
   void update_returnsOk_whenAuthAsStaff_whenUpdatingOwnAppointment_whenStatusCanceled()
       throws Exception {
     Appointment appointment = new Appointment();
-    appointment.setClient(VALID_CLIENT);
-    appointment.setStaff(VALID_STAFF);
-    appointment.setService(VALID_SERVICE);
+    appointment.setClient(validClient);
+    appointment.setStaff(validStaff);
+    appointment.setService(validService);
     appointment.setStartDate(LocalDateTime.now().plusYears(10));
     appointment.setEndDate(
-        LocalDateTime.now().plusYears(10).plusMinutes(VALID_SERVICE.getDuration().toMinutes()));
+        LocalDateTime.now().plusYears(10).plusMinutes(validService.getDuration().toMinutes()));
     appointment.setStatus(AppointmentStatus.APPROVED);
     appointmentRepository.save(appointment);
 
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.CANCELED);
 
     String response = mockMvc.perform(put("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1312,29 +1357,30 @@ class AppointmentControllerIT {
         .getContentAsString();
 
     AppointmentView result = objectMapper.readValue(response, AppointmentView.class);
-    assertEquals(updateDto.status().name(), result.status().name());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(1)).sendCanceledAppointmentNotificationToClient(
-        any(Appointment.class));
+    assertEquals(updateDto.status().name(), result.status().name());
+    assertEquals(1, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(CANCELED_SUBJECT));
   }
 
   @Test
   void update_returnsOk_whenAuthAsStaff_whenUpdatingOwnAppointment_whenStatusCompleted()
       throws Exception {
     Appointment appointment = new Appointment();
-    appointment.setClient(VALID_CLIENT);
-    appointment.setStaff(VALID_STAFF);
-    appointment.setService(VALID_SERVICE);
+    appointment.setClient(validClient);
+    appointment.setStaff(validStaff);
+    appointment.setService(validService);
     appointment.setStartDate(LocalDateTime.now().plusYears(10));
     appointment.setEndDate(
-        LocalDateTime.now().plusYears(10).plusMinutes(VALID_SERVICE.getDuration().toMinutes()));
+        LocalDateTime.now().plusYears(10).plusMinutes(validService.getDuration().toMinutes()));
     appointment.setStatus(AppointmentStatus.APPROVED);
     appointmentRepository.save(appointment);
 
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.CANCELED);
 
     String response = mockMvc.perform(put("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isOk())
@@ -1351,7 +1397,7 @@ class AppointmentControllerIT {
       throws Exception {
     Appointment appointment = appointmentRepository.findAll()
         .stream()
-        .filter(a -> !a.getStaff().getId().equals(VALID_STAFF.getId()))
+        .filter(a -> !a.getStaff().getId().equals(validStaff.getId()))
         .findFirst()
         .orElseThrow(
             () -> new IllegalStateException("No other client appointments in the database")
@@ -1360,7 +1406,7 @@ class AppointmentControllerIT {
     AppointmentUpdate updateDto = new AppointmentUpdate(UpdateAppointmentStatus.COMPLETED);
 
     mockMvc.perform(put("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(updateDto)))
         .andExpect(status().isForbidden());
@@ -1368,95 +1414,97 @@ class AppointmentControllerIT {
 
   @Test
   void delete_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(delete("/api/v1/appointments/" + VALID_APPOINTMENT.getId()))
+    mockMvc.perform(delete("/api/v1/appointments/" + validAppointment.getId()))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void delete_returnsNoContent_whenAuthAsAdmin() throws Exception {
-    mockMvc.perform(delete("/api/v1/appointments/" + VALID_APPOINTMENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+    mockMvc.perform(delete("/api/v1/appointments/" + validAppointment.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isNoContent());
 
-    assertFalse(appointmentRepository.existsById(VALID_APPOINTMENT.getId()));
+    assertFalse(appointmentRepository.existsById(validAppointment.getId()));
   }
 
   @Test
   void delete_returnsNoContent_whenAuthAsClient_whenDeletingOwnAppointment() throws Exception {
     Appointment appointment = new Appointment();
-    appointment.setClient(VALID_CLIENT);
-    appointment.setStaff(VALID_STAFF);
-    appointment.setService(VALID_SERVICE);
+    appointment.setClient(validClient);
+    appointment.setStaff(validStaff);
+    appointment.setService(validService);
     appointment.setStartDate(LocalDateTime.now().plusYears(10));
     appointment.setEndDate(
-        LocalDateTime.now().plusYears(10).plusMinutes(VALID_SERVICE.getDuration().toMinutes()));
+        LocalDateTime.now().plusYears(10).plusMinutes(validService.getDuration().toMinutes()));
     appointment.setStatus(AppointmentStatus.NOT_APPROVED);
     appointmentRepository.save(appointment);
 
     mockMvc.perform(delete("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isNoContent());
 
-    assertFalse(appointmentRepository.existsById(appointment.getId()));
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(1)).sendCanceledAppointmentNotificationToClient(
-        any(Appointment.class));
+    assertFalse(appointmentRepository.existsById(appointment.getId()));
+    assertEquals(1, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(CANCELED_SUBJECT));
   }
 
   @Test
   void delete_returnsForbidden_whenAuthAsClient_whenDeletingOthersAppointment() throws Exception {
     Appointment appointment = appointmentRepository.findAll()
         .stream()
-        .filter(a -> !a.getClient().getId().equals(VALID_CLIENT.getId()))
+        .filter(a -> !a.getClient().getId().equals(validClient.getId()))
         .findFirst()
         .orElseThrow(
             () -> new IllegalStateException("No other client appointments in the database"));
 
     mockMvc.perform(delete("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void delete_returnsNoContent_whenAuthAsStaff_whenDeletingOwnAppointment() throws Exception {
     Appointment appointment = new Appointment();
-    appointment.setClient(VALID_CLIENT);
-    appointment.setStaff(VALID_STAFF);
-    appointment.setService(VALID_SERVICE);
+    appointment.setClient(validClient);
+    appointment.setStaff(validStaff);
+    appointment.setService(validService);
     appointment.setStartDate(LocalDateTime.now().plusYears(10));
     appointment.setEndDate(
-        LocalDateTime.now().plusYears(10).plusMinutes(VALID_SERVICE.getDuration().toMinutes()));
+        LocalDateTime.now().plusYears(10).plusMinutes(validService.getDuration().toMinutes()));
     appointment.setStatus(AppointmentStatus.NOT_APPROVED);
     appointmentRepository.save(appointment);
 
     mockMvc.perform(delete("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isNoContent());
 
-    assertFalse(appointmentRepository.existsById(appointment.getId()));
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-    verify(mailService, times(1)).sendCanceledAppointmentNotificationToClient(
-        any(Appointment.class));
+    assertFalse(appointmentRepository.existsById(appointment.getId()));
+    assertEquals(1, receivedMessages.length);
+    assertTrue(receivedMessages[0].getSubject().contains(CANCELED_SUBJECT));
   }
 
   @Test
   void delete_returnsForbidden_whenAuthAsStaff_whenDeletingOthersAppointment() throws Exception {
     Appointment appointment = appointmentRepository.findAll()
         .stream()
-        .filter(a -> !a.getStaff().getId().equals(VALID_STAFF.getId()))
+        .filter(a -> !a.getStaff().getId().equals(validStaff.getId()))
         .findFirst()
         .orElseThrow(
             () -> new IllegalStateException("No other staff appointments in the database"));
 
     mockMvc.perform(delete("/api/v1/appointments/" + appointment.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void delete_returnsNotFound_whenAppointmentDoesNotExist() throws Exception {
     mockMvc.perform(delete("/api/v1/appointments/" + INVALID_APPOINTMENT_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isNotFound());
   }
 

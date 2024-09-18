@@ -5,9 +5,6 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,9 +13,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.icegreen.greenmail.configuration.GreenMailConfiguration;
+import com.icegreen.greenmail.junit5.GreenMailExtension;
+import com.icegreen.greenmail.util.ServerSetupTest;
 import com.internship.flow_appointment_scheduling.FlowAppointmentSchedulingApplication;
 import com.internship.flow_appointment_scheduling.config.TestContainersConfig;
-import com.internship.flow_appointment_scheduling.enums.Users;
 import com.internship.flow_appointment_scheduling.features.appointments.entity.enums.AppointmentStatus;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import com.internship.flow_appointment_scheduling.features.service.repository.ServiceRepository;
@@ -34,18 +33,21 @@ import com.internship.flow_appointment_scheduling.features.user.entity.StaffDeta
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
-import com.internship.flow_appointment_scheduling.infrastructure.mail_service.MailService;
 import com.internship.flow_appointment_scheduling.infrastructure.security.service.JwtService;
+import com.internship.flow_appointment_scheduling.seed.enums.SeededAdminUsers;
+import com.internship.flow_appointment_scheduling.seed.enums.SeededClientUsers;
+import com.internship.flow_appointment_scheduling.seed.enums.SeededStaffUsers;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import javax.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -69,15 +71,18 @@ class UserControllerIT {
   private ServiceRepository serviceRepository;
   @Autowired
   private JwtService jwtService;
-  @MockBean
-  private MailService mailService;
   @Autowired
   private ObjectMapper objectMapper;
 
-  private static Service VALID_SERVICE;
-  private static long ADMIN_ID;
-  private static User VALID_STAFF;
-  private static User VALID_CLIENT;
+  @RegisterExtension
+  static GreenMailExtension greenMail = new GreenMailExtension(ServerSetupTest.SMTP)
+      .withConfiguration(GreenMailConfiguration.aConfig().withUser("springboot", "duke"))
+      .withPerMethodLifecycle(true);
+
+  private static Service validService;
+  private static long adminId;
+  private static User validStaff;
+  private static User validClient;
   private static final long INVALID_SERVICE_ID = -1L;
   private static final long INVALID_USER_ID = -1L;
   private static final UserPostRequest VALID_USER_POST_REQUEST = new UserPostRequest(
@@ -109,18 +114,18 @@ class UserControllerIT {
 
   @BeforeEach
   void setUp() {
-    VALID_SERVICE = serviceRepository.findAll().stream()
+    validService = serviceRepository.findAll().stream()
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No service data in the database"));
 
-    ADMIN_ID = userRepository.findByEmail(Users.ADMIN.getEmail())
+    adminId = userRepository.findByEmail(SeededAdminUsers.ADMIN1.getEmail())
         .orElseThrow(() -> new IllegalStateException("Admin user not found in the database"))
         .getId();
 
-    VALID_STAFF = userRepository.findByEmail(Users.STAFF.getEmail())
+    validStaff = userRepository.findByEmail(SeededStaffUsers.STAFF1.getEmail())
         .orElseThrow(() -> new IllegalStateException("Staff user not found in the database"));
 
-    VALID_CLIENT = userRepository.findByEmail(Users.CLIENT.getEmail())
+    validClient = userRepository.findByEmail(SeededClientUsers.CLIENT1.getEmail())
         .orElseThrow(() -> new IllegalStateException("Client user not found in the database"));
   }
 
@@ -133,28 +138,28 @@ class UserControllerIT {
   @Test
   void getAll_returnsForbidden_whenAuthAsClient() throws Exception {
     mockMvc.perform(get("/api/v1/users")
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getAll_returnsOk_whenAuthAsAdmin() throws Exception {
     mockMvc.perform(get("/api/v1/users")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getAll_returnsOk_whenAuthAsStaff() throws Exception {
     mockMvc.perform(get("/api/v1/users")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getAll_returnsAllUsers_whenAuthAsAdmin() throws Exception {
     mockMvc.perform(get("/api/v1/users")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isNotEmpty());
   }
@@ -162,7 +167,7 @@ class UserControllerIT {
   @Test
   void getAll_returnsUsersWithSpecificRole_whenAuthAsAdmin() throws Exception {
     mockMvc.perform(get("/api/v1/users")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .param("userRole", UserRoles.CLIENT.name()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isNotEmpty())
@@ -173,86 +178,86 @@ class UserControllerIT {
 
   @Test
   void getAllByServiceId_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(get("/api/v1/users/service/" + VALID_SERVICE.getId()))
+    mockMvc.perform(get("/api/v1/users/service/" + validService.getId()))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getAllByServiceId_returnsOk_whenAuthAsAdmin() throws Exception {
-    mockMvc.perform(get("/api/v1/users/service/" + VALID_SERVICE.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+    mockMvc.perform(get("/api/v1/users/service/" + validService.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getAllByServiceId_returnsOk_whenAuthAsStaff() throws Exception {
-    mockMvc.perform(get("/api/v1/users/service/" + VALID_SERVICE.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+    mockMvc.perform(get("/api/v1/users/service/" + validService.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getAllByServiceId_returnsOk_whenAuthAsClient() throws Exception {
-    mockMvc.perform(get("/api/v1/users/service/" + VALID_SERVICE.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+    mockMvc.perform(get("/api/v1/users/service/" + validService.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getAllByServiceId_returnsOkEmptyPage_whenInvalidServiceId() throws Exception {
     mockMvc.perform(get("/api/v1/users/service/" + INVALID_SERVICE_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getById_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(get("/api/v1/users/" + ADMIN_ID))
+    mockMvc.perform(get("/api/v1/users/" + adminId))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getById_returnsOk_whenAuthAsAdmin() throws Exception {
-    mockMvc.perform(get("/api/v1/users/" + ADMIN_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+    mockMvc.perform(get("/api/v1/users/" + adminId)
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getById_returnsOk_whenAuthAsStaff() throws Exception {
-    mockMvc.perform(get("/api/v1/users/" + VALID_STAFF.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+    mockMvc.perform(get("/api/v1/users/" + validStaff.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getById_returnsForbidden_whenAuthAsClientAccessingAnotherUser() throws Exception {
-    mockMvc.perform(get("/api/v1/users/" + ADMIN_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+    mockMvc.perform(get("/api/v1/users/" + adminId)
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getById_returnsOk_whenAuthAsClientAccessingSelf() throws Exception {
-    mockMvc.perform(get("/api/v1/users/" + VALID_CLIENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+    mockMvc.perform(get("/api/v1/users/" + validClient.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isOk());
   }
 
   @Test
   void getById_returnsNotFound_whenUserNotFound() throws Exception {
     mockMvc.perform(get("/api/v1/users/" + INVALID_USER_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void getById_returnsStaffDetails_whenReturnStaff() throws Exception {
-    User user = userRepository.findById(VALID_STAFF.getId()).orElseThrow();
+    User user = userRepository.findById(validStaff.getId()).orElseThrow();
     UserView expectedUserView = generateUserView(user);
 
-    MvcResult result = mockMvc.perform(get("/api/v1/users/" + VALID_STAFF.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+    MvcResult result = mockMvc.perform(get("/api/v1/users/" + validStaff.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk())
         .andReturn();
 
@@ -264,11 +269,11 @@ class UserControllerIT {
 
   @Test
   void getById_returnsNullStaffDetails_whenReturnClient() throws Exception {
-    User user = userRepository.findById(VALID_CLIENT.getId()).orElseThrow();
+    User user = userRepository.findById(validClient.getId()).orElseThrow();
     UserView expectedUserView = generateUserView(user);
 
-    MvcResult result = mockMvc.perform(get("/api/v1/users/" + VALID_CLIENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+    MvcResult result = mockMvc.perform(get("/api/v1/users/" + validClient.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isOk())
         .andReturn();
 
@@ -310,7 +315,7 @@ class UserControllerIT {
   @Test
   void create_returnsBadRequest_whenInvalidEmail() throws Exception {
     List<String> invalidEmail = List.of(
-        "", "   ", "  11", "email@", Users.ADMIN.getEmail()
+        "", "   ", "  11", "email@", SeededAdminUsers.ADMIN1.getEmail()
     );
 
     for (String email : invalidEmail) {
@@ -359,7 +364,7 @@ class UserControllerIT {
 
   @Test
   void update_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + ADMIN_ID)
+    mockMvc.perform(put("/api/v1/users/" + adminId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PUT_REQUEST)))
         .andExpect(status().isForbidden());
@@ -367,15 +372,15 @@ class UserControllerIT {
 
   @Test
   void update_returnsOk_whenAdminUpdatesAnotherUser() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PUT_REQUEST)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.firstName").value(VALID_USER_PUT_REQUEST.firstName()))
         .andExpect(jsonPath("$.lastName").value(VALID_USER_PUT_REQUEST.lastName()));
 
-    Optional<User> updatedUser = userRepository.findById(VALID_STAFF.getId());
+    Optional<User> updatedUser = userRepository.findById(validStaff.getId());
     assertTrue(updatedUser.isPresent());
     assertEquals(VALID_USER_PUT_REQUEST.firstName(), updatedUser.get().getFirstName());
     assertEquals(VALID_USER_PUT_REQUEST.lastName(), updatedUser.get().getLastName());
@@ -383,8 +388,8 @@ class UserControllerIT {
 
   @Test
   void update_returnsForbidden_whenClientUpdatesAnotherUser() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + ADMIN_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + adminId)
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PUT_REQUEST)))
         .andExpect(status().isForbidden());
@@ -392,15 +397,15 @@ class UserControllerIT {
 
   @Test
   void update_returnsOk_whenClientUpdatesSelf() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_CLIENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validClient.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PUT_REQUEST)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.firstName").value(VALID_USER_PUT_REQUEST.firstName()))
         .andExpect(jsonPath("$.lastName").value(VALID_USER_PUT_REQUEST.lastName()));
 
-    Optional<User> updatedUser = userRepository.findById(VALID_CLIENT.getId());
+    Optional<User> updatedUser = userRepository.findById(validClient.getId());
     assertTrue(updatedUser.isPresent());
     assertEquals(VALID_USER_PUT_REQUEST.firstName(), updatedUser.get().getFirstName());
     assertEquals(VALID_USER_PUT_REQUEST.lastName(), updatedUser.get().getLastName());
@@ -408,8 +413,8 @@ class UserControllerIT {
 
   @Test
   void update_returnsForbidden_whenStaffUpdatesAnotherUser() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_CLIENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validClient.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PUT_REQUEST)))
         .andExpect(status().isForbidden());
@@ -417,15 +422,15 @@ class UserControllerIT {
 
   @Test
   void update_returnsOk_whenStaffUpdatesSelf() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PUT_REQUEST)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.firstName").value(VALID_USER_PUT_REQUEST.firstName()))
         .andExpect(jsonPath("$.lastName").value(VALID_USER_PUT_REQUEST.lastName()));
 
-    Optional<User> updatedUser = userRepository.findById(VALID_STAFF.getId());
+    Optional<User> updatedUser = userRepository.findById(validStaff.getId());
     assertTrue(updatedUser.isPresent());
     assertEquals(VALID_USER_PUT_REQUEST.firstName(), updatedUser.get().getFirstName());
     assertEquals(VALID_USER_PUT_REQUEST.lastName(), updatedUser.get().getLastName());
@@ -434,7 +439,7 @@ class UserControllerIT {
   @Test
   void update_returnsNotFound_whenUserNotFound() throws Exception {
     mockMvc.perform(put("/api/v1/users/" + INVALID_USER_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PUT_REQUEST)))
         .andExpect(status().isNotFound());
@@ -442,80 +447,82 @@ class UserControllerIT {
 
   @Test
   void delete_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(delete("/api/v1/users/" + VALID_STAFF.getId()))
+    mockMvc.perform(delete("/api/v1/users/" + validStaff.getId()))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void delete_returnsNoContent_whenAuthAsAdmin() throws Exception {
-    User staff = userRepository.findById(VALID_STAFF.getId()).orElseThrow();
-    boolean checkMailService = staff.getStaffAppointments()
+    User staff = userRepository.findById(validStaff.getId()).orElseThrow();
+    long appointmentsToBeDeleted = staff.getStaffAppointments()
         .stream()
-        .anyMatch(appointment ->
+        .filter(appointment ->
             appointment.getStatus() == AppointmentStatus.NOT_APPROVED ||
                 appointment.getStatus() == AppointmentStatus.APPROVED
-        );
+        )
+        .count();
 
-    mockMvc.perform(delete("/api/v1/users/" + VALID_STAFF.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+    mockMvc.perform(delete("/api/v1/users/" + validStaff.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isNoContent());
 
-    Optional<User> deletedUser = userRepository.findById(VALID_STAFF.getId());
+    Optional<User> deletedUser = userRepository.findById(validStaff.getId());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+
     assertTrue(deletedUser.isEmpty());
-    if (checkMailService) {
-      verify(mailService, atLeastOnce()).sendCanceledAppointmentNotificationToClient(any());
-    }
+    assertEquals(appointmentsToBeDeleted, receivedMessages.length);
   }
 
   @Test
   void delete_returnsForbidden_whenStaffDeletesAnotherUser() throws Exception {
-    mockMvc.perform(delete("/api/v1/users/" + VALID_CLIENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+    mockMvc.perform(delete("/api/v1/users/" + validClient.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void delete_returnsNoContent_whenStaffDeletesSelf() throws Exception {
-    User staff = userRepository.findById(VALID_STAFF.getId()).orElseThrow();
-    boolean checkMailService = staff.getStaffAppointments()
+    User staff = userRepository.findById(validStaff.getId()).orElseThrow();
+    long totalAppointmentsToBeDeleted = staff.getStaffAppointments()
         .stream()
-        .anyMatch(appointment ->
+        .filter(appointment ->
             appointment.getStatus() == AppointmentStatus.NOT_APPROVED ||
                 appointment.getStatus() == AppointmentStatus.APPROVED
-        );
+        )
+        .count();
 
-    mockMvc.perform(delete("/api/v1/users/" + VALID_STAFF.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail())))
+    mockMvc.perform(delete("/api/v1/users/" + validStaff.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail())))
         .andExpect(status().isNoContent());
 
-    Optional<User> deletedUser = userRepository.findById(VALID_STAFF.getId());
+    Optional<User> deletedUser = userRepository.findById(validStaff.getId());
+    MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+
     assertTrue(deletedUser.isEmpty());
-    if (checkMailService) {
-      verify(mailService, atLeastOnce()).sendCanceledAppointmentNotificationToClient(any());
-    }
+    assertEquals(totalAppointmentsToBeDeleted, receivedMessages.length);
   }
 
   @Test
   void delete_returnsForbidden_whenClientDeletesAnotherUser() throws Exception {
-    mockMvc.perform(delete("/api/v1/users/" + VALID_STAFF.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+    mockMvc.perform(delete("/api/v1/users/" + validStaff.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void delete_returnsNoContent_whenClientDeletesSelf() throws Exception {
-    mockMvc.perform(delete("/api/v1/users/" + VALID_CLIENT.getId())
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail())))
+    mockMvc.perform(delete("/api/v1/users/" + validClient.getId())
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail())))
         .andExpect(status().isNoContent());
 
-    Optional<User> deletedUser = userRepository.findById(VALID_CLIENT.getId());
+    Optional<User> deletedUser = userRepository.findById(validClient.getId());
     assertTrue(deletedUser.isEmpty());
   }
 
   @Test
   void delete_returnsNotFound_whenUserNotFound() throws Exception {
     mockMvc.perform(delete("/api/v1/users/" + INVALID_USER_ID)
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail())))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
         .andExpect(status().isNotFound());
   }
 
@@ -531,7 +538,7 @@ class UserControllerIT {
   @Test
   void hireStaff_returnsCreated_whenAuthAsAdmin() throws Exception {
     mockMvc.perform(post("/api/v1/users/hire")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffHireDto(VALID_USER_POST_REQUEST, VALID_STAFF_DETAILS_DTO))))
@@ -544,7 +551,7 @@ class UserControllerIT {
   @Test
   void hireStaff_returnsForbidden_whenAuthAsStaff() throws Exception {
     mockMvc.perform(post("/api/v1/users/hire")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffHireDto(VALID_USER_POST_REQUEST, VALID_STAFF_DETAILS_DTO))))
@@ -554,7 +561,7 @@ class UserControllerIT {
   @Test
   void hireStaff_returnsForbidden_whenAuthAsClient() throws Exception {
     mockMvc.perform(post("/api/v1/users/hire")
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffHireDto(VALID_USER_POST_REQUEST, VALID_STAFF_DETAILS_DTO))))
@@ -564,7 +571,7 @@ class UserControllerIT {
   @Test
   void hireStaff_returnsBadRequest_whenUserInfoIsNull() throws Exception {
     mockMvc.perform(post("/api/v1/users/hire")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffHireDto(null, VALID_STAFF_DETAILS_DTO))))
@@ -574,7 +581,7 @@ class UserControllerIT {
   @Test
   void hireStaff_returnsBadRequest_whenStaffDetailsDtoIsNull() throws Exception {
     mockMvc.perform(post("/api/v1/users/hire")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffHireDto(VALID_USER_POST_REQUEST, null))))
@@ -587,7 +594,7 @@ class UserControllerIT {
         new StaffDetailsDto(-1000.0, LocalTime.of(9, 0), LocalTime.of(17, 0));
 
     mockMvc.perform(post("/api/v1/users/hire")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffHireDto(VALID_USER_POST_REQUEST, invalidSalaryDto))))
@@ -600,7 +607,7 @@ class UserControllerIT {
         new StaffDetailsDto(1000.0, LocalTime.of(9, 0), null);
 
     mockMvc.perform(post("/api/v1/users/hire")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffHireDto(VALID_USER_POST_REQUEST, invalidEndWorkingHourDto))))
@@ -613,7 +620,7 @@ class UserControllerIT {
         new StaffDetailsDto(1000.0, null, LocalTime.of(17, 0));
 
     mockMvc.perform(post("/api/v1/users/hire")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffHireDto(VALID_USER_POST_REQUEST, invalidBeginWorkingHourDto))))
@@ -626,7 +633,7 @@ class UserControllerIT {
         new StaffDetailsDto(1000.0, LocalTime.of(17, 0), LocalTime.of(9, 0));
 
     mockMvc.perform(post("/api/v1/users/hire")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffHireDto(VALID_USER_POST_REQUEST, invalidWorkingHoursDto))))
@@ -635,7 +642,7 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsForbidden_whenNoAuth() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_STAFF_MODIFY_DTO)))
         .andExpect(status().isForbidden());
@@ -643,13 +650,13 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsOk_whenAuthAsAdmin() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_STAFF_MODIFY_DTO)))
         .andExpect(status().isOk());
 
-    Optional<User> staff = userRepository.findById(VALID_STAFF.getId());
+    Optional<User> staff = userRepository.findById(validStaff.getId());
     assertTrue(staff.isPresent());
     StaffDetails details = staff.get().getStaffDetails();
     assertNotNull(details);
@@ -662,8 +669,8 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsOk_whenAuthAsStaff() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -678,8 +685,8 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsBadRequest_whenAuthAsStaffAndTouchAdminFields() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -691,8 +698,8 @@ class UserControllerIT {
                 ))))
         .andExpect(status().isBadRequest());
 
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -707,8 +714,8 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsForbidden_whenAuthAsClient() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -723,8 +730,8 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsBadRequest_whenUserRoleIsClient() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -739,8 +746,8 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsBadRequest_whenSalaryIsInvalid() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -755,8 +762,8 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsBadRequest_whenIsAvailableIsNull() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -771,8 +778,8 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsBadRequest_whenBeginWorkingHourIsNull() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -787,8 +794,8 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsBadRequest_whenEndWorkingHourIsNull() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -803,8 +810,8 @@ class UserControllerIT {
 
   @Test
   void modifyStaff_returnsBadRequest_whenBeginWorkingHourAfterEndWorkingHour() throws Exception {
-    mockMvc.perform(put("/api/v1/users/" + VALID_STAFF.getId() + "/staff")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+    mockMvc.perform(put("/api/v1/users/" + validStaff.getId() + "/staff")
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(
                 new StaffModifyDto(
@@ -828,7 +835,7 @@ class UserControllerIT {
   @Test
   void resetPassword_returnsOk_whenAuthAsAdmin() throws Exception {
     mockMvc.perform(put("/api/v1/users/reset-password")
-            .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PASSWORD_UPDATE)))
         .andExpect(status().isOk());
@@ -837,7 +844,7 @@ class UserControllerIT {
   @Test
   void resetPassword_returnsOk_whenAuthAsStaff() throws Exception {
     mockMvc.perform(put("/api/v1/users/reset-password")
-            .header("Authorization", generateBarrierAuthHeader(Users.STAFF.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededStaffUsers.STAFF1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PASSWORD_UPDATE)))
         .andExpect(status().isOk());
@@ -846,7 +853,7 @@ class UserControllerIT {
   @Test
   void resetPassword_returnsOk_whenAuthAsClient() throws Exception {
     mockMvc.perform(put("/api/v1/users/reset-password")
-            .header("Authorization", generateBarrierAuthHeader(Users.CLIENT.getEmail()))
+            .header("Authorization", generateBarrierAuthHeader(SeededClientUsers.CLIENT1.getEmail()))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(VALID_USER_PASSWORD_UPDATE)))
         .andExpect(status().isOk());
@@ -862,7 +869,7 @@ class UserControllerIT {
       UserPasswordUpdate request = new UserPasswordUpdate(password);
 
       mockMvc.perform(put("/api/v1/users/reset-password")
-              .header("Authorization", generateBarrierAuthHeader(Users.ADMIN.getEmail()))
+              .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail()))
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
