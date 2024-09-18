@@ -14,8 +14,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
   Page<Appointment> findAllByServiceId(Long serviceId, Pageable pageable);
 
-  long countByServiceId(Long serviceId);
-
   @Query("SELECT a FROM Appointment a " +
       "WHERE a.client.id = :userId " +
       "OR a.staff.id = :userId")

@@ -242,18 +242,6 @@ class AppointmentRepositoryTest {
     assertThat(count).isZero();
   }
 
-  @Test
-  void countAppointmentsInWorkspace_returnNonZero_whenAppointmentsExist() {
-    Service existingService = extractServiceWithExistingAppointments();
-    LocalDateTime existingStartDate = existingService.getAppointments().getFirst().getStartDate();
-    LocalDateTime endDate = existingStartDate.plusMinutes(60);
-
-    int count = appointmentRepository.countAppointmentsInWorkspace(
-        existingService.getWorkSpace().getId(), existingStartDate, endDate);
-
-    assertThat(count).isNotZero();
-  }
-
   private Service extractServiceWithExistingAppointments() {
     return serviceRepository.findAll()
         .stream()

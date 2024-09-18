@@ -161,7 +161,7 @@ class AppointmentControllerIT {
 
   @Test
   void getAllByServiceId_returnsOk_whenAuthAsAdmin() throws Exception {
-    long totalAppointments = appointmentRepository.countByServiceId(validService.getId());
+    long totalAppointments = validService.getAppointments().size();
 
     mockMvc.perform(get("/api/v1/appointments/service/" + validService.getId())
             .header("Authorization", generateBarrierAuthHeader(SeededAdminUsers.ADMIN1.getEmail())))
