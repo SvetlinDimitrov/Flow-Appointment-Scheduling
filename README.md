@@ -1,7 +1,11 @@
-## Flow Appointment Scheduling: Tech Stack
+# Flow Appointment Scheduling
+
+## Project Presentation
+Watch our project walkthrough: [Project Video](https://youtu.be/7JNJUH2in9w)
+
+## Tech Stack
 
 ### Front-End
-
 - **Framework**: React (18.3.1)
 - **Routing**: React Router DOM
 - **State Management**: React Query
@@ -17,7 +21,6 @@
 - **Security**: JWT Decode
 
 ### Back-End
-
 - **Language**: Java 21
 - **Framework**: Spring Boot (3.3.2)
 - **Data Access**: Spring Data JPA
@@ -31,6 +34,7 @@
 - **Mapping**: MapStruct
 - **Password Policies**: Passay
 
+### Additional Tools
 - **Testing Frameworks**: JUnit, GreenMail, Testcontainers
 - **Build Tool**: Maven
 - **IDE Helpers**: Lombok
