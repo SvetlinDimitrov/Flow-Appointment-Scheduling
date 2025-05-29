@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  phpadmin:
+    image: 'phpmyadmin:latest'
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: verysecret
+    ports:
+      - '5678:80'
+    networks:
+      - flow-network
+
+  db:
+    image: 'mysql:8.3.0'
+    environment:
+      MYSQL_DATABASE: scheduling_db
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: verysecret
+      MYSQL_USER: user
+    ports:
+      - '3306:3306'
+    networks:
+      - flow-network
+    volumes:
+      - my-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "user", "--password=secret"]
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 55
+
+  be:
+    image: 'svetlindimitrov606/flow-appointment-scheduling:latest'
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_POST: 3306
+      DB_NAME: scheduling_db
+      DB_USER: user
+      DB_PASS: secret
+      FRONT_END_URL: http://client:3000
+      MAIL_HOST: smtp.mailtrap.io
+      MAIL_PORT: 2525
+      MAIL_USERNAME: 00a1cd76c75101
+      MAIL_PASSWORD: 3b2c4e5f6a7b8c
+      SPRING_PROFILES_ACTIVE: development
+    ports:
+      - '8080:8080' 
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - flow-network
+
+
+  client:
+    image: 'svetlindimitrov606/client-flow-appointment-scheduling:latest'
+    restart: always
+    ports:
+      - '3000:3000'
+    networks:
+      - flow-network
+    depends_on:
+      - be
+
+volumes:
+  my-db:
+
+networks:
+  flow-network:
