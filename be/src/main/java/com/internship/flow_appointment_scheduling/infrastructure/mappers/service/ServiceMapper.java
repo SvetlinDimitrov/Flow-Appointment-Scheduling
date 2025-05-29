@@ -16,5 +16,4 @@ public interface ServiceMapper {
   Service toEntity(ServiceDTO dto);
 
   void updateEntity(@MappingTarget Service toUpdate, ServiceDTO dto);
-
 }

@@ -1,7 +1,6 @@
 package com.internship.flow_appointment_scheduling.features.user.service;
 
 import com.internship.flow_appointment_scheduling.features.appointments.entity.Appointment;
-import com.internship.flow_appointment_scheduling.features.service.entity.Service;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffHireDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.staff_details.StaffModifyDto;
 import com.internship.flow_appointment_scheduling.features.user.dto.users.UserPasswordUpdate;
@@ -15,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserService {
 
-  Page<UserView> getAll(Pageable pageable , UserRoles userRole);
+  Page<UserView> getAll(Pageable pageable, UserRoles userRole);
 
   Page<UserView> getAllByServiceId(Pageable pageable, Long serviceId);
 
@@ -27,7 +26,7 @@ public interface UserService {
 
   void delete(Long id);
 
-  UserView resetPassword(String email , UserPasswordUpdate dto);
+  UserView resetPassword(String email, UserPasswordUpdate dto);
 
   User findByEmail(String email);
 

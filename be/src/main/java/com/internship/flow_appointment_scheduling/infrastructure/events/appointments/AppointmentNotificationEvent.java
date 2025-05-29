@@ -7,16 +7,19 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class AppointmentNotificationEvent extends ApplicationEvent {
 
-    public enum NotificationType {
-        APPROVED, NOT_APPROVED, CANCELED
-    }
+  private final Appointment appointment;
+  private final NotificationType notificationType;
 
-    private final Appointment appointment;
-    private final NotificationType notificationType;
+  public AppointmentNotificationEvent(
+      Object source, Appointment appointment, NotificationType notificationType) {
+    super(source);
+    this.appointment = appointment;
+    this.notificationType = notificationType;
+  }
 
-    public AppointmentNotificationEvent(Object source, Appointment appointment, NotificationType notificationType) {
-        super(source);
-        this.appointment = appointment;
-        this.notificationType = notificationType;
-    }
+  public enum NotificationType {
+    APPROVED,
+    NOT_APPROVED,
+    CANCELED
+  }
 }

@@ -7,8 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class WorkSpaceNameValidator implements ConstraintValidator<ValidWorkSpaceName, String> {
 
-  @Autowired
-  private WorkSpaceRepository workSpaceRepository;
+  @Autowired private WorkSpaceRepository workSpaceRepository;
 
   @Override
   public boolean isValid(String workSpaceName, ConstraintValidatorContext context) {

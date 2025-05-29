@@ -10,7 +10,4 @@ public record UserView(
     String lastName,
     String email,
     String role,
-    StaffDetailsView staffDetails
-) {
-
-}
+    StaffDetailsView staffDetails) {}

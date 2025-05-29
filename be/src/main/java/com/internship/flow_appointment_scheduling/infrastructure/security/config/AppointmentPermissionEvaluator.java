@@ -15,27 +15,34 @@ public class AppointmentPermissionEvaluator {
 
   public boolean currentClientOrStaffAccess(Authentication authentication, Long appointmentId) {
     if (authentication != null
-        && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+        && authentication.getPrincipal()
+            instanceof
+            CustomUserDetails(
+                com.internship.flow_appointment_scheduling.features.user.entity.User user)) {
 
-      return appointmentRepository.findById(appointmentId)
-          .filter(value ->
-              userDetails.user().getEmail().equals(value.getClient().getEmail()) ||
-                  userDetails.user().getEmail().equals(value.getStaff().getEmail())
-          ).isPresent();
-
+      return appointmentRepository
+          .findById(appointmentId)
+          .filter(
+              value ->
+                  user.getEmail().equals(value.getClient().getEmail())
+                      || user.getEmail().equals(value.getStaff().getEmail()))
+          .isPresent();
     }
     return false;
   }
 
-  public boolean currentClientOrStaffAccess(Authentication authentication, AppointmentCreate appointmentCreate) {
+  public boolean currentClientOrStaffAccess(
+      Authentication authentication, AppointmentCreate appointmentCreate) {
     if (authentication != null
-        && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+        && authentication.getPrincipal()
+            instanceof
+            CustomUserDetails(
+                com.internship.flow_appointment_scheduling.features.user.entity.User user)) {
 
-      String userEmail = userDetails.user().getEmail();
-      return userEmail.equals(appointmentCreate.clientEmail()) ||
-          userEmail.equals(appointmentCreate.staffEmail());
+      String userEmail = user.getEmail();
+      return userEmail.equals(appointmentCreate.clientEmail())
+          || userEmail.equals(appointmentCreate.staffEmail());
     }
     return false;
   }
-
 }

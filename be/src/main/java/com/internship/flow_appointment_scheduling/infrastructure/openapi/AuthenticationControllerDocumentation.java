@@ -21,80 +21,106 @@ public interface AuthenticationControllerDocumentation {
 
   @Operation(
       summary = "Create authentication token",
-      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = AuthenticationRequest.class),
-              examples = {
-                  @ExampleObject(
-                      name = "Admin Example",
-                      value = "{" +
-                          "\"email\": \"admin1@flow.com\"," +
-                          "\"password\": \"password123A!\"" +
-                          "}"
-                  ),
-                  @ExampleObject(
-                      name = "Staff Example",
-                      value = "{" +
-                          "\"email\": \"staff1@flow.com\"," +
-                          "\"password\": \"password123A!\"" +
-                          "}"
-                  ),
-                  @ExampleObject(
-                      name = "Customer Example",
-                      value = "{" +
-                          "\"email\": \"client1@abv.bg\"," +
-                          "\"password\": \"password123A!\"" +
-                          "}"
-                  )
-              }
-          )
-      )
-  )
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Successfully created authentication token",
-          content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationResponse.class))
-      ),
-      @ApiResponse(responseCode = "400", description = "Invalid input",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-  })
+      requestBody =
+          @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              content =
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = AuthenticationRequest.class),
+                      examples = {
+                        @ExampleObject(
+                            name = "Admin Example",
+                            value =
+                                "{"
+                                    + "\"email\": \"admin1@flow.com\","
+                                    + "\"password\": \"password123A!\""
+                                    + "}"),
+                        @ExampleObject(
+                            name = "Staff Example",
+                            value =
+                                "{"
+                                    + "\"email\": \"staff1@flow.com\","
+                                    + "\"password\": \"password123A!\""
+                                    + "}"),
+                        @ExampleObject(
+                            name = "Customer Example",
+                            value =
+                                "{"
+                                    + "\"email\": \"client1@abv.bg\","
+                                    + "\"password\": \"password123A!\""
+                                    + "}")
+                      })))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully created authentication token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = AuthenticationResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+      })
   @PostMapping
   ResponseEntity<AuthenticationResponse> createAuthenticationToken(
       @Valid @RequestBody AuthenticationRequest authenticationRequest);
 
   @Operation(
       summary = "Refresh authentication token",
-      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = RefreshTokenPostRequest.class)
-          )
-      )
-  )
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Successfully refreshed authentication token",
-          content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationResponse.class))
-      ),
-      @ApiResponse(responseCode = "400", description = "Invalid input or token expired",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-  })
+      requestBody =
+          @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              content =
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = RefreshTokenPostRequest.class))))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully refreshed authentication token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = AuthenticationResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or token expired",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+      })
   @PostMapping("/refresh")
   ResponseEntity<AuthenticationResponse> refreshToken(
       @Valid @RequestBody RefreshTokenPostRequest dto);
 
-  @Operation(
-      summary = "Reset password",
-      description = "Send email with reset password link"
-  )
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Password reset email sent successfully"),
-      @ApiResponse(responseCode = "404", description = "User not found",
-          content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class))),
-      @ApiResponse(responseCode = "400", description = "Bad request",
-          content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class)))
-  })
+  @Operation(summary = "Reset password", description = "Send email with reset password link")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Password reset email sent successfully"),
+        @ApiResponse(
+            responseCode = "404",
+            description = "User not found",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ProblemDetail.class)))
+      })
   @GetMapping("/reset-password")
   ResponseEntity<Void> resetPassword(@RequestParam String email);
 }

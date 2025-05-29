@@ -22,9 +22,6 @@ public enum SeededWorkSpaces {
   private final int availableSlots;
 
   public WorkSpace toWorkSpace() {
-    return WorkSpace.builder()
-        .name(name)
-        .availableSlots(availableSlots)
-        .build();
+    return WorkSpace.builder().name(name).availableSlots(availableSlots).build();
   }
 }

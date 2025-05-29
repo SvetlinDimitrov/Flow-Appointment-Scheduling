@@ -7,8 +7,8 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-public class StatusCheckForClientRoleValidator implements
-    ConstraintValidator<StatusCheckForClientRole, UpdateAppointmentStatus> {
+public class StatusCheckForClientRoleValidator
+    implements ConstraintValidator<StatusCheckForClientRole, UpdateAppointmentStatus> {
 
   @Override
   public boolean isValid(UpdateAppointmentStatus status, ConstraintValidatorContext context) {
@@ -18,9 +18,9 @@ public class StatusCheckForClientRoleValidator implements
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    boolean isTheUserClient = authentication.getAuthorities()
-        .stream()
-        .anyMatch(a -> a.getAuthority().equals("ROLE_" + UserRoles.CLIENT));
+    boolean isTheUserClient =
+        authentication.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_" + UserRoles.CLIENT));
 
     if (isTheUserClient) {
       return status != UpdateAppointmentStatus.APPROVED

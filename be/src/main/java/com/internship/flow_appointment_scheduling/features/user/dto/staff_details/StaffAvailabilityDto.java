@@ -5,15 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 @ValidWorkingHours
 public record StaffAvailabilityDto(
-
-    @NotNull(message = "Is available must not be null")
-    Boolean isAvailable,
-
-    @NotNull(message = "Begin working hour must not be null")
-    String beginWorkingHour,
-
-    @NotNull(message = "End working hour must not be null")
-    String endWorkingHour
-) {
-
-}
+    @NotNull(message = "Is available must not be null") Boolean isAvailable,
+    @NotNull(message = "Begin working hour must not be null") String beginWorkingHour,
+    @NotNull(message = "End working hour must not be null") String endWorkingHour) {}

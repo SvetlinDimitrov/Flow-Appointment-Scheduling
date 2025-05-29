@@ -1,69 +1,71 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Appointment Canceled</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
+    <title>Appointment Canceled</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f9;
+          color: #333;
+          margin: 0;
+          padding: 0;
+        }
 
-    .container {
-      width: 80%;
-      margin: 0 auto;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
+        .container {
+          width: 80%;
+          margin: 0 auto;
+          background-color: #fff;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
 
-    .header {
-      text-align: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #ddd;
-    }
+        .header {
+          text-align: center;
+          padding: 10px 0;
+          border-bottom: 1px solid #ddd;
+        }
 
-    .content {
-      padding: 20px 0;
-    }
+        .content {
+          padding: 20px 0;
+        }
 
-    .content p {
-      line-height: 1.6;
-    }
+        .content p {
+          line-height: 1.6;
+        }
 
-    .date-info {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #e0e0e0;
-      border-radius: 4px;
-    }
+        .date-info {
+          margin-top: 20px;
+          padding: 10px;
+          background-color: #e0e0e0;
+          border-radius: 4px;
+        }
 
-    .footer {
-      text-align: center;
-      padding: 10px 0;
-      border-top: 1px solid #ddd;
-      font-size: 0.9em;
-      color: #777;
-    }
-  </style>
+        .footer {
+          text-align: center;
+          padding: 10px 0;
+          border-top: 1px solid #ddd;
+          font-size: 0.9em;
+          color: #777;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <h1>Appointment Canceled</h1>
-  </div>
-  <div class="content">
-    <p>Dear <span th:text="${clientName}">Client Name</span>,</p>
-    <p>We regret to inform you that your appointment for the service <span th:text="${serviceName}"> Name</span> scheduled from <span th:text="${startDate}">Start Date</span> to <span th:text="${endDate}">End Date</span> has been canceled.</p>
-    <p>If you have any questions, please contact us.</p>
-  </div>
-  <div class="footer">
-    <p>Best regards,</p>
-    <p>Appointment Scheduling Team</p>
-  </div>
+    <div class="header">
+        <h1>Appointment Canceled</h1>
+    </div>
+    <div class="content">
+        <p>Dear <span th:text="${clientName}">Client Name</span>,</p>
+        <p>We regret to inform you that your appointment for the service <span th:text="${serviceName}"> Name</span>
+            scheduled from <span th:text="${startDate}">Start Date</span> to <span th:text="${endDate}">End Date</span>
+            has been canceled.</p>
+        <p>If you have any questions, please contact us.</p>
+    </div>
+    <div class="footer">
+        <p>Best regards,</p>
+        <p>Appointment Scheduling Team</p>
+    </div>
 </div>
 </body>
 </html>

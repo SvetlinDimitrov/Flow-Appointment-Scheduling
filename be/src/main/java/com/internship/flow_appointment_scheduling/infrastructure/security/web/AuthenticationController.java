@@ -29,21 +29,16 @@ public class AuthenticationController implements AuthenticationControllerDocumen
   public ResponseEntity<AuthenticationResponse> createAuthenticationToken(
       @Valid @RequestBody AuthenticationRequest authenticationRequest) {
     authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(authenticationRequest.email(),
-            authenticationRequest.password())
-    );
+        new UsernamePasswordAuthenticationToken(
+            authenticationRequest.email(), authenticationRequest.password()));
 
-    return ResponseEntity
-        .ok()
-        .body(jwtService.generateToken(authenticationRequest.email()));
+    return ResponseEntity.ok().body(jwtService.generateToken(authenticationRequest.email()));
   }
 
   @PostMapping("/refresh")
   public ResponseEntity<AuthenticationResponse> refreshToken(
       @Valid @RequestBody RefreshTokenPostRequest dto) {
-    return ResponseEntity
-        .ok()
-        .body(jwtService.refreshToken(dto));
+    return ResponseEntity.ok().body(jwtService.refreshToken(dto));
   }
 
   @GetMapping("/reset-password")

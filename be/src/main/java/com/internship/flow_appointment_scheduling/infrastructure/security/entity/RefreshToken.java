@@ -22,11 +22,7 @@ public class RefreshToken {
 
   LocalDateTime expiryDate;
 
-  @OneToOne
-  User user;
+  @OneToOne User user;
 
-  @Id
-  @UuidGenerator
-  private String id;
-
+  @Id @UuidGenerator private String id;
 }

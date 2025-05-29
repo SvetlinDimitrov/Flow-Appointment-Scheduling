@@ -8,7 +8,4 @@ public record ShortAppointmentView(
     String serviceName,
     LocalDateTime startDate,
     LocalDateTime endDate,
-    AppointmentStatus status
-) {
-
-}
+    AppointmentStatus status) {}

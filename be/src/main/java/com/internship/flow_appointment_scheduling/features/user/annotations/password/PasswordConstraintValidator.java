@@ -17,14 +17,15 @@ public class PasswordConstraintValidator implements ConstraintValidator<ValidPas
   @Override
   public boolean isValid(String password, ConstraintValidatorContext context) {
 
-    PasswordValidator validator = new PasswordValidator(Arrays.asList(
-        new LengthRule(8, 30),
-        new CharacterRule(EnglishCharacterData.UpperCase, 1),
-        new CharacterRule(EnglishCharacterData.LowerCase, 1),
-        new CharacterRule(EnglishCharacterData.Digit, 1),
-        new CharacterRule(EnglishCharacterData.Special, 1),
-        new WhitespaceRule()
-    ));
+    PasswordValidator validator =
+        new PasswordValidator(
+            Arrays.asList(
+                new LengthRule(8, 30),
+                new CharacterRule(EnglishCharacterData.UpperCase, 1),
+                new CharacterRule(EnglishCharacterData.LowerCase, 1),
+                new CharacterRule(EnglishCharacterData.Digit, 1),
+                new CharacterRule(EnglishCharacterData.Special, 1),
+                new WhitespaceRule()));
 
     RuleResult result = validator.validate(new PasswordData(password));
 
@@ -44,8 +45,7 @@ public class PasswordConstraintValidator implements ConstraintValidator<ValidPas
     formatedMessage = formatedMessage.replace("password", "");
 
     context.disableDefaultConstraintViolation();
-    context.buildConstraintViolationWithTemplate(formatedMessage)
-        .addConstraintViolation();
+    context.buildConstraintViolationWithTemplate(formatedMessage).addConstraintViolation();
 
     return false;
   }

@@ -45,27 +45,25 @@ public class Service {
   @Column(nullable = false, columnDefinition = "varchar(255)")
   private String name;
 
-  @Column(nullable = false , columnDefinition = "text")
+  @Column(nullable = false, columnDefinition = "text")
   private String description;
 
   @Column(nullable = false)
   private Duration duration;
 
-  @Column(nullable = false , columnDefinition = "decimal(10,2)")
+  @Column(nullable = false, columnDefinition = "decimal(10,2)")
   private BigDecimal price;
 
   @Column(nullable = false)
   private Boolean availability;
 
-  @ManyToOne
-  private WorkSpace workSpace;
+  @ManyToOne private WorkSpace workSpace;
 
   @ManyToMany
   @JoinTable(
       name = "users_services",
       joinColumns = @JoinColumn(name = "service_id"),
-      inverseJoinColumns = @JoinColumn(name = "user_id")
-  )
+      inverseJoinColumns = @JoinColumn(name = "user_id"))
   @Builder.Default
   private List<User> users = new ArrayList<>();
 

@@ -23,5 +23,4 @@ public interface ServiceService {
   void delete(Long id);
 
   Service findById(Long id);
-
 }

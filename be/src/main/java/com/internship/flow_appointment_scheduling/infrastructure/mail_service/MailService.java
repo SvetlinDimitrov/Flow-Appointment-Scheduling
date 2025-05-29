@@ -10,5 +10,5 @@ public interface MailService {
 
   void sendCanceledAppointmentNotificationToClient(Appointment appointment);
 
-  void sendResetPasswordEmail(String jwtToken , String userEmail);
+  void sendResetPasswordEmail(String jwtToken, String userEmail);
 }

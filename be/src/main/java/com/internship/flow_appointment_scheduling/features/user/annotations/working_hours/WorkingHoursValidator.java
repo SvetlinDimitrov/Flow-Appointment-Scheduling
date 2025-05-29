@@ -3,8 +3,7 @@ package com.internship.flow_appointment_scheduling.features.user.annotations.wor
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class WorkingHoursValidator implements
-    ConstraintValidator<ValidWorkingHours, WorkingHours> {
+public class WorkingHoursValidator implements ConstraintValidator<ValidWorkingHours, WorkingHours> {
 
   @Override
   public boolean isValid(WorkingHours dto, ConstraintValidatorContext context) {

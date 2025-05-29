@@ -58,7 +58,5 @@ public class StaffDetails {
   @Column(name = "end_working_hour", nullable = false)
   private LocalTime endWorkingHour;
 
-  @OneToOne
-  private User user;
-
+  @OneToOne private User user;
 }

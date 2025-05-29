@@ -1,5 +1,6 @@
 package com.internship.flow_appointment_scheduling.infrastructure.security.config;
 
+import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.entity.enums.UserRoles;
 import com.internship.flow_appointment_scheduling.features.user.repository.UserRepository;
 import com.internship.flow_appointment_scheduling.infrastructure.security.dto.CustomUserDetails;
@@ -17,14 +18,16 @@ public class UserPermissionEvaluator {
   public boolean currentClientOrStaffAccess(Authentication authentication, Long id) {
     if (authentication != null
         && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+      User user = userDetails.user();
 
-      return userRepository.findById(id)
-          .filter(value ->
-              userDetails.user().getEmail().equals(value.getEmail()) &&
-              (userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT)) ||
-                  userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
-          ).isPresent();
-
+      return userRepository
+          .findById(id)
+          .filter(
+              value ->
+                  user.getEmail().equals(value.getEmail())
+                      && (userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT))
+                          || userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE))))
+          .isPresent();
     }
     return false;
   }
@@ -32,12 +35,15 @@ public class UserPermissionEvaluator {
   public boolean currentClientAccess(Authentication authentication, Long id) {
     if (authentication != null
         && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+      User user = userDetails.user();
 
-      return userRepository.findById(id)
-          .filter(value ->
-              userDetails.user().getEmail().equals(value.getEmail()) &&
-                  userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT))
-          ).isPresent();
+      return userRepository
+          .findById(id)
+          .filter(
+              value ->
+                  user.getEmail().equals(value.getEmail())
+                      && userDetails.getAuthorities().contains(getRole(UserRoles.CLIENT)))
+          .isPresent();
     }
     return false;
   }
@@ -45,12 +51,15 @@ public class UserPermissionEvaluator {
   public boolean currentStaffAccess(Authentication authentication, Long id) {
     if (authentication != null
         && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+      User user = userDetails.user();
 
-      return userRepository.findById(id)
-          .filter(value ->
-              userDetails.user().getEmail().equals(value.getEmail()) &&
-              userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE))
-          ).isPresent();
+      return userRepository
+          .findById(id)
+          .filter(
+              value ->
+                  user.getEmail().equals(value.getEmail())
+                      && userDetails.getAuthorities().contains(getRole(UserRoles.EMPLOYEE)))
+          .isPresent();
     }
     return false;
   }

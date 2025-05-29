@@ -20,26 +20,43 @@ public class AppointmentValidator {
 
   /**
    * Validates an appointment based on various criteria.
-   * <p>
-   * This is how this validates method works:
+   *
+   * <p>This is how this validates method works:
+   *
    * <ul>
-   *   <li>First, it checks if the staff user in the DTO is actually a staff and the same goes for the client. This is done in the method {@code checkForUserRoles}.</li>
-   *   <li>Second, it checks if the staff is actually available at the given time. This is done in the method {@code checkForStaffWorkingTime}, where it gets the staff's starting working hours and ending working hours and verifies if the startDate and endDate for the appointment are in between.</li>
-   *   <li>Third, it checks if the staff and services are available. In the database, both the StaffDetails and the services have a field called availability. It checks if these two fields are true. This is done in the method {@code checkForStaffAndServiceAvailability}.</li>
-   *   <li>Fourth, it checks if the staff actually has the requested service that the DTO is sending. This is done in the method {@code checkForStaffContainingService}.</li>
-   *   <li>Fifth, it checks if the staff member has another appointment in the range between the starting date and the ending date. This is done in the method {@code checkForOverlappingAppointments}, which looks for any appointments that have a status of either NOT_APPROVED or APPROVED. It checks for NOT_APPROVED too because only one request for an appointment in a specific time is allowed.</li>
-   *   <li>Sixth, it checks if the workspace has available spaces. In the database, the workspace entity has a field called available_slots. For example, if a workspace has 4 available_slots, it means that at a specific time, there can be only 4 appointments executed. This is checked in the method {@code checkForWorkSpaceCapacity}. If there are more than 4 appointments, an exception will be thrown indicating that the workspace is full.</li>
+   *   <li>First, it checks if the staff user in the DTO is actually a staff and the same goes for
+   *       the client. This is done in the method {@code checkForUserRoles}.
+   *   <li>Second, it checks if the staff is actually available at the given time. This is done in
+   *       the method {@code checkForStaffWorkingTime}, where it gets the staff's starting working
+   *       hours and ending working hours and verifies if the startDate and endDate for the
+   *       appointment are in between.
+   *   <li>Third, it checks if the staff and services are available. In the database, both the
+   *       StaffDetails and the services have a field called availability. It checks if these two
+   *       fields are true. This is done in the method {@code checkForStaffAndServiceAvailability}.
+   *   <li>Fourth, it checks if the staff actually has the requested service that the DTO is
+   *       sending. This is done in the method {@code checkForStaffContainingService}.
+   *   <li>Fifth, it checks if the staff member has another appointment in the range between the
+   *       starting date and the ending date. This is done in the method {@code
+   *       checkForOverlappingAppointments}, which looks for any appointments that have a status of
+   *       either NOT_APPROVED or APPROVED. It checks for NOT_APPROVED too because only one request
+   *       for an appointment in a specific time is allowed.
+   *   <li>Sixth, it checks if the workspace has available spaces. In the database, the workspace
+   *       entity has a field called available_slots. For example, if a workspace has 4
+   *       available_slots, it means that at a specific time, there can be only 4 appointments
+   *       executed. This is checked in the method {@code checkForWorkSpaceCapacity}. If there are
+   *       more than 4 appointments, an exception will be thrown indicating that the workspace is
+   *       full.
    * </ul>
    *
-   * @param staff     the staff user
-   * @param client    the client user
-   * @param service   the service
+   * @param staff the staff user
+   * @param client the client user
+   * @param service the service
    * @param startDate the start date and time of the appointment
-   * @param endDate   the end date and time of the appointment
+   * @param endDate the end date and time of the appointment
    * @throws BadRequestException if any validation fails
    */
-  public void validateAppointment(User staff, User client, Service service,
-      LocalDateTime startDate, LocalDateTime endDate) {
+  public void validateAppointment(
+      User staff, User client, Service service, LocalDateTime startDate, LocalDateTime endDate) {
 
     checkForUserRoles(client, staff);
     checkForStaffWorkingTime(staff, startDate, endDate);
@@ -48,7 +65,6 @@ public class AppointmentValidator {
     checkForWorkSpaceCapacity(service, startDate, endDate);
     checkForOverlappingAppointments(client, staff, startDate, endDate);
   }
-
 
   private void checkForUserRoles(User client, User staff) {
     if (UserRoles.CLIENT != client.getRole()) {
@@ -66,8 +82,8 @@ public class AppointmentValidator {
     LocalTime endTime = endDate.toLocalTime();
     StaffDetails staffDetails = staff.getStaffDetails();
 
-    if (startTime.isBefore(staffDetails.getBeginWorkingHour()) ||
-        endTime.isAfter(staffDetails.getEndWorkingHour())) {
+    if (startTime.isBefore(staffDetails.getBeginWorkingHour())
+        || endTime.isAfter(staffDetails.getEndWorkingHour())) {
       throw new BadRequestException(Exceptions.APPOINTMENT_STAFF_NOT_AVAILABLE, staff.getEmail());
     }
   }
@@ -96,21 +112,20 @@ public class AppointmentValidator {
   private void checkForStaffContainingService(User staff, Service service) {
     if (!staff.getServices().contains(service)) {
       throw new BadRequestException(
-          Exceptions.APPOINTMENT_STAFF_NOT_CONTAINING_SERVICE,
-          staff.getEmail(), service.getId()
-      );
+          Exceptions.APPOINTMENT_STAFF_NOT_CONTAINING_SERVICE, staff.getEmail(), service.getId());
     }
   }
 
-  private void checkForWorkSpaceCapacity(Service service, LocalDateTime startDate,
-      LocalDateTime endDate) {
+  private void checkForWorkSpaceCapacity(
+      Service service, LocalDateTime startDate, LocalDateTime endDate) {
 
-    int appointmentsCount = appointmentRepository.countAppointmentsInWorkspace(
-        service.getWorkSpace().getId(), startDate, endDate);
+    int appointmentsCount =
+        appointmentRepository.countAppointmentsInWorkspace(
+            service.getWorkSpace().getId(), startDate, endDate);
 
     if (appointmentsCount >= service.getWorkSpace().getAvailableSlots()) {
-      throw new BadRequestException(Exceptions.APPOINTMENT_WORK_SPACE_NOT_AVAILABLE,
-          service.getWorkSpace().getId());
+      throw new BadRequestException(
+          Exceptions.APPOINTMENT_WORK_SPACE_NOT_AVAILABLE, service.getWorkSpace().getId());
     }
   }
 
@@ -118,5 +133,4 @@ public class AppointmentValidator {
       User user, LocalDateTime startDate, LocalDateTime endDate) {
     return appointmentRepository.existsOverlappingAppointment(user.getEmail(), startDate, endDate);
   }
-
 }

@@ -11,32 +11,20 @@ import java.time.LocalTime;
 
 @ValidWorkingHours
 public record StaffModifyDto(
+    @AdminOnlyField @NotClientRole UserRoles userRole,
+    @AdminOnlyField @Min(value = 0, message = "Salary must be at least 0") Double salary,
+    @NotNull(message = "Available must not be null") Boolean isAvailable,
+    @NotNull(message = "Begin working hour must not be null") LocalTime beginWorkingHour,
+    @NotNull(message = "End working hour must not be null") LocalTime endWorkingHour)
+    implements WorkingHours {
 
-    @AdminOnlyField
-    @NotClientRole
-    UserRoles userRole,
+  @Override
+  public LocalTime getBeginWorkingHour() {
+    return beginWorkingHour;
+  }
 
-    @AdminOnlyField
-    @Min(value = 0, message = "Salary must be at least 0")
-    Double salary,
-
-    @NotNull(message = "Available must not be null")
-    Boolean isAvailable,
-
-    @NotNull(message = "Begin working hour must not be null")
-    LocalTime beginWorkingHour,
-
-    @NotNull(message = "End working hour must not be null")
-    LocalTime endWorkingHour
-) implements WorkingHours {
-
-    @Override
-    public LocalTime getBeginWorkingHour() {
-        return beginWorkingHour;
-    }
-
-    @Override
-    public LocalTime getEndWorkingHour() {
-        return endWorkingHour;
-    }
+  @Override
+  public LocalTime getEndWorkingHour() {
+    return endWorkingHour;
+  }
 }

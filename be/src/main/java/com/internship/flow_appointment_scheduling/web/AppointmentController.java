@@ -40,57 +40,57 @@ public class AppointmentController implements AppointmentControllerDocumentation
   @GetMapping("/service/{serviceId}")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
   public ResponseEntity<Page<AppointmentView>> getAllByServiceId(
-      @PathVariable Long serviceId,
-      Pageable pageable) {
+      @PathVariable Long serviceId, Pageable pageable) {
     return ResponseEntity.ok(appointmentService.getAllByServiceId(serviceId, pageable));
   }
 
   @GetMapping("/service/{serviceId}/short")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'CLIENT', 'EMPLOYEE')")
   public ResponseEntity<List<ShortAppointmentView>> getAllByServiceIdAndDate(
-      @PathVariable Long serviceId,
-      @RequestParam LocalDate date) {
+      @PathVariable Long serviceId, @RequestParam LocalDate date) {
     return ResponseEntity.ok(appointmentService.getAllByServiceIdAndDate(serviceId, date));
   }
 
   @GetMapping("/user/{userId}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #userId)")
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #userId)")
   public ResponseEntity<Page<AppointmentView>> getAllByUserId(
-      @PathVariable Long userId,
-      Pageable pageable) {
+      @PathVariable Long userId, Pageable pageable) {
     return ResponseEntity.ok(appointmentService.getAllByUserId(userId, pageable));
   }
 
   @GetMapping("/user/{userId}/short")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'CLIENT', 'EMPLOYEE')")
   public ResponseEntity<List<ShortAppointmentView>> getAllByUserIdAndDate(
-      @PathVariable Long userId,
-      @RequestParam LocalDate date) {
+      @PathVariable Long userId, @RequestParam LocalDate date) {
     return ResponseEntity.ok(appointmentService.getAllByUserIdAndDate(userId, date));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @appointmentPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR') || @appointmentPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
   public ResponseEntity<AppointmentView> getById(@PathVariable Long id) {
     return ResponseEntity.ok(appointmentService.getById(id));
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @appointmentPermissionEvaluator.currentClientOrStaffAccess(authentication, #dto)")
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR') || @appointmentPermissionEvaluator.currentClientOrStaffAccess(authentication, #dto)")
   public ResponseEntity<AppointmentView> create(@RequestBody @Valid AppointmentCreate dto) {
     return ResponseEntity.ok(appointmentService.create(dto));
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @appointmentPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR') || @appointmentPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
   public ResponseEntity<AppointmentView> update(
-      @PathVariable Long id,
-      @RequestBody @Valid AppointmentUpdate dto) {
+      @PathVariable Long id, @RequestBody @Valid AppointmentUpdate dto) {
     return ResponseEntity.ok(appointmentService.update(id, dto));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @appointmentPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR') || @appointmentPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     appointmentService.delete(id);
     return ResponseEntity.noContent().build();

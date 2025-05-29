@@ -18,21 +18,23 @@ public interface StaffDetailsMapper {
 
   StaffDetails toEntity(StaffDetailsDto staffDetailsDto);
 
-  @Mapping(source = "user.services", target = "serviceIds", qualifiedByName = "mapServicesToServiceIds")
+  @Mapping(
+      source = "user.services",
+      target = "serviceIds",
+      qualifiedByName = "mapServicesToServiceIds")
   StaffDetailsView toView(StaffDetails entity);
 
-  @Mapping(target = "salary", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+  @Mapping(
+      target = "salary",
+      nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   @Mapping(
       target = "user.role",
       source = "userRole",
-      nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
-  )
+      nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   void updateEntity(@MappingTarget StaffDetails entity, StaffModifyDto dto);
 
   @Named("mapServicesToServiceIds")
   default List<Long> mapServicesToServiceIds(List<Service> services) {
-    return services.stream()
-        .map(Service::getId)
-        .collect(Collectors.toList());
+    return services.stream().map(Service::getId).collect(Collectors.toList());
   }
 }

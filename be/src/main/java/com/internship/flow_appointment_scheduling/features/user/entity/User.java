@@ -53,7 +53,7 @@ public class User {
   @Column(columnDefinition = "varchar(255)", nullable = false)
   private String password;
 
-  @Column(columnDefinition = "varchar(255)" , name = "password_reset_token")
+  @Column(columnDefinition = "varchar(255)", name = "password_reset_token")
   private String passwordResetToken;
 
   @Enumerated(EnumType.STRING)
@@ -61,21 +61,29 @@ public class User {
   @Builder.Default
   private UserRoles role = UserRoles.CLIENT;
 
-  @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE})
+  @OneToOne(
+      mappedBy = "user",
+      cascade = {CascadeType.REMOVE})
   private RefreshToken refreshToken;
 
   @ManyToMany(mappedBy = "users")
   @Builder.Default
   private List<Service> services = new ArrayList<>();
 
-  @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE , CascadeType.PERSIST})
+  @OneToOne(
+      mappedBy = "user",
+      cascade = {CascadeType.REMOVE, CascadeType.PERSIST})
   private StaffDetails staffDetails;
 
-  @OneToMany(mappedBy = "client", cascade = {CascadeType.REMOVE})
+  @OneToMany(
+      mappedBy = "client",
+      cascade = {CascadeType.REMOVE})
   @Builder.Default
   private List<Appointment> clientAppointments = new ArrayList<>();
 
-  @OneToMany(mappedBy = "staff", cascade = {CascadeType.REMOVE})
+  @OneToMany(
+      mappedBy = "staff",
+      cascade = {CascadeType.REMOVE})
   @Builder.Default
   private List<Appointment> staffAppointments = new ArrayList<>();
 }

@@ -30,11 +30,11 @@ public enum SeededClientUsers {
   CLIENT19("client19@abv.bg", "Steve", "Thompson"),
   CLIENT20("client20@abv.bg", "Tina", "White");
 
+  private static final String PASSWORD =
+      "$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm";
   private final String email;
   private final String firstName;
   private final String lastName;
-
-  private final static String PASSWORD = "$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm";
 
   public User toUser() {
     return User.builder()

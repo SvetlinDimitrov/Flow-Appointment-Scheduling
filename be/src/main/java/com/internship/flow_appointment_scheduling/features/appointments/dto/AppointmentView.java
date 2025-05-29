@@ -12,7 +12,4 @@ public record AppointmentView(
     LocalDateTime startDate,
     LocalDateTime endDate,
     AppointmentStatus status,
-    ServiceView service
-) {
-
-}
+    ServiceView service) {}

@@ -12,11 +12,13 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring", uses = StaffDetailsMapper.class, implementationName = "UserMapperImpl")
+@Mapper(
+    componentModel = "spring",
+    uses = StaffDetailsMapper.class,
+    implementationName = "UserMapperImpl")
 public abstract class UserMapper {
 
-  @Autowired
-  private PasswordEncoderComponent passwordEncoderComponent;
+  @Autowired private PasswordEncoderComponent passwordEncoderComponent;
 
   @Mapping(source = "staffDetails", target = "staffDetails")
   public abstract UserView toView(User entity);

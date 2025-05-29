@@ -11,7 +11,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StatusCheckForClientRole {
-    String message() default "Users with role 'CLIENT' cannot set status to APPROVED or COMPLETED";
-    Class<?>[] groups() default {};
-    Class<? extends Payload>[] payload() default {};
+  String message() default "Users with role 'CLIENT' cannot set status to APPROVED or COMPLETED";
+
+  Class<?>[] groups() default {};
+
+  Class<? extends Payload>[] payload() default {};
 }

@@ -13,6 +13,6 @@ public class PasswordResetEventListener {
 
   @EventListener
   public void handlePasswordResetEvent(PasswordResetEvent event) {
-    mailService.sendResetPasswordEmail(event.getToken() , event.getEmail());
+    mailService.sendResetPasswordEmail(event.getToken(), event.getEmail());
   }
 }

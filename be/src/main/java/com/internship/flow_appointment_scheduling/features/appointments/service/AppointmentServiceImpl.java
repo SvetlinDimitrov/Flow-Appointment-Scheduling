@@ -35,14 +35,11 @@ import org.springframework.stereotype.Component;
 public class AppointmentServiceImpl implements AppointmentService {
 
   private final AppointmentRepository appointmentRepository;
-
-  private UserService userService;
-  private ServiceService serviceService;
-
   private final AppointmentMapper appointmentMapper;
   private final AppointmentValidator appointmentValidator;
-
   private final ApplicationEventPublisher eventPublisher;
+  private UserService userService;
+  private ServiceService serviceService;
 
   @Autowired
   public void setServiceService(@Lazy ServiceService serviceService) {

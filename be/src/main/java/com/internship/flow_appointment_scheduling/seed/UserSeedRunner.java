@@ -54,53 +54,95 @@ public class UserSeedRunner implements ApplicationRunner {
 
   private void initUserServiceConnections() {
     Map<SeededStaffUsers, List<SeededServices>> staffServiceMap = new HashMap<>();
-    staffServiceMap.put(SeededStaffUsers.STAFF1,
-        List.of(SeededServices.YOGA_TRAINING, SeededServices.PILATES_CLASS,
-            SeededServices.MEDITATION_SESSION, SeededServices.CARDIO_WORKOUT));
-    staffServiceMap.put(SeededStaffUsers.STAFF2,
-        List.of(SeededServices.DEEP_MASSAGE, SeededServices.STRENGTH_TRAINING,
-            SeededServices.BOXING_TRAINING, SeededServices.SPIN_CLASS));
-    staffServiceMap.put(SeededStaffUsers.STAFF3,
-        List.of(SeededServices.PERSONAL_TRAINING, SeededServices.CARDIO_WORKOUT,
-            SeededServices.SPIN_CLASS, SeededServices.ZUMBA_CLASS));
-    staffServiceMap.put(SeededStaffUsers.STAFF4,
-        List.of(SeededServices.PILATES_CLASS, SeededServices.ZUMBA_CLASS,
-            SeededServices.YOGA_TRAINING, SeededServices.MEDITATION_SESSION));
-    staffServiceMap.put(SeededStaffUsers.STAFF5,
-        List.of(SeededServices.CARDIO_WORKOUT, SeededServices.SPIN_CLASS,
-            SeededServices.STRENGTH_TRAINING, SeededServices.BOXING_TRAINING));
-    staffServiceMap.put(SeededStaffUsers.STAFF6,
-        List.of(SeededServices.STRENGTH_TRAINING, SeededServices.BOXING_TRAINING,
-            SeededServices.DEEP_MASSAGE, SeededServices.PERSONAL_TRAINING));
-    staffServiceMap.put(SeededStaffUsers.STAFF7,
-        List.of(SeededServices.ZUMBA_CLASS, SeededServices.YOGA_TRAINING,
-            SeededServices.PILATES_CLASS, SeededServices.CARDIO_WORKOUT));
-    staffServiceMap.put(SeededStaffUsers.STAFF8,
-        List.of(SeededServices.MEDITATION_SESSION, SeededServices.PERSONAL_TRAINING,
-            SeededServices.CARDIO_WORKOUT, SeededServices.SPIN_CLASS));
-    staffServiceMap.put(SeededStaffUsers.STAFF9,
-        List.of(SeededServices.SPIN_CLASS, SeededServices.STRENGTH_TRAINING,
-            SeededServices.BOXING_TRAINING, SeededServices.DEEP_MASSAGE));
-    staffServiceMap.put(SeededStaffUsers.STAFF10,
-        List.of(SeededServices.BOXING_TRAINING, SeededServices.DEEP_MASSAGE,
-            SeededServices.MEDITATION_SESSION, SeededServices.YOGA_TRAINING,
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF1,
+        List.of(
+            SeededServices.YOGA_TRAINING,
+            SeededServices.PILATES_CLASS,
+            SeededServices.MEDITATION_SESSION,
+            SeededServices.CARDIO_WORKOUT));
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF2,
+        List.of(
+            SeededServices.DEEP_MASSAGE,
+            SeededServices.STRENGTH_TRAINING,
+            SeededServices.BOXING_TRAINING,
+            SeededServices.SPIN_CLASS));
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF3,
+        List.of(
+            SeededServices.PERSONAL_TRAINING,
+            SeededServices.CARDIO_WORKOUT,
+            SeededServices.SPIN_CLASS,
+            SeededServices.ZUMBA_CLASS));
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF4,
+        List.of(
+            SeededServices.PILATES_CLASS,
+            SeededServices.ZUMBA_CLASS,
+            SeededServices.YOGA_TRAINING,
+            SeededServices.MEDITATION_SESSION));
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF5,
+        List.of(
+            SeededServices.CARDIO_WORKOUT,
+            SeededServices.SPIN_CLASS,
+            SeededServices.STRENGTH_TRAINING,
+            SeededServices.BOXING_TRAINING));
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF6,
+        List.of(
+            SeededServices.STRENGTH_TRAINING,
+            SeededServices.BOXING_TRAINING,
+            SeededServices.DEEP_MASSAGE,
+            SeededServices.PERSONAL_TRAINING));
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF7,
+        List.of(
+            SeededServices.ZUMBA_CLASS,
+            SeededServices.YOGA_TRAINING,
+            SeededServices.PILATES_CLASS,
+            SeededServices.CARDIO_WORKOUT));
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF8,
+        List.of(
+            SeededServices.MEDITATION_SESSION,
+            SeededServices.PERSONAL_TRAINING,
+            SeededServices.CARDIO_WORKOUT,
+            SeededServices.SPIN_CLASS));
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF9,
+        List.of(
+            SeededServices.SPIN_CLASS,
+            SeededServices.STRENGTH_TRAINING,
+            SeededServices.BOXING_TRAINING,
+            SeededServices.DEEP_MASSAGE));
+    staffServiceMap.put(
+        SeededStaffUsers.STAFF10,
+        List.of(
+            SeededServices.BOXING_TRAINING,
+            SeededServices.DEEP_MASSAGE,
+            SeededServices.MEDITATION_SESSION,
+            SeededServices.YOGA_TRAINING,
             SeededServices.PILATES_CLASS));
 
-    staffServiceMap.forEach((staff, services) -> {
-      User staffUser = userRepository.findByEmail(staff.getEmail()).orElseThrow();
-      if (staffUser.getServices().isEmpty()) {
-        for (SeededServices service : services) {
-          Service serviceEntity = serviceRepository.findAllByName(service.getName())
-              .stream()
-              .filter(s -> s.getDescription().equals(service.getDescription()))
-              .filter(s -> s.getDuration().equals(service.getDuration()))
-              .findFirst()
-              .orElseThrow(
-                  () -> new RuntimeException("Service not found with " + service.getName()));
-          serviceEntity.getUsers().add(staffUser);
-          serviceRepository.save(serviceEntity);
-        }
-    }
-    });
+    staffServiceMap.forEach(
+        (staff, services) -> {
+          User staffUser = userRepository.findByEmail(staff.getEmail()).orElseThrow();
+          if (staffUser.getServices().isEmpty()) {
+            for (SeededServices service : services) {
+              Service serviceEntity =
+                  serviceRepository.findAllByName(service.getName()).stream()
+                      .filter(s -> s.getDescription().equals(service.getDescription()))
+                      .filter(s -> s.getDuration().equals(service.getDuration()))
+                      .findFirst()
+                      .orElseThrow(
+                          () ->
+                              new RuntimeException("Service not found with " + service.getName()));
+              serviceEntity.getUsers().add(staffUser);
+              serviceRepository.save(serviceEntity);
+            }
+          }
+        });
   }
 }

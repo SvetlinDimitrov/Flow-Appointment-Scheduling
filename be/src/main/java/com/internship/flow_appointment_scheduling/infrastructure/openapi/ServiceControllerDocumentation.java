@@ -26,48 +26,87 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 public interface ServiceControllerDocumentation {
 
-  @Operation(summary = "Get all services", description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Found the services",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = Page.class))}),
-      @ApiResponse(responseCode = "403", description = "Forbidden",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "401", description = "Unauthorized",
-          content = {@Content(mediaType = "application/json")}),
-  })
+  @Operation(
+      summary = "Get all services",
+      description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Found the services",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = Page.class))
+            }),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content = {@Content(mediaType = "application/json")}),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = {@Content(mediaType = "application/json")}),
+      })
   @GetMapping
   @SecurityRequirement(name = "bearerAuth")
-  ResponseEntity<Page<ServiceView>> getAll(Pageable pageable,
-      @RequestParam(required = false) String staffEmail);
+  ResponseEntity<Page<ServiceView>> getAll(
+      Pageable pageable, @RequestParam(required = false) String staffEmail);
 
   @Operation(summary = "Get all workspace names", description = "Accessible by ADMINISTRATOR role")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Found the workspace names",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(type = "array", implementation = String.class))}),
-      @ApiResponse(responseCode = "403", description = "Forbidden",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "401", description = "Unauthorized",
-          content = {@Content(mediaType = "application/json")}),
-  })
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Found the workspace names",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(type = "array", implementation = String.class))
+            }),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content = {@Content(mediaType = "application/json")}),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = {@Content(mediaType = "application/json")}),
+      })
   @SecurityRequirement(name = "bearerAuth")
   @GetMapping("/workspaces")
   ResponseEntity<List<String>> getAllWorkSpacesNames();
 
-  @Operation(summary = "Get a service by ID", description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Found the service",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ServiceView.class))}),
-      @ApiResponse(responseCode = "404", description = "Service not found",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "403", description = "Forbidden",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "401", description = "Unauthorized",
-          content = {@Content(mediaType = "application/json")}),
-  })
+  @Operation(
+      summary = "Get a service by ID",
+      description = "Accessible by ADMINISTRATOR, EMPLOYEE, and CLIENT roles")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Found the service",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ServiceView.class))
+            }),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Service not found",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content = {@Content(mediaType = "application/json")}),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = {@Content(mediaType = "application/json")}),
+      })
   @SecurityRequirement(name = "bearerAuth")
   @GetMapping("/{id}")
   ResponseEntity<ServiceView> getById(@PathVariable Long id);
@@ -75,14 +114,18 @@ public interface ServiceControllerDocumentation {
   @Operation(
       description = "Accessible by ADMINISTRATOR role",
       summary = "Create a service",
-      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = ServiceDTO.class),
-              examples = @ExampleObject(
-                  name = "CreateService",
-                  summary = "Example of creating a service",
-                  value = """
+      requestBody =
+          @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              content =
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = ServiceDTO.class),
+                      examples =
+                          @ExampleObject(
+                              name = "CreateService",
+                              summary = "Example of creating a service",
+                              value =
+                                  """
                 {
                   "name": "Gym instructor",
                   "description": "Become the next Chris Bumstead",
@@ -91,63 +134,119 @@ public interface ServiceControllerDocumentation {
                   "price": 99.99,
                   "workSpaceName": "Gym"
                 }
-                """
-              )
-          )
-      )
-  )    @ApiResponses(value = {
-      @ApiResponse(responseCode = "201", description = "Service created",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ServiceView.class))}),
-      @ApiResponse(responseCode = "403", description = "Forbidden",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "400", description = "Invalid input",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "401", description = "Unauthorized",
-          content = {@Content(mediaType = "application/json")}),
-  })
+                """))))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Service created",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ServiceView.class))
+            }),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content = {@Content(mediaType = "application/json")}),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = {@Content(mediaType = "application/json")}),
+      })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping
   ResponseEntity<ServiceView> create(@Valid @RequestBody ServiceDTO createDto);
 
-  @Operation(summary = "Assign an staff to a service", description = "Accessible by ADMINISTRATOR role")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Staff assigned",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ServiceView.class))}),
-      @ApiResponse(responseCode = "400", description = "User already assigned to service",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "403", description = "Forbidden",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "404", description = "Service or staff not found",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "401", description = "Unauthorized",
-          content = {@Content(mediaType = "application/json")}),
-  })
+  @Operation(
+      summary = "Assign an staff to a service",
+      description = "Accessible by ADMINISTRATOR role")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Staff assigned",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ServiceView.class))
+            }),
+        @ApiResponse(
+            responseCode = "400",
+            description = "User already assigned to service",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content = {@Content(mediaType = "application/json")}),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Service or staff not found",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = {@Content(mediaType = "application/json")}),
+      })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping("/{id}/assign")
-  ResponseEntity<ServiceView> assignStaff(@PathVariable Long id,
-      @RequestParam @StaffOrAdmin String staffEmail);
+  ResponseEntity<ServiceView> assignStaff(
+      @PathVariable Long id, @RequestParam @StaffOrAdmin String staffEmail);
 
-  @Operation(summary = "Unassign an staff from a service", description = "Accessible by ADMINISTRATOR role")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Staff unassigned",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ServiceView.class))}),
-      @ApiResponse(responseCode = "400", description = "User not assigned to service",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "403", description = "Forbidden",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "404", description = "Service or staff not found",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "401", description = "Unauthorized",
-          content = {@Content(mediaType = "application/json")}),
-  })
+  @Operation(
+      summary = "Unassign an staff from a service",
+      description = "Accessible by ADMINISTRATOR role")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Staff unassigned",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ServiceView.class))
+            }),
+        @ApiResponse(
+            responseCode = "400",
+            description = "User not assigned to service",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content = {@Content(mediaType = "application/json")}),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Service or staff not found",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = {@Content(mediaType = "application/json")}),
+      })
   @SecurityRequirement(name = "bearerAuth")
   @PutMapping("/{id}/unassign")
   ResponseEntity<ServiceView> unassignStaff(@PathVariable Long id, @RequestParam String staffEmail);
@@ -155,14 +254,18 @@ public interface ServiceControllerDocumentation {
   @Operation(
       summary = "Update an existing service",
       description = "Accessible by ADMINISTRATOR role",
-      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = ServiceDTO.class),
-              examples = @ExampleObject(
-                  name = "UpdateServiceExample",
-                  summary = "Example of updating a service",
-                  value = """
+      requestBody =
+          @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              content =
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = ServiceDTO.class),
+                      examples =
+                          @ExampleObject(
+                              name = "UpdateServiceExample",
+                              summary = "Example of updating a service",
+                              value =
+                                  """
                       {
                         "name": "Gym instructor",
                         "description": "Become the next Chris Bumstead",
@@ -171,42 +274,67 @@ public interface ServiceControllerDocumentation {
                         "price": 99.99,
                         "workSpaceName": "Gym"
                       }
-                      """
-              )
-          )
-      )
-  )
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Service updated",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ServiceView.class))}),
-      @ApiResponse(responseCode = "400", description = "Invalid input",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "404", description = "Service not found",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "403", description = "Forbidden",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "401", description = "Unauthorized",
-          content = {@Content(mediaType = "application/json")}),
-  })
+                      """))))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Service updated",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ServiceView.class))
+            }),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Service not found",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content = {@Content(mediaType = "application/json")}),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = {@Content(mediaType = "application/json")}),
+      })
   @SecurityRequirement(name = "bearerAuth")
   @PutMapping("/{id}")
   ResponseEntity<ServiceView> update(@PathVariable Long id, @Valid @RequestBody ServiceDTO putDto);
 
   @Operation(summary = "Delete a service", description = "Accessible by ADMINISTRATOR role")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "204", description = "Service deleted",
-          content = @Content),
-      @ApiResponse(responseCode = "404", description = "Service not found",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ProblemDetail.class))}),
-      @ApiResponse(responseCode = "403", description = "Forbidden",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "401", description = "Unauthorized",
-          content = {@Content(mediaType = "application/json")}),
-  })
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "204", description = "Service deleted", content = @Content),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Service not found",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = ProblemDetail.class))
+            }),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content = {@Content(mediaType = "application/json")}),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = {@Content(mediaType = "application/json")}),
+      })
   @SecurityRequirement(name = "bearerAuth")
   @DeleteMapping("/{id}")
   ResponseEntity<Void> delete(@PathVariable Long id);

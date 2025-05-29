@@ -34,11 +34,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
-
-  private AppointmentService appointmentService;
-
   private final UserMapper userMapper;
   private final StaffDetailsMapper staffDetailsMapper;
+  private AppointmentService appointmentService;
 
   @Autowired
   public void setAppointmentService(@Lazy AppointmentService appointmentService) {
@@ -55,8 +53,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public Page<UserView> getAllByServiceId(Pageable pageable, Long serviceId) {
-    return userRepository.findAllByServiceId(serviceId, pageable)
-        .map(userMapper::toView);
+    return userRepository.findAllByServiceId(serviceId, pageable).map(userMapper::toView);
   }
 
   @Override
@@ -82,10 +79,12 @@ public class UserServiceImpl implements UserService {
 
   /**
    * Deletes a user based on the provided ID.
-   * <p>
-   * Functionality:
+   *
+   * <p>Functionality:
+   *
    * <ul>
-   *   <li>If the user is a staff member (has `staffDetails` and `staffAppointments` is not empty), send notifications to cancel the not approved and approved appointments.</li>
+   *   <li>If the user is a staff member (has `staffDetails` and `staffAppointments` is not empty),
+   *       send notifications to cancel the not approved and approved appointments.
    * </ul>
    *
    * @param id the ID of the user to delete
@@ -96,10 +95,11 @@ public class UserServiceImpl implements UserService {
   public void delete(Long id) {
     User user = findById(id);
 
-    user.getStaffAppointments()
-        .stream()
-        .filter(a -> a.getStatus() == AppointmentStatus.NOT_APPROVED ||
-            a.getStatus() == AppointmentStatus.APPROVED)
+    user.getStaffAppointments().stream()
+        .filter(
+            a ->
+                a.getStatus() == AppointmentStatus.NOT_APPROVED
+                    || a.getStatus() == AppointmentStatus.APPROVED)
         .forEach(a -> appointmentService.cancelAppointment(a.getId()));
 
     userRepository.delete(user);
@@ -116,12 +116,9 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User findByEmail(String email) {
-    return userRepository.findByEmail(email)
-        .orElseThrow(
-            () -> new NotFoundException(
-                Exceptions.USER_NOT_FOUND_BY_EMAIL,
-                email)
-        );
+    return userRepository
+        .findByEmail(email)
+        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
   }
 
   @Override
@@ -138,15 +135,19 @@ public class UserServiceImpl implements UserService {
 
   /**
    * Modifies the details of a staff member based on the provided ID and modification DTO.
-   * <p>
-   * Functionality:
+   *
+   * <p>Functionality:
+   *
    * <ul>
-   *   <li>If the staff member's availability is changed from true to false, they must lose all of their appointments.</li>
-   *   <li>This is because there is no date specifying how long they will be unavailable, making it impossible to check if they can handle their appointments.</li>
-   *   <li>In this situation, either deny the change of availability if the staff has future appointments coming or change the status of all of them to canceled.</li>
+   *   <li>If the staff member's availability is changed from true to false, they must lose all of
+   *       their appointments.
+   *   <li>This is because there is no date specifying how long they will be unavailable, making it
+   *       impossible to check if they can handle their appointments.
+   *   <li>In this situation, either deny the change of availability if the staff has future
+   *       appointments coming or change the status of all of them to canceled.
    * </ul>
    *
-   * @param id  the ID of the staff member to modify
+   * @param id the ID of the staff member to modify
    * @param dto the modification DTO containing the new details
    * @throws BadRequestException if the user is not a staff member
    */
@@ -161,10 +162,11 @@ public class UserServiceImpl implements UserService {
     }
 
     if (staff.getStaffDetails().getIsAvailable().equals(true) && dto.isAvailable().equals(false)) {
-      staff.getStaffAppointments()
-          .stream()
-          .filter(a -> a.getStatus() == AppointmentStatus.NOT_APPROVED ||
-              a.getStatus() == AppointmentStatus.APPROVED)
+      staff.getStaffAppointments().stream()
+          .filter(
+              a ->
+                  a.getStatus() == AppointmentStatus.NOT_APPROVED
+                      || a.getStatus() == AppointmentStatus.APPROVED)
           .forEach(a -> appointmentService.cancelAppointment(a.getId()));
 
       List<Appointment> mutableAppointments = new ArrayList<>(staff.getStaffAppointments());
@@ -189,7 +191,8 @@ public class UserServiceImpl implements UserService {
   }
 
   private User findById(Long id) {
-    return userRepository.findById(id)
+    return userRepository
+        .findById(id)
         .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND, id));
   }
 }

@@ -4,8 +4,8 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.time.Duration;
 
-public class NonNegativeDurationValidator implements
-    ConstraintValidator<NonNegativeDuration, Duration> {
+public class NonNegativeDurationValidator
+    implements ConstraintValidator<NonNegativeDuration, Duration> {
 
   @Override
   public boolean isValid(Duration duration, ConstraintValidatorContext context) {

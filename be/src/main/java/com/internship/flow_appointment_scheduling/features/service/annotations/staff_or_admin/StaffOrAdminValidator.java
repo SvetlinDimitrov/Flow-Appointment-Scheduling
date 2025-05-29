@@ -9,8 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class StaffOrAdminValidator implements ConstraintValidator<StaffOrAdmin, String> {
 
-  @Autowired
-  private UserService userService;
+  @Autowired private UserService userService;
 
   @Override
   public boolean isValid(String email, ConstraintValidatorContext context) {

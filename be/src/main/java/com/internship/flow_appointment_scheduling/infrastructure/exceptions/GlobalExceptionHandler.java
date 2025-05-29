@@ -19,8 +19,8 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<ProblemDetail> handleUserNotFoundException(NotFoundException e) {
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND,
-        e.getMessage());
+    ProblemDetail problemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
 
     problemDetail.setTitle(e.getTitle());
 
@@ -29,8 +29,8 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(BadRequestException.class)
   public ResponseEntity<ProblemDetail> handleRefreshTokenExpiredException(BadRequestException e) {
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
-        e.getMessage());
+    ProblemDetail problemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
 
     problemDetail.setTitle(e.getTitle());
 
@@ -38,9 +38,10 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ServiceUnavailableException.class)
-  public ResponseEntity<ProblemDetail> handleServiceUnavailableException(ServiceUnavailableException e) {
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
-        e.getMessage());
+  public ResponseEntity<ProblemDetail> handleServiceUnavailableException(
+      ServiceUnavailableException e) {
+    ProblemDetail problemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
 
     problemDetail.setTitle(e.getTitle());
 
@@ -50,24 +51,22 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ProblemDetail> handleValidationExceptions(
       MethodArgumentNotValidException ex) {
-    List<String> fieldErrors = ex.getBindingResult()
-        .getFieldErrors()
-        .stream()
-        .collect(Collectors.groupingBy(
-            FieldError::getField,
-            Collectors.mapping(DefaultMessageSourceResolvable::getDefaultMessage,
-                Collectors.toList())
-        ))
-        .entrySet()
-        .stream()
-        .map(entry -> entry.getKey() + ": " + String.join(", ", entry.getValue()))
-        .toList();
+    List<String> fieldErrors =
+        ex.getBindingResult().getFieldErrors().stream()
+            .collect(
+                Collectors.groupingBy(
+                    FieldError::getField,
+                    Collectors.mapping(
+                        DefaultMessageSourceResolvable::getDefaultMessage, Collectors.toList())))
+            .entrySet()
+            .stream()
+            .map(entry -> entry.getKey() + ": " + String.join(", ", entry.getValue()))
+            .toList();
 
-    List<String> globalErrors = ex.getBindingResult()
-        .getGlobalErrors()
-        .stream()
-        .map(DefaultMessageSourceResolvable::getDefaultMessage)
-        .toList();
+    List<String> globalErrors =
+        ex.getBindingResult().getGlobalErrors().stream()
+            .map(DefaultMessageSourceResolvable::getDefaultMessage)
+            .toList();
 
     List<String> errors = new ArrayList<>();
     errors.addAll(fieldErrors);
@@ -88,8 +87,10 @@ public class GlobalExceptionHandler {
     String invalidValue = message.substring(message.indexOf("\"") + 1, message.lastIndexOf("\""));
     String acceptedValues = message.substring(message.indexOf("[") + 1, message.indexOf("]"));
 
-    String detail = String.format("Invalid value '%s' for enum type. Accepted values are: %s",
-        invalidValue, acceptedValues);
+    String detail =
+        String.format(
+            "Invalid value '%s' for enum type. Accepted values are: %s",
+            invalidValue, acceptedValues);
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
     problemDetail.setTitle("Invalid Enum Value");
 
@@ -99,15 +100,16 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   public ResponseEntity<ProblemDetail> handleMethodArgumentTypeMismatchException(
       MethodArgumentTypeMismatchException ex) {
-    String detail = String.format(
-        "Failed to convert value of type '%s' to required type '%s'; For input string: '%s'",
-        ex.getValue().getClass().getSimpleName(), ex.getRequiredType().getSimpleName(),
-        ex.getValue());
+    String detail =
+        String.format(
+            "Failed to convert value of type '%s' to required type '%s'; For input string: '%s'",
+            ex.getValue().getClass().getSimpleName(),
+            ex.getRequiredType().getSimpleName(),
+            ex.getValue());
 
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
     problemDetail.setTitle("Method Argument Type Mismatch");
 
     return new ResponseEntity<>(problemDetail, HttpStatus.BAD_REQUEST);
   }
-
 }

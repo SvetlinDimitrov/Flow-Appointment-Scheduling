@@ -25,24 +25,28 @@ public class ServiceSeedRunner implements ApplicationRunner {
   private final WorkSpaceRepository workSpaceRepository;
 
   @Override
-  public void run(ApplicationArguments args){
+  public void run(ApplicationArguments args) {
 
-    Arrays.stream(SeededWorkSpaces.values()).forEach(e -> {
-      if (workSpaceRepository.findByName(e.getName()).isEmpty()) {
-        workSpaceRepository.saveAndFlush(e.toWorkSpace());
-      }
-    });
+    Arrays.stream(SeededWorkSpaces.values())
+        .forEach(
+            e -> {
+              if (workSpaceRepository.findByName(e.getName()).isEmpty()) {
+                workSpaceRepository.saveAndFlush(e.toWorkSpace());
+              }
+            });
 
-    serviceWorkSpaceConnections().forEach((serviceEnum, workSpaceEnum) -> {
-      Service service = serviceEnum.toService();
-      service.setWorkSpace(
-          workSpaceRepository.findByName(workSpaceEnum.getName())
-              .orElseThrow(() -> new RuntimeException("WorkSpace not found"))
-      );
-      if (serviceRepository.findAllByName(service.getName()).isEmpty()) {
-        serviceRepository.saveAndFlush(service);
-      }
-    });
+    serviceWorkSpaceConnections()
+        .forEach(
+            (serviceEnum, workSpaceEnum) -> {
+              Service service = serviceEnum.toService();
+              service.setWorkSpace(
+                  workSpaceRepository
+                      .findByName(workSpaceEnum.getName())
+                      .orElseThrow(() -> new RuntimeException("WorkSpace not found")));
+              if (serviceRepository.findAllByName(service.getName()).isEmpty()) {
+                serviceRepository.saveAndFlush(service);
+              }
+            });
   }
 
   private Map<SeededServices, SeededWorkSpaces> serviceWorkSpaceConnections() {
@@ -59,5 +63,4 @@ public class ServiceSeedRunner implements ApplicationRunner {
     serviceWorkSpaceMap.put(SeededServices.BOXING_TRAINING, SeededWorkSpaces.WORKSPACE10);
     return serviceWorkSpaceMap;
   }
-
 }

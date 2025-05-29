@@ -5,10 +5,5 @@ import com.internship.flow_appointment_scheduling.features.appointments.dto.enum
 import jakarta.validation.constraints.NotNull;
 
 public record AppointmentUpdate(
-
-    @NotNull(message = "Status is required")
-    @StatusCheckForClientRole
-    UpdateAppointmentStatus status
-) {
-
-}
+    @NotNull(message = "Status is required") @StatusCheckForClientRole
+        UpdateAppointmentStatus status) {}

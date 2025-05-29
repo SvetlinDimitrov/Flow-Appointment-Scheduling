@@ -11,5 +11,4 @@ public interface RefreshTokenMapper {
   @Mapping(target = "token", source = "id")
   @Mapping(target = "expirationTime", source = "expiryDate")
   RefreshTokenView toView(RefreshToken entity);
-
 }

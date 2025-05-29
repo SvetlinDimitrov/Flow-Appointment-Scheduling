@@ -10,5 +10,4 @@ public record ServiceView(
     String description,
     Boolean availability,
     Double price,
-    WorkSpaceView workSpace) {
-}
+    WorkSpaceView workSpace) {}

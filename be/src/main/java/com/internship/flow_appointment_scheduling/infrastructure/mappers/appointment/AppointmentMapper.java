@@ -17,8 +17,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(
     componentModel = "spring",
     uses = {UserMapper.class, ServiceMapper.class},
-    implementationName = "AppointmentMapperImpl"
-)
+    implementationName = "AppointmentMapperImpl")
 public interface AppointmentMapper {
 
   AppointmentView toView(Appointment entity);
@@ -29,7 +28,10 @@ public interface AppointmentMapper {
   @Mapping(target = "startDate", source = "date")
   Appointment toEntity(AppointmentCreate dto);
 
-  @Mapping(target = "status", source = "status", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+  @Mapping(
+      target = "status",
+      source = "status",
+      nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   void updateEntity(@MappingTarget Appointment appointment, AppointmentUpdate dto);
 
   default AppointmentStatus map(UpdateAppointmentStatus status) {
@@ -38,5 +40,4 @@ public interface AppointmentMapper {
     }
     return AppointmentStatus.valueOf(status.name());
   }
-
 }

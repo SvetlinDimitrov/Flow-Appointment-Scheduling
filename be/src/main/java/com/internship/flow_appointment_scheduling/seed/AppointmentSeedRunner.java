@@ -33,12 +33,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class AppointmentSeedRunner implements ApplicationRunner {
 
+  private static final Long APPOINTMENTS_COUNT = 800L;
+  private static final Long MIN_APPOINTMENTS_COUNT = 200L;
   private final AppointmentRepository appointmentRepository;
   private final UserRepository userRepository;
   private final ServiceRepository serviceRepository;
-
-  private static final Long APPOINTMENTS_COUNT = 800L;
-  private static final Long MIN_APPOINTMENTS_COUNT = 200L;
 
   @Override
   @Transactional

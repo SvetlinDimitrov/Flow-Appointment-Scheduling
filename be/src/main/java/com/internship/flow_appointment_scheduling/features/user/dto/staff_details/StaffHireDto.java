@@ -5,13 +5,5 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 public record StaffHireDto(
-
-    @NotNull(message = "User info must not be null")
-    @Valid
-    UserPostRequest userInfo,
-
-    @NotNull(message = "Staff details must not be null")
-    @Valid
-    StaffDetailsDto staffDetailsDto) {
-
-}
+    @NotNull(message = "User info must not be null") @Valid UserPostRequest userInfo,
+    @NotNull(message = "Staff details must not be null") @Valid StaffDetailsDto staffDetailsDto) {}

@@ -14,5 +14,4 @@ public interface JwtService {
   String getEmailFromToken(String token);
 
   void sendEmailForRestingThePassword(String email);
-
 }

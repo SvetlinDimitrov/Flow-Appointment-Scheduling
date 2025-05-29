@@ -19,12 +19,19 @@ public class AppointmentNotificationEventListener {
 
   /**
    * Event listener for handling appointment notification events.
-   * <p>
-   * This method listens for `AppointmentNotificationEvent` and schedules tasks based on the notification type.
+   *
+   * <p>This method listens for `AppointmentNotificationEvent` and schedules tasks based on the
+   * notification type.
+   *
    * <ul>
-   *   <li>When an appointment is approved, it schedules a task to be executed at the end date. If the appointment status is still approved at the end date, it will be updated to completed automatically. It also sends an approved appointment notification.</li>
-   *   <li>When an appointment is not approved, it schedules a task to be executed at the end date. If the appointment status is still not approved at the end date, it will be set to canceled automatically. It also sends a not approved appointment notification.</li>
-   *   <li>When an appointment is canceled, it sends a cancellation notification to the client immediately.</li>
+   *   <li>When an appointment is approved, it schedules a task to be executed at the end date. If
+   *       the appointment status is still approved at the end date, it will be updated to completed
+   *       automatically. It also sends an approved appointment notification.
+   *   <li>When an appointment is not approved, it schedules a task to be executed at the end date.
+   *       If the appointment status is still not approved at the end date, it will be set to
+   *       canceled automatically. It also sends a not approved appointment notification.
+   *   <li>When an appointment is canceled, it sends a cancellation notification to the client
+   *       immediately.
    * </ul>
    *
    * @param event the appointment notification event
@@ -40,8 +47,7 @@ public class AppointmentNotificationEventListener {
                 appointmentService.completeAppointment(event.getAppointment().getId());
               }
             },
-            endDateToTriggerTheScheduler
-        );
+            endDateToTriggerTheScheduler);
         mailService.sendApprovedAppointmentNotification(event.getAppointment());
       }
       case NOT_APPROVED -> {
@@ -52,8 +58,7 @@ public class AppointmentNotificationEventListener {
                 appointmentService.cancelAppointment(event.getAppointment().getId());
               }
             },
-            endDateToTriggerTheScheduler
-        );
+            endDateToTriggerTheScheduler);
         mailService.sendNotApprovedAppointmentNotification(event.getAppointment());
       }
       case CANCELED ->

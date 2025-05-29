@@ -5,11 +5,11 @@ import com.internship.flow_appointment_scheduling.features.appointments.service.
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceDTO;
 import com.internship.flow_appointment_scheduling.features.service.dto.ServiceView;
 import com.internship.flow_appointment_scheduling.features.service.entity.Service;
-import com.internship.flow_appointment_scheduling.features.work_space.entity.WorkSpace;
 import com.internship.flow_appointment_scheduling.features.service.repository.ServiceRepository;
-import com.internship.flow_appointment_scheduling.features.work_space.service.WorkSpaceService;
 import com.internship.flow_appointment_scheduling.features.user.entity.User;
 import com.internship.flow_appointment_scheduling.features.user.service.UserService;
+import com.internship.flow_appointment_scheduling.features.work_space.entity.WorkSpace;
+import com.internship.flow_appointment_scheduling.features.work_space.service.WorkSpaceService;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.BadRequestException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.NotFoundException;
 import com.internship.flow_appointment_scheduling.infrastructure.exceptions.enums.Exceptions;
@@ -31,9 +31,8 @@ public class ServiceServiceImpl implements ServiceService {
 
   private final UserService userService;
   private final WorkSpaceService workSpaceService;
-  private AppointmentService appointmentService;
-
   private final ServiceMapper serviceMapper;
+  private AppointmentService appointmentService;
 
   @Autowired
   public void setAppointmentService(@Lazy AppointmentService appointmentService) {

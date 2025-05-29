@@ -23,6 +23,8 @@ public enum SeededAdminUsers {
       LocalTime.of(16, 0), 25, BigDecimal.valueOf(12000),
       BigDecimal.valueOf(1900), LocalDate.of(2023, 9, 1));
 
+  private static final String PASSWORD =
+      "$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm";
   private final String email;
   private final String firstName;
   private final String lastName;
@@ -32,8 +34,6 @@ public enum SeededAdminUsers {
   private final BigDecimal profit;
   private final BigDecimal salary;
   private final LocalDate startDate;
-
-  private final static String PASSWORD = "$2a$10$v3jjdP2RNNpea0Lfb/GzP.Ujj1S4aSzDxXT/vWT2XobBTzexNZmAm";
 
   public User toUser() {
     User user = User.builder()

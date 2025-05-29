@@ -16,17 +16,13 @@ public class WorkSpaceServiceImpl implements WorkSpaceService {
 
   @Override
   public WorkSpace findByName(String name) {
-    return workSpaceRepository.findByName(name)
-        .orElseThrow(() -> new NotFoundException(
-            Exceptions.WORK_SPACE_NOT_FOUND, name)
-        );
+    return workSpaceRepository
+        .findByName(name)
+        .orElseThrow(() -> new NotFoundException(Exceptions.WORK_SPACE_NOT_FOUND, name));
   }
 
   @Override
   public List<String> getAllNames() {
-    return workSpaceRepository.findAll()
-        .stream()
-        .map(WorkSpace::getName)
-        .toList();
+    return workSpaceRepository.findAll().stream().map(WorkSpace::getName).toList();
   }
 }

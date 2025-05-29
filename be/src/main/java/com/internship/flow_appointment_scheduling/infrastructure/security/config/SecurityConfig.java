@@ -27,39 +27,43 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   private static final String[] WHITE_LIST = {
-      "/v2/api-docs",
-      "/v3/api-docs",
-      "/v3/api-docs/**",
-      "/swagger-resources",
-      "/swagger-resources/**",
-      "/configuration/ui",
-      "/configuration/security",
-      "/swagger-ui/**",
-      "/webjars/**",
-      "/swagger-ui.html",
-      "/api/v1/auth",
-      "/api/v1/auth/refresh",
-      "/api/v1/auth/reset-password",
+    "/v2/api-docs",
+    "/v3/api-docs",
+    "/v3/api-docs/**",
+    "/swagger-resources",
+    "/swagger-resources/**",
+    "/configuration/ui",
+    "/configuration/security",
+    "/swagger-ui/**",
+    "/webjars/**",
+    "/swagger-ui.html",
+    "/api/v1/auth",
+    "/api/v1/auth/refresh",
+    "/api/v1/auth/reset-password",
   };
   private final JwtRequestFilter jwtRequestFilter;
   private final AuthenticationProvider authenticationProvider;
+
   @Value("${cors.allowed-origins}")
   private List<String> allowedOrigins;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .cors(cors -> corsConfigurationSource())
+    http.cors(cors -> corsConfigurationSource())
         .csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(authorizeRequests ->
-            authorizeRequests
-                .requestMatchers(WHITE_LIST).permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
-                .requestMatchers(HttpMethod.GET,
-                    "/api/v1/services", "/api/v1/services/{id}").permitAll()
-                .anyRequest().authenticated()
-        )
+        .authorizeHttpRequests(
+            authorizeRequests ->
+                authorizeRequests
+                    .requestMatchers(WHITE_LIST)
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/users")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/users")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/services", "/api/v1/services/{id}")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider)
@@ -78,5 +82,4 @@ public class SecurityConfig {
     source.registerCorsConfiguration("/**", config);
     return source;
   }
-
 }

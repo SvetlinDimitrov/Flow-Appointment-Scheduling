@@ -39,17 +39,19 @@ public class JwtServiceImpl implements JwtService {
 
   @Value("${refresh-token.expiration-time}")
   private long refreshTokenDuration;
+
   @Value("${jwt.secret}")
   private String secret;
+
   @Value("${jwt.expiration-time}")
   private long expirationTime;
 
   public AuthenticationResponse refreshToken(RefreshTokenPostRequest dto) {
-    RefreshToken refreshToken = refreshTokenRepository
-        .findById(dto.token())
-        .orElseThrow(
-            () -> new NotFoundException(Exceptions.REFRESH_TOKEN_NOT_FOUND, dto.token())
-        );
+    RefreshToken refreshToken =
+        refreshTokenRepository
+            .findById(dto.token())
+            .orElseThrow(
+                () -> new NotFoundException(Exceptions.REFRESH_TOKEN_NOT_FOUND, dto.token()));
 
     if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
       refreshTokenRepository.delete(refreshToken);
@@ -63,10 +65,10 @@ public class JwtServiceImpl implements JwtService {
   }
 
   public AuthenticationResponse generateToken(String email) {
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(
-            () -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email)
-        );
+    User user =
+        userRepository
+            .findByEmail(email)
+            .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
 
     JwtView jwtView = generateJwtToken(user);
     RefreshTokenView refreshTokenView = generateRefreshToken(user);
@@ -75,29 +77,26 @@ public class JwtServiceImpl implements JwtService {
   }
 
   public Boolean isJwtTokenExpired(String token) {
-  try {
-    Date expiration = extractAllClaims(token).getExpiration();
-    return expiration.before(new Date());
-  } catch (io.jsonwebtoken.ExpiredJwtException e) {
-    return true;
+    try {
+      Date expiration = extractAllClaims(token).getExpiration();
+      return expiration.before(new Date());
+    } catch (io.jsonwebtoken.ExpiredJwtException e) {
+      return true;
+    }
   }
-}
 
   public String getEmailFromToken(String token) {
     Claims claims = extractAllClaims(token);
     return claims.getSubject();
   }
 
-
   /**
-   * Sends an email for resetting the password.
-   * First, this method checks if there is an existing user with the provided email.
-   * If the user exists, it checks if the user already has an existing reset token.
-   * If a valid reset token is found, an exception is thrown to prevent spamming the request.
-   * If there is no valid reset token, a new one is created with a 15-minute lifespan.
-   * The reset token is then sent to the user's email.
-   * When the user clicks the link in the email,
-   * they will be redirected to a specific page in the frontend.
+   * Sends an email for resetting the password. First, this method checks if there is an existing
+   * user with the provided email. If the user exists, it checks if the user already has an existing
+   * reset token. If a valid reset token is found, an exception is thrown to prevent spamming the
+   * request. If there is no valid reset token, a new one is created with a 15-minute lifespan. The
+   * reset token is then sent to the user's email. When the user clicks the link in the email, they
+   * will be redirected to a specific page in the frontend.
    *
    * @param email the email of the user requesting the password reset
    * @throws NotFoundException if the user is not found by the provided email
@@ -105,8 +104,10 @@ public class JwtServiceImpl implements JwtService {
    */
   @Override
   public void sendEmailForRestingThePassword(String email) {
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
+    User user =
+        userRepository
+            .findByEmail(email)
+            .orElseThrow(() -> new NotFoundException(Exceptions.USER_NOT_FOUND_BY_EMAIL, email));
 
     if (user.getPasswordResetToken() != null) {
       if (!isJwtTokenExpired(user.getPasswordResetToken())) {
@@ -120,7 +121,7 @@ public class JwtServiceImpl implements JwtService {
 
     userRepository.save(user);
 
-    eventPublisher.publishEvent(new PasswordResetEvent(this , token , email));
+    eventPublisher.publishEvent(new PasswordResetEvent(this, token, email));
   }
 
   private String generateShortLivedToken(String userEmail) {
@@ -133,23 +134,24 @@ public class JwtServiceImpl implements JwtService {
         .setExpiration(expirationDate)
         .signWith(getSigningKey(), SignatureAlgorithm.HS256)
         .compact();
-}
+  }
 
   private JwtView generateJwtToken(User user) {
     Date now = new Date();
     Date expirationDate = new Date(now.getTime() + expirationTime);
 
-    String token = Jwts.builder()
-        .setSubject(user.getEmail())
-        .claim("userId", user.getId())
-        .claim("role", user.getRole())
-        .setIssuedAt(now)
-        .setExpiration(expirationDate)
-        .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-        .compact();
+    String token =
+        Jwts.builder()
+            .setSubject(user.getEmail())
+            .claim("userId", user.getId())
+            .claim("role", user.getRole())
+            .setIssuedAt(now)
+            .setExpiration(expirationDate)
+            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+            .compact();
 
-    LocalDateTime expirationTime = LocalDateTime.ofInstant(expirationDate.toInstant(),
-        ZoneId.systemDefault());
+    LocalDateTime expirationTime =
+        LocalDateTime.ofInstant(expirationDate.toInstant(), ZoneId.systemDefault());
 
     return new JwtView(token, expirationTime);
   }

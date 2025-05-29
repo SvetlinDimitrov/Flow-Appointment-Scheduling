@@ -33,8 +33,8 @@ public class ServiceController implements ServiceControllerDocumentation {
   private final WorkSpaceService workSpaceService;
 
   @GetMapping
-  public ResponseEntity<Page<ServiceView>> getAll(Pageable pageable,
-      @RequestParam(required = false) String staffEmail) {
+  public ResponseEntity<Page<ServiceView>> getAll(
+      Pageable pageable, @RequestParam(required = false) String staffEmail) {
     return ResponseEntity.ok(serviceService.getAll(pageable, staffEmail));
   }
 
@@ -51,32 +51,28 @@ public class ServiceController implements ServiceControllerDocumentation {
 
   @PostMapping
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
-  public ResponseEntity<ServiceView> create(
-      @Valid @RequestBody ServiceDTO createDto) {
+  public ResponseEntity<ServiceView> create(@Valid @RequestBody ServiceDTO createDto) {
     return ResponseEntity.ok(serviceService.create(createDto));
   }
 
   @PostMapping("/{id}/assign")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
   public ResponseEntity<ServiceView> assignStaff(
-      @PathVariable Long id,
-      @RequestParam @StaffOrAdmin String staffEmail) {
+      @PathVariable Long id, @RequestParam @StaffOrAdmin String staffEmail) {
     return ResponseEntity.ok(serviceService.assignStaff(id, staffEmail));
   }
 
   @PutMapping("/{id}/unassign")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
   public ResponseEntity<ServiceView> unassignStaff(
-      @PathVariable Long id,
-      @RequestParam String staffEmail) {
+      @PathVariable Long id, @RequestParam String staffEmail) {
     return ResponseEntity.ok(serviceService.unassignStaff(id, staffEmail));
   }
 
   @PutMapping("/{id}")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
   public ResponseEntity<ServiceView> update(
-      @PathVariable Long id,
-      @Valid @RequestBody ServiceDTO putDto) {
+      @PathVariable Long id, @Valid @RequestBody ServiceDTO putDto) {
     return ResponseEntity.ok(serviceService.update(id, putDto));
   }
 
@@ -85,8 +81,6 @@ public class ServiceController implements ServiceControllerDocumentation {
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     serviceService.delete(id);
 
-    return ResponseEntity
-        .status(HttpStatus.NO_CONTENT)
-        .build();
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

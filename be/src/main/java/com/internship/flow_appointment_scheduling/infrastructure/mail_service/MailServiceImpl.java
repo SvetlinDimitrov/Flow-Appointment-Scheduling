@@ -25,6 +25,7 @@ public class MailServiceImpl implements MailService {
 
   private final JavaMailSender mailSender;
   private final TemplateEngine templateEngine;
+
   @Value("${front-end.url}")
   private String frontEndUrl;
 
@@ -37,10 +38,10 @@ public class MailServiceImpl implements MailService {
     Context context = extractContext(appointment);
     context.setVariable("staffName", appointment.getStaff().getFirstName());
 
-    String clientNotification = templateEngine.process("client-approved-appointment-notification",
-        context);
-    String staffNotification = templateEngine.process("staff-approved-appointment-notification",
-        context);
+    String clientNotification =
+        templateEngine.process("client-approved-appointment-notification", context);
+    String staffNotification =
+        templateEngine.process("staff-approved-appointment-notification", context);
 
     try {
       sendEmail(clientEmail, subject, clientNotification);
@@ -48,11 +49,13 @@ public class MailServiceImpl implements MailService {
     } catch (MailAuthenticationException e) {
       logger.error(
           "Failed to send approved appointment notification due to authentication error for appointment: {}. Error: {}",
-          appointment, e.getCause().getMessage());
+          appointment,
+          e.getCause().getMessage());
     } catch (MessagingException e) {
       logger.error(
           "Failed to send approved appointment notification for appointment: {}. Error: {}",
-          appointment, e.getCause().getMessage());
+          appointment,
+          e.getCause().getMessage());
       throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
@@ -66,10 +69,10 @@ public class MailServiceImpl implements MailService {
     Context context = extractContext(appointment);
     context.setVariable("staffName", appointment.getStaff().getFirstName());
 
-    String clientNotification = templateEngine.process("client-created-appointment-notification",
-        context);
-    String staffNotification = templateEngine.process("staff-created-appointment-notification",
-        context);
+    String clientNotification =
+        templateEngine.process("client-created-appointment-notification", context);
+    String staffNotification =
+        templateEngine.process("staff-created-appointment-notification", context);
 
     try {
       sendEmail(clientEmail, subject, clientNotification);
@@ -77,11 +80,13 @@ public class MailServiceImpl implements MailService {
     } catch (MailAuthenticationException e) {
       logger.error(
           "Failed to send not approved appointment notification due to authentication error for appointment: {}. Error: {}",
-          appointment, e.getCause().getMessage());
+          appointment,
+          e.getCause().getMessage());
     } catch (MessagingException e) {
       logger.error(
           "Failed to send not approved appointment notification for appointment: {}. Error: {}",
-          appointment, e.getCause().getMessage());
+          appointment,
+          e.getCause().getMessage());
       throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
@@ -93,19 +98,21 @@ public class MailServiceImpl implements MailService {
 
     Context context = extractContext(appointment);
 
-    String clientNotification = templateEngine.process("client-canceled-appointment-notification",
-        context);
+    String clientNotification =
+        templateEngine.process("client-canceled-appointment-notification", context);
 
     try {
       sendEmail(clientEmail, subject, clientNotification);
     } catch (MailAuthenticationException e) {
       logger.error(
           "Failed to send canceled appointment notification due to authentication error for appointment: {}. Error: {}",
-          appointment, e.getCause().getMessage());
+          appointment,
+          e.getCause().getMessage());
     } catch (MessagingException e) {
       logger.error(
           "Failed to send canceled appointment notification for appointment: {}. Error: {}",
-          appointment, e.getCause().getMessage());
+          appointment,
+          e.getCause().getMessage());
       throw new ServiceUnavailableException(Exceptions.MAIL_SERVICE_ERROR);
     }
   }
@@ -125,7 +132,8 @@ public class MailServiceImpl implements MailService {
     try {
       sendEmail(userEmail, subject, htmlContent);
     } catch (MailAuthenticationException e) {
-      logger.error("Failed to send reset password email due to authentication error. Error: {}",
+      logger.error(
+          "Failed to send reset password email due to authentication error. Error: {}",
           e.getCause().getMessage());
     } catch (MessagingException e) {
       logger.error("Failed to send reset password email. Error: {}", e.getCause().getMessage());

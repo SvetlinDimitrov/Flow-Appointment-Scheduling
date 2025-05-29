@@ -37,20 +37,21 @@ public class UserController implements UserControllerDocumentation {
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE')")
-  public ResponseEntity<Page<UserView>> getAll(Pageable pageable,
-      @RequestParam(required = false) UserRoles userRole) {
-    return ResponseEntity.ok(userService.getAll(pageable , userRole));
+  public ResponseEntity<Page<UserView>> getAll(
+      Pageable pageable, @RequestParam(required = false) UserRoles userRole) {
+    return ResponseEntity.ok(userService.getAll(pageable, userRole));
   }
 
   @GetMapping("/service/{serviceId}")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE' , 'CLIENT')")
-  public ResponseEntity<Page<UserView>> getAllByServiceId(Pageable pageable,
-      @PathVariable Long serviceId) {
+  public ResponseEntity<Page<UserView>> getAllByServiceId(
+      Pageable pageable, @PathVariable Long serviceId) {
     return ResponseEntity.ok(userService.getAllByServiceId(pageable, serviceId));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'EMPLOYEE') || @userPermissionEvaluator.currentClientAccess(authentication, #id)")
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR', 'EMPLOYEE') || @userPermissionEvaluator.currentClientAccess(authentication, #id)")
   public ResponseEntity<UserView> getById(@PathVariable Long id) {
     return ResponseEntity.ok(userService.getById(id));
   }
@@ -58,49 +59,46 @@ public class UserController implements UserControllerDocumentation {
   @PostMapping
   public ResponseEntity<UserView> create(@Valid @RequestBody UserPostRequest createDto) {
 
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(userService.create(createDto));
+    return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(createDto));
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
-  public ResponseEntity<UserView> update(@PathVariable Long id,
-      @Valid @RequestBody UserPutRequest updateDto) {
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
+  public ResponseEntity<UserView> update(
+      @PathVariable Long id, @Valid @RequestBody UserPutRequest updateDto) {
     return ResponseEntity.ok(userService.update(id, updateDto));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #id)")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     userService.delete(id);
 
-    return ResponseEntity
-        .status(HttpStatus.NO_CONTENT)
-        .build();
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @PostMapping("/hire")
   @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
   public ResponseEntity<UserView> hireStaff(@Valid @RequestBody StaffHireDto hireDto) {
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(userService.hireStaff(hireDto));
+    return ResponseEntity.status(HttpStatus.CREATED).body(userService.hireStaff(hireDto));
   }
 
   @PutMapping("/{id}/staff")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentStaffAccess(authentication, #id)")
-  public ResponseEntity<UserView> modifyStaff(@PathVariable Long id,
-      @Valid @RequestBody StaffModifyDto modifyDto) {
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentStaffAccess(authentication, #id)")
+  public ResponseEntity<UserView> modifyStaff(
+      @PathVariable Long id, @Valid @RequestBody StaffModifyDto modifyDto) {
     return ResponseEntity.ok(userService.modifyStaff(id, modifyDto));
   }
 
   @PutMapping("/reset-password")
-  @PreAuthorize("hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #userDetails.user().id)")
+  @PreAuthorize(
+      "hasAnyRole('ADMINISTRATOR') || @userPermissionEvaluator.currentClientOrStaffAccess(authentication, #userDetails.user().id)")
   public ResponseEntity<UserView> resetPassword(
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @Valid @RequestBody UserPasswordUpdate dto) {
-    return ResponseEntity.ok(
-        userService.resetPassword(userDetails.getUsername(), dto));
+    return ResponseEntity.ok(userService.resetPassword(userDetails.getUsername(), dto));
   }
 }
