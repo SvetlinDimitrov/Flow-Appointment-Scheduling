@@ -1,39 +1,22 @@
-# Flow Appointment Scheduling: Tech Stack
+# Tech Stack
 
 ## Core Technologies
 
-- **Language**: Java 21
-- **Framework**: Spring Boot (3.3.2)
+- **Library**: React 18.3.1
+- **Routing**: React Router DOM
 
-## Data Management
+## UI and Styling
 
-- **Data Access**: Spring Data JPA
-- **Database**: MySQL
-- **Database Migration**: Flyway
+- **UI Framework**: MUI
+- **Styling**: Emotion, Styled Components
 
-## Security and Validation
+## State Management and Forms
 
-- **Security**: Spring Security, JWT (JSON Web Tokens)
-- **Validation**: Hibernate Validator
+- **State Management**: React Query
+- **Forms**: React Hook Form, Zod
 
-## UI and API Documentation
+## Build and Development
 
-- **UI Template Engine**: Thymeleaf
-- **API Documentation**: Springdoc OpenAPI
-
-## Utilities and Libraries
-
-- **Mail Support**: Spring Boot Starter Mail
-- **Mapping**: MapStruct
-- **Password Policies**: Passay
-- **JSON Processing**: Jackson
-
-## Testing
-
-- **Testing Frameworks**: JUnit, GreenMail, Testcontainers
-- **Testing Utilities**: Spring Boot Test, Spring Security Test
-
-## Build and Plugins
-
-- **Build Tool**: Maven
-- **IDE Helpers**: Lombok
+- **Build Tool**: Vite
+- **Language**: TypeScript
+- **Linting**: ESLint

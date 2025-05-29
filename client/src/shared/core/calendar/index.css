@@ -1,0 +1,18 @@
+.rbc-event {
+    padding: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    background-color: transparent !important;
+}
+
+.rbc-event-label {
+    display: none !important;
+}
+
+.rbc-events-container {
+    width: 100% !important;
+}
+
+.rbc-timeslot-group {
+    min-height: 55px !important;
+}
