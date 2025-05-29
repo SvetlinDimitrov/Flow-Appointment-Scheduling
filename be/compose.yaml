@@ -4,8 +4,8 @@ services:
     restart: always
     environment:
       PMA_HOST: db
-      PMA_USER: user
-      PMA_PASSWORD: secret
+      PMA_USER: root
+      PMA_PASSWORD: verysecret
     ports:
       - '5678:80'
     networks:

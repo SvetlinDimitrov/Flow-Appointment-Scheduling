@@ -16,6 +16,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,27 +26,35 @@ import org.springframework.transaction.annotation.Transactional;
 @Order(2)
 public class UserSeedRunner implements ApplicationRunner {
 
+  public static String PASSWORD = "Password123!";
   private final UserRepository userRepository;
   private final ServiceRepository serviceRepository;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
   public void run(ApplicationArguments args) {
     for (SeededAdminUsers admin : SeededAdminUsers.values()) {
       if (!userRepository.existsByEmail(admin.getEmail())) {
-        userRepository.saveAndFlush(admin.toUser());
+        var user = admin.toUser();
+        user.setPassword(passwordEncoder.encode(PASSWORD));
+        userRepository.saveAndFlush(user);
       }
     }
 
     for (SeededStaffUsers staff : SeededStaffUsers.values()) {
       if (!userRepository.existsByEmail(staff.getEmail())) {
-        userRepository.saveAndFlush(staff.toUser());
+        var user = staff.toUser();
+        user.setPassword(passwordEncoder.encode(PASSWORD));
+        userRepository.saveAndFlush(user);
       }
     }
 
     for (SeededClientUsers client : SeededClientUsers.values()) {
       if (!userRepository.existsByEmail(client.getEmail())) {
-        userRepository.saveAndFlush(client.toUser());
+        var user = client.toUser();
+        user.setPassword(passwordEncoder.encode(PASSWORD));
+        userRepository.saveAndFlush(user);
       }
     }
 
